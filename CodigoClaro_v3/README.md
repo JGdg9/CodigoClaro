@@ -13,7 +13,12 @@
 - Aula didáctica con ejercicios, formatos de test y un IDE educativo que distingue motores de ejecución de simulaciones/análisis estático.
 - Tests corregidos en servidor, registro de intentos, progreso personal, planificación de estudio y feedback.
 - Código organizado en módulos, pruebas automáticas e instrucciones para Windows.
+- 
+## 🚀 Prueba CódigoClaro
 
+Accede a la plataforma desde aquí:
+
+👉 https://codigoclaro.onrender.com/
 ## Capturas para el portfolio
 
 Antes de publicar el repositorio, se recomienda añadir capturas propias en `docs/capturas/`:
