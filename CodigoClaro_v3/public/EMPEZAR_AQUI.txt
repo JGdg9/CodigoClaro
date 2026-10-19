@@ -1,0 +1,20 @@
+CODIGOCLARO DAM - COMO EJECUTARLO
+
+1) Extrae TODO el archivo ZIP en una carpeta (no ejecutes los archivos dentro del ZIP).
+2) Haz doble clic en EJECUTAR_CODIGOCLARO.bat o abre index.html con Chrome/Edge.
+3) Para consultar los temarios, abre temarios.html o usa el catálogo desde index.html.
+4) Para validar la estructura del paquete, abre PowerShell en esta carpeta y ejecuta:
+   python verificar_entrega.py
+
+NO requiere Node.js ni base de datos para abrir la aplicación principal.
+Algunas funciones del IDE pueden requerir Internet o un motor configurado. La validación del paquete no significa que todos los lenguajes estén compilando.
+
+ARCHIVOS PRINCIPALES
+- index.html: aplicación principal
+- temarios.html: biblioteca de temas
+- diagnostico.html: diagnóstico de conocimientos
+- catalogo_temas.json: índice de temas
+- verificar_entrega.py: comprobación de estructura, PDF y enlaces locales
+- *.pdf: temarios y guías
+
+Los cambios de progreso del navegador se guardan localmente en ese navegador/dispositivo. Exporta una copia si la aplicación ofrece esa opción antes de borrar datos del navegador.

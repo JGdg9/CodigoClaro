@@ -1,0 +1,16 @@
+{
+  "name": "codigoclaro-piloto",
+  "version": "1.2.1",
+  "private": true,
+  "description": "CódigoClaro: plataforma educativa de programación para DAM y DAW, con temarios ampliados, prácticas y seguimiento del aprendizaje",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test tests/*.test.js",
+    "docs:build": "python scripts/generar_temarios.py"
+  }
+}
