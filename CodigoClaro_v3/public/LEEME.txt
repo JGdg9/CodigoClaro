@@ -1,0 +1,36 @@
+CÓDIGOCLARO · ENTREGA AMPLIADA DE TEMARIOS Y TESTS
+
+INICIO
+1. Extrae el ZIP completo.
+2. Abre index.html en un navegador moderno.
+3. Entra en “Rutas PDF” para buscar temas y abrir los PDFs individuales.
+4. Los PDF deben permanecer junto a index.html, en sus carpetas originales (todos están en la misma carpeta en esta entrega).
+
+MATERIAL INCLUIDO
+- 15 temas individuales de Java.
+- 15 temas individuales de JavaScript.
+- 15 temas individuales de Python.
+- 15 temas individuales de Kotlin.
+- 15 temas individuales de React.
+- 5 guías complementarias de 15 temas: SQL relacional (Oracle/MySQL/PostgreSQL), NoSQL (MongoDB/Firestore/Firebase), backend/API, POO y gestión de bases de datos.
+- Los 9 PDFs anteriores, los ejercicios y el IDE integrado.
+- Cada tema individual incluye objetivos, conceptos, ejemplo, práctica, solución orientativa y checklist.
+
+EJECUCIÓN Y COSTES
+- No se integra ninguna API de pago ni se requieren servicios contratados para leer los PDF.
+- JavaScript y SQLite funcionan localmente en el navegador; Pyodide/React pueden necesitar Internet si sus bibliotecas se cargan desde CDN.
+- Java/Kotlin/Node remotos solo funcionan si configuras un endpoint compatible; no son necesarios para estudiar los PDF.
+- Firestore/MongoDB se presentan como simuladores en el IDE; las conexiones reales requieren motores/configuración propios.
+
+PRUEBAS DE PAQUETE
+- Verificación de que los 75 PDF de temas individuales y 5 guías complementarias se generan y están presentes.
+- Verificación de enlaces de PDF en el catálogo del navegador.
+- Comprobación de sintaxis JavaScript con Node.js sobre los scripts embebidos.
+- Pruebas de ejecución de motores externos no se pueden garantizar sin conexión y configuración en el equipo del usuario.
+
+PRUEBAS RÁPIDAS
+Consulta GUIA_PRUEBAS_RAPIDAS.md para una lista de comprobación de 10–15 minutos. Ejecuta python verificar_entrega.py para revisar estructura y archivos locales.
+
+NOVEDAD UX: abre "Plan de estudio" para seguir un plan semanal de tareas, marcar sesiones, consultar el progreso del plan y exportarlo a JSON. El plan se guarda en este navegador y es independiente de las notas de ejercicios.
+
+VERIFICACIÓN: ejecuta `python verificar_entrega.py` desde esta carpeta. Comprueba la estructura, los PDF, enlaces locales, funciones clave y sintaxis JavaScript si Node.js está instalado. No sustituye las pruebas manuales de cada motor.
