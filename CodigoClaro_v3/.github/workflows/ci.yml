@@ -1,0 +1,24 @@
+name: CódigoClaro CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check server syntax
+        run: node --check server.js
+      - name: Run automated tests
+        run: npm test
+      - name: Check Python tooling syntax
+        run: python -m py_compile scripts/generar_temarios.py verificar_entrega.py
+      - name: Verify package
+        run: python verificar_entrega.py

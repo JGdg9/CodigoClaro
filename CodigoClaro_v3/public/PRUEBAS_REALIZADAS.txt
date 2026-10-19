@@ -1,0 +1,14 @@
+PRUEBAS DE PAQUETE · CÓDIGOCLARO DAM
+
+RESULTADO: comprobaciones locales superadas.
+
+- 89 archivos PDF presentes y legibles; todos contienen texto extraíble.
+- 75 PDF individuales: 15 temas para Java, JavaScript, Python, Kotlin y React.
+- 5 guías complementarias de 15 temas: SQL relacional, NoSQL, backend/APIs, POO y gestión de bases de datos.
+- 9 PDF anteriores conservados.
+- Todos los ficheros referenciados en catalogo_temas.json existen.
+- Sintaxis JavaScript de la aplicación y de la página de catálogo comprobada con Node.js.
+- ZIP verificado con testzip.
+
+ALCANCE DE ESTAS PRUEBAS
+Estas pruebas validan estructura, integridad de archivos, lectura de PDF y sintaxis de los scripts. No equivalen a una prueba de navegador real ni certifican la disponibilidad de CDN, Pyodide, React o servicios remotos. El IDE mantiene las limitaciones descritas en LEEME.txt.

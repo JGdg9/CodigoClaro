@@ -1,0 +1,26 @@
+# Blueprint de Render para ejecutar la aplicación completa (no la demo estática).
+# Si reorganizas el repositorio y pones package.json en la raíz, cambia rootDir a ".".
+services:
+  - type: web
+    name: codigoclaro
+    runtime: node
+    plan: starter
+    rootDir: CodigoClaro_v1.2.1/CodigoClaro_Piloto_Actualizado
+    buildCommand: node --check server.js
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: codigoclaro-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /var/data/codigoclaro.sqlite
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
