@@ -317,8 +317,6 @@ def build_story():
                   Spacer(1, 5 * mm), para("Fuentes fiables", "h2")]
         for source in topic["sources"]:
             story.append(source_paragraph(source))
-        if index < len(TOPICS):
-            story.append(PageBreak())
     story += [PageBreak(), para("Referencias de la ruta", "h1"),
               para("Las fuentes de cada tema enlazan a la sección más relevante. Consulta la versión indicada por el organismo cuando cambie el runtime o la norma.", "body"), Spacer(1, 3 * mm)]
     for name, url in SOURCES.items():

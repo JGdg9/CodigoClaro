@@ -8,6 +8,13 @@ import json, re, shutil, subprocess, sys, tempfile
 ROOT=Path(__file__).resolve().parent
 PUB=ROOT/'public'
 errors=[]; notes=[]
+try:
+    public_catalog=json.loads((PUB/'catalogo_temas.json').read_text(encoding='utf-8'))
+    expected_pages={item['file']:item.get('pages') for item in public_catalog}
+except Exception as exc:
+    public_catalog=[]
+    expected_pages={}
+    errors.append(f'No se pudo leer el catálogo público de temarios: {exc}')
 class CheckHTML(HTMLParser):
     def __init__(self): super().__init__(); self.ids=[]; self.local=[]
     def handle_starttag(self, tag, attrs):
@@ -20,6 +27,7 @@ class CheckHTML(HTMLParser):
 
 if not (ROOT/'server.js').is_file(): errors.append('Falta server.js')
 if not (ROOT/'lib'/'quizzes.js').is_file(): errors.append('Falta el banco de preguntas del servidor')
+if not (ROOT/'lib'/'quizzes-expanded.js').is_file(): errors.append('Falta el banco ampliado de preguntas')
 if not (ROOT/'tests'/'api.test.js').is_file(): errors.append('Faltan las pruebas de integración')
 expected={'Java':15,'JavaScript':15,'Python':15,'Kotlin':15,'React':15}
 counts={}
@@ -36,7 +44,9 @@ for track,count_expected in expected.items():
             # Replace undecodable bytes so the ASCII Pages field remains parseable on Windows.
             meta=subprocess.run([pdfinfo,str(f)],capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=10)
             match=re.search(r'^Pages:\s+(\d+)',meta.stdout,re.M)
-            if not match or int(match.group(1))!=10: errors.append(f'{f.name}: se esperaban 10 páginas, se detectaron {match.group(1) if match else 'sin dato'}')
+            actual_pages=int(match.group(1)) if match else None
+            expected_count=expected_pages.get(f.name)
+            if not match or actual_pages!=expected_count: errors.append(f'{f.name}: catálogo declara {expected_count} páginas y el PDF contiene {actual_pages if actual_pages is not None else "sin dato"}')
 pdfs=list((PUB/'temarios').glob('*.pdf'))
 if len(pdfs)!=90: errors.append(f'Se esperaban 90 PDF en total; hay {len(pdfs)}')
 typescript_route=PUB/'temarios'/'Ruta_TypeScript_JavaScript_React_Node_15_Temas.pdf'
@@ -85,7 +95,7 @@ for name in ['index.html','aula.html','temarios.html','diagnostico.html','privac
             finally: tmp.unlink(missing_ok=True)
 
 if node:
-    for file in [ROOT/'server.js',ROOT/'lib'/'quizzes.js',*sorted((ROOT/'tests').glob('*.test.js'))]:
+    for file in [ROOT/'server.js',ROOT/'lib'/'quizzes.js',ROOT/'lib'/'quizzes-expanded.js',*sorted((ROOT/'tests').glob('*.test.js'))]:
         r=subprocess.run([node,'--check',str(file)],capture_output=True,text=True,timeout=15)
         if r.returncode: errors.append(f'Sintaxis Node incorrecta en {file.relative_to(ROOT)}: {(r.stderr or r.stdout).strip()}')
     test_files=sorted((ROOT/'tests').glob('*.test.js'))
@@ -102,7 +112,7 @@ if errors:
     for e in errors: print(' - '+e)
     sys.exit(1)
 print('OK: catálogo con 75 temas individuales y ruta TypeScript complementaria.')
-if shutil.which('pdfinfo'): print('OK: los 75 temarios individuales tienen exactamente 10 páginas.')
+if shutil.which('pdfinfo'): print('OK: los 75 temarios individuales coinciden con el número de páginas del catálogo.')
 print(f'OK: {len(pdfs)} PDF en public/temarios con cabecera válida y marcador final.')
 print('OK: estructura HTML, IDs, enlaces locales y sintaxis JS revisados.')
 for n in notes: print('OK: '+n)

@@ -47,7 +47,7 @@ TOPIC = {
   'Arrays': ('Un array tiene longitud fija y sus índices empiezan en cero. Los elementos de un array de referencias pueden ser null; el acceso fuera de rango provoca ArrayIndexOutOfBoundsException.', 'int[] notas = {7, 8, 10};\nfor (int nota : notas) {\n  System.out.println(nota);\n}', 'Usa length, no length(). Distingue copiar una referencia de copiar los elementos; Arrays.copyOf crea otro array.'),
   'Métodos': ('Un método define una operación con nombre, parámetros y tipo de retorno. La firma participa en la sobrecarga; el tipo de retorno por sí solo no permite sobrecargar. Java pasa argumentos por valor, incluidas las referencias.', 'static int sumar(int a, int b) {\n  return a + b;\n}', 'Divide operaciones grandes en métodos con una responsabilidad. Comprueba precondiciones y documenta qué devuelve y qué errores puede producir.'),
   'Clases y objetos': ('Una clase describe estado y comportamiento; un objeto es una instancia. Encapsular significa proteger invariantes y exponer operaciones claras. Los modificadores de acceso forman parte del diseño de la API.', 'class Contador {\n  private int valor;\n  void incrementar() { valor++; }\n  int valorActual() { return valor; }\n}', 'Evita campos públicos mutables por defecto. Decide qué estado debe ser visible y qué condiciones deben mantenerse siempre.'),
-  'Constructores y this': ('El constructor inicializa una instancia y no tiene tipo de retorno. `this` refiere al objeto actual y puede resolver nombres; `this(...)` delega en otro constructor de la misma clase y debe aparecer al inicio.', 'class Usuario {\n  private final String nombre;\n  Usuario(String nombre) { this.nombre = nombre; }\n}', 'Valida argumentos al crear el objeto. Evita duplicar lógica entre constructores; delega en un constructor principal cuando sea claro.'),
+  'Constructores y this': ('El constructor inicializa una instancia y no tiene tipo de retorno. `this` refiere al objeto actual y puede resolver nombres; `this(...)` delega en otro constructor de la misma clase. Desde Java 25, ciertas instrucciones de preparación o validación pueden preceder a la invocación explícita, pero no pueden acceder a la instancia aún en construcción. En versiones anteriores, la invocación debe aparecer al inicio.', 'class Usuario {\n  private final String nombre;\n  Usuario(String nombre) { this.nombre = nombre; }\n}', 'Valida argumentos al crear el objeto. Evita duplicar lógica entre constructores; delega en un constructor principal cuando sea claro.'),
   'Herencia y polimorfismo': ('extends crea una relación de herencia de clases; una subclase especializa el comportamiento. La sobrescritura debe respetar el contrato de la clase base. El despacho dinámico elige la implementación según el objeto real.', 'class Animal { void hablar() { System.out.println("..."); } }\nclass Perro extends Animal { @Override void hablar() { System.out.println("Guau"); } }', 'Prefiere composición cuando no existe una relación genuina “es-un”. No reduzcas visibilidad al sobrescribir y respeta el principio de sustitución.'),
   'Interfaces y abstractas': ('Una interfaz define un contrato que distintas clases pueden implementar. Una clase abstracta puede combinar estado y comportamiento compartido. Las interfaces permiten implementar varios contratos, mientras que una clase solo extiende una clase.', 'interface Exportable {\n  String exportar();\n}\nclass Informe implements Exportable {\n  public String exportar() { return "{}"; }\n}', 'Programa contra abstracciones cuando facilite cambiar implementaciones. Mantén interfaces pequeñas y cohesivas.'),
   'Excepciones': ('Las excepciones representan condiciones excepcionales. Las checked deben declararse o capturarse; las unchecked suelen representar errores de programación o precondiciones incumplidas. try-with-resources cierra recursos AutoCloseable.', 'try (var lector = java.nio.file.Files.newBufferedReader(ruta)) {\n  System.out.println(lector.readLine());\n} catch (java.io.IOException e) {\n  System.err.println("No se pudo leer el fichero");\n}', 'No captures Exception para ocultar fallos ni ignores una excepción vacía. Añade contexto útil y conserva la causa al envolverla.'),
@@ -105,16 +105,16 @@ DETAILS = {
  'val, var y tipos': ('`val` declara una variable o propiedad de solo lectura que no puede reasignarse; `var` sí permite reasignarla. Un `val` puede referirse a un objeto mutable: no se puede reasignar la variable, pero sí cambiar el estado del objeto. Kotlin infiere tipos cuando la expresión lo permite.', 'val nombre: String = "Ada"\nvar intentos = 0\nintentos += 1'),
  'Null safety': ('Los tipos `String` y `String?` son distintos. El acceso seguro `?.` evita dereferenciar null; `?:` proporciona alternativa; `!!` fuerza una aserción y puede lanzar NullPointerException.', 'val nombre: String? = obtenerNombre()\nval longitud = nombre?.length ?: 0'),
  'Condiciones y when': ('if puede ser una expresión que devuelve un valor. `when` permite comparar con valores, rangos, tipos o condiciones, y puede usarse como expresión exhaustiva.', 'val etiqueta = when (nota) {\n    in 9..10 -> "Sobresaliente"\n    in 7..8 -> "Notable"\n    else -> "Revisar"\n}'),
- 'Bucles y rangos': ('Los rangos `..` incluyen el límite final; `until` lo excluye. `downTo` recorre hacia atrás y `step` define el incremento. Comprueba límites al recorrer índices.', 'for (i in 0 until 3) {\n    println(i)\n}'),
- 'Funciones': ('Las funciones pueden tener parámetros nombrados, valores por defecto y retorno inferido. Una función de una sola expresión puede omitir llaves y return explícito.', 'fun sumar(a: Int, b: Int = 0): Int = a + b'),
+ 'Bucles y rangos': ('Los rangos `..` incluyen el límite final; `until` lo excluye y `..<` expresa también un rango abierto. `downTo` recorre hacia atrás y `step` define el intervalo entre elementos. Comprueba límites al recorrer índices.', 'for (i in 0 until 3) {\n    println(i)\n}'),
+ 'Funciones': ('Las llamadas pueden nombrar argumentos y los parámetros pueden tener valores por defecto. Las funciones con cuerpo de expresión pueden inferir el tipo de retorno; las de cuerpo de bloque lo declaran explícitamente, salvo cuando devuelven `Unit`.', 'fun sumar(a: Int, b: Int = 0): Int = a + b'),
  'Colecciones': ('Kotlin distingue interfaces de colecciones de solo lectura de las mutables. Una colección de solo lectura no garantiza que el objeto subyacente sea inmutable si otra referencia puede modificarlo.', 'val numeros = listOf(1, 2, 3)\nval pares = numeros.filter { it % 2 == 0 }\nval mutable = mutableListOf("Java")'),
- 'Clases y data class': ('Una data class genera equals, hashCode, toString y funciones componentN/copy basadas en propiedades del constructor primario. Es útil para datos, no implica persistencia ni validación automática.', 'data class Usuario(val id: Int, val nombre: String)\nval original = Usuario(1, "Ada")\nval copia = original.copy(nombre = "Lía")'),
- 'Herencia e interfaces': ('Las clases y miembros son final por defecto. `open` habilita herencia/sobrescritura; `override` declara la implementación. Las interfaces pueden definir comportamiento, pero no mantener estado de instancia como una clase.', 'interface Exportable { fun exportar(): String }\nclass Informe : Exportable {\n    override fun exportar() = "informe"\n}'),
+ 'Clases y data class': ('Una data class genera equals, hashCode, toString y funciones componentN/copy basadas en propiedades del constructor primario. `copy()` es superficial: las referencias a objetos mutables se comparten. Es útil para datos, no implica persistencia ni validación automática.', 'data class Usuario(val id: Int, val nombre: String)\nval original = Usuario(1, "Ada")\nval copia = original.copy(nombre = "Lía")'),
+ 'Herencia e interfaces': ('Las clases y sus miembros son final por defecto; las interfaces y sus miembros son abiertos. `open` habilita herencia o sobrescritura en clases. `override` declara la implementación, y un miembro sobrescrito queda abierto por defecto, salvo que se marque `final`. Las interfaces pueden definir comportamiento, pero no guardar estado de instancia.', 'interface Exportable { fun exportar(): String }\nclass Informe : Exportable {\n    override fun exportar() = "informe"\n}'),
  'Lambdas y funciones de orden superior': ('Una función de orden superior recibe o devuelve funciones. `it` es el nombre implícito de un único parámetro de lambda. Las referencias a funciones pueden mejorar la claridad si la firma es evidente.', 'val nombres = listOf("Ada", "Lía")\nval largos = nombres.filter { it.length > 3 }'),
  'Excepciones': ('Kotlin no distingue excepciones checked y unchecked en el sistema de tipos. try puede ser una expresión. `use` cierra recursos Closeable/AutoCloseable al finalizar el bloque.', 'val numero = try { texto.toInt() } catch (e: NumberFormatException) { 0 }'),
  'Genéricos': ('Los parámetros de tipo permiten reutilizar código con seguridad estática. Kotlin admite declaración de varianza con `out` y `in`; la proyección de tipos limita qué operaciones se pueden realizar.', 'fun <T> primero(elementos: List<T>): T? = elementos.firstOrNull()'),
- 'Coroutines': ('Las funciones suspend pueden pausar y reanudarse sin bloquear el hilo. `delay`, `launch` y `async` pertenecen a `kotlinx.coroutines`, que debe añadirse como dependencia. `launch` devuelve un Job; `async`, un Deferred con resultado; ambos se inician dentro de un CoroutineScope.', 'import kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\n\nsuspend fun cargar(): String {\n    delay(100L)\n    return "listo"\n}\n\nfun main() = runBlocking {\n    // Solo como puente didáctico desde main: runBlocking bloquea este hilo.\n    println(cargar())\n}'),
- 'Ficheros y serialización': ('La E/S de archivos depende del destino de Kotlin y de las bibliotecas utilizadas. Serializar transforma objetos a un formato intercambiable; el formato, versión y validación deben ser explícitos.', 'val ruta = java.nio.file.Path.of("datos.txt")\njava.nio.file.Files.writeString(ruta, "CódigoClaro")'),
+ 'Coroutines': ('Una función suspend puede pausar y reanudarse mediante operaciones suspendibles como `delay`, sin bloquear el hilo mientras espera. La palabra clave no cambia por sí sola de hilo ni vuelve no bloqueante una llamada bloqueante; el dispatcher controla dónde se ejecuta la coroutine. `delay`, `launch` y `async` pertenecen a `kotlinx.coroutines`, que debe añadirse como dependencia. `launch` devuelve un Job; `async`, un Deferred con resultado; ambos se inician dentro de un CoroutineScope.', 'import kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\n\nsuspend fun cargar(): String {\n    delay(100L)\n    return "listo"\n}\n\nfun main() = runBlocking {\n    // Solo como puente didáctico desde main: runBlocking bloquea este hilo.\n    println(cargar())\n}'),
+ 'Ficheros y serialización': ('El acceso a archivos depende del target y de las bibliotecas. Este ejemplo usa `java.nio.file`, APIs de Kotlin/JVM; `Path.of` y `Files.writeString` requieren JDK 11 o posterior y no sirven en código común multiplataforma. Serializar transforma objetos a un formato intercambiable; el formato, versión y validación deben ser explícitos.', 'val ruta = java.nio.file.Path.of("datos.txt")\njava.nio.file.Files.writeString(ruta, "CódigoClaro")'),
  'Pruebas y arquitectura': ('Las pruebas de unidad aíslan reglas; las de integración verifican colaboración. Separar dominio, infraestructura y presentación reduce acoplamiento, pero conviene adaptar la arquitectura al tamaño real del proyecto.', 'import kotlin.test.Test\nimport kotlin.test.assertEquals\nclass SumaTest {\n    @Test fun suma() { assertEquals(5, 2 + 3) }\n}'),
  },
  'React': {
@@ -158,13 +158,13 @@ else:
 
 styles = getSampleStyleSheet()
 styles.add(ParagraphStyle(name='CoverTitleCC', fontName=BOLD, fontSize=24, leading=30, textColor=colors.HexColor('#243b80'), spaceAfter=16, alignment=TA_LEFT))
-styles.add(ParagraphStyle(name='SubCC', fontName=FONT, fontSize=11, leading=16, textColor=colors.HexColor('#475467'), spaceAfter=10))
-styles.add(ParagraphStyle(name='H1CC', fontName=BOLD, fontSize=16, leading=20, textColor=colors.HexColor('#243b80'), spaceBefore=3, spaceAfter=12))
-styles.add(ParagraphStyle(name='H2CC', fontName=BOLD, fontSize=10, leading=12, textColor=colors.HexColor('#087f8c'), spaceBefore=5, spaceAfter=3))
-styles.add(ParagraphStyle(name='BodyCC', fontName=FONT, fontSize=8.2, leading=10.4, textColor=colors.HexColor('#263244'), spaceAfter=4))
+styles.add(ParagraphStyle(name='SubCC', fontName=FONT, fontSize=11, leading=14, textColor=colors.HexColor('#475467'), spaceAfter=5))
+styles.add(ParagraphStyle(name='H1CC', fontName=BOLD, fontSize=16, leading=19, textColor=colors.HexColor('#243b80'), spaceBefore=4, spaceAfter=7, keepWithNext=True))
+styles.add(ParagraphStyle(name='H2CC', fontName=BOLD, fontSize=10, leading=12, textColor=colors.HexColor('#087f8c'), spaceBefore=4, spaceAfter=2, keepWithNext=True))
+styles.add(ParagraphStyle(name='BodyCC', fontName=FONT, fontSize=8.2, leading=10, textColor=colors.HexColor('#263244'), spaceAfter=3))
 styles.add(ParagraphStyle(name='SmallCC', fontName=FONT, fontSize=7, leading=8.5, textColor=colors.HexColor('#596579'), spaceAfter=2))
-styles.add(ParagraphStyle(name='CodeCC', fontName='Courier', fontSize=8, leading=11, leftIndent=8, rightIndent=8, backColor=colors.HexColor('#f3f5f9'), borderColor=colors.HexColor('#d8deea'), borderWidth=.5, borderPadding=8, spaceBefore=5, spaceAfter=9))
-styles.add(ParagraphStyle(name='BulletCC', parent=styles['BodyCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=2))
+styles.add(ParagraphStyle(name='CodeCC', fontName='Courier', fontSize=8, leading=10, leftIndent=8, rightIndent=8, backColor=colors.HexColor('#f3f5f9'), borderColor=colors.HexColor('#d8deea'), borderWidth=.5, borderPadding=6, spaceBefore=3, spaceAfter=5))
+styles.add(ParagraphStyle(name='BulletCC', parent=styles['BodyCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=1))
 
 
 def esc(s):
@@ -206,12 +206,26 @@ def make_pages(item):
         ref = [*ref, ('Kotlin Documentation: Coroutines basics', 'https://kotlinlang.org/docs/coroutines-basics.html')]
     if track == 'Kotlin' and title == 'val, var y tipos':
         ref = [*ref, ('Kotlin Documentation: Basic syntax — Variables', 'https://kotlinlang.org/docs/basic-syntax.html#variables')]
+    if track == 'Kotlin' and title == 'Bucles y rangos':
+        ref = [*ref, ('Kotlin Documentation: Ranges and progressions', 'https://kotlinlang.org/docs/ranges.html')]
+    if track == 'Kotlin' and title == 'Funciones':
+        ref = [*ref, ('Kotlin Documentation: Functions', 'https://kotlinlang.org/docs/functions.html')]
+    if track == 'Kotlin' and title == 'Clases y data class':
+        ref = [*ref, ('Kotlin Documentation: Data classes', 'https://kotlinlang.org/docs/data-classes.html')]
+    if track == 'Kotlin' and title == 'Herencia e interfaces':
+        ref = [*ref, ('Kotlin Documentation: Inheritance', 'https://kotlinlang.org/docs/inheritance.html'), ('Kotlin Documentation: Interfaces', 'https://kotlinlang.org/docs/interfaces.html')]
+    if track == 'Kotlin' and title == 'Ficheros y serialización':
+        ref = [*ref, ('Kotlin Multiplatform: Platform-specific APIs', 'https://kotlinlang.org/docs/multiplatform/multiplatform-connect-to-apis.html'), ('Oracle Java SE 25: Files', 'https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/nio/file/Files.html')]
+    if track == 'Kotlin' and title == 'Pruebas y arquitectura':
+        ref = [*ref, ('Kotlin API: kotlin.test', 'https://kotlinlang.org/api/latest/kotlin.test/')]
     if track == 'Python' and title == 'Diccionarios y conjuntos':
         ref = [*ref, ('Python Data Model: Dictionaries', 'https://docs.python.org/3/reference/datamodel.html#dictionaries')]
     if track == 'Python' and title == 'Instalación y primer programa':
         ref = [*ref, ('Python: venv', 'https://docs.python.org/es/3/library/venv.html')]
     if track == 'Python' and title == 'Ficheros y JSON':
         ref = [*ref, ('Python: json', 'https://docs.python.org/es/3/library/json.html')]
+    if track == 'Java' and title == 'Constructores y this':
+        ref = [*ref, ('Java 27: Flexible Constructor Bodies', 'https://docs.oracle.com/en/java/javase/27/language/flexible-constructor-bodies.html')]
     if track == 'React' and title == 'React Router':
         ref = [*ref, ('React Router: Routing', 'https://reactrouter.com/start/declarative/routing')]
     if track == 'React' and title == 'Peticiones a APIs':
@@ -244,12 +258,19 @@ def make_pages(item):
     practice_description = desc.lower().rstrip().rstrip('.')
     pages.append([para('8. Laboratorio práctico', 'H1CC'), para('Resuelve los ejercicios sin copiar el código anterior. Guarda cada solución en un archivo separado y añade comentarios solo cuando aclaren una decisión. Si trabajas en pareja, una persona implementa y la otra revisa entradas, salidas y casos límite; después intercambiad los papeles.'), para('Práctica A · Básica', 'H2CC'), para(f'Crea un ejemplo mínimo que demuestre {title.lower()}. Incluye una entrada válida, un resultado esperado y una explicación de tres o cuatro líneas sobre cómo funciona.'), para('Práctica B · Intermedia', 'H2CC'), para(f'Extiende el ejemplo con una segunda condición de negocio relacionada con {practice_description}. Separa la lógica repetible y crea al menos tres casos de prueba: normal, límite y dato inválido.'), para('Práctica C · Aplicación DAM/DAW', 'H2CC'), para('Integra la solución en una pequeña aplicación de consola o en un módulo de tu proyecto. Define una interfaz clara, valida las entradas en el límite adecuado y evita mezclar el acceso a datos con la lógica central.'), para('Práctica D · Revisión', 'H2CC'), para('Entrega el código a otra persona sin explicarlo oralmente. Pídele que identifique qué hace, qué puede fallar y cómo probarlo. Corrige cualquier parte que dependa de una explicación que solo tú conoces.'), para('Criterios de evaluación', 'H2CC'), *[bullet(x) for x in ['Cumple el enunciado y produce resultados verificables.', 'Maneja al menos un caso límite relevante.', 'Tiene nombres claros y estructura sencilla.', 'Incluye pruebas o pasos de reproducción.', 'Explica una decisión técnica y una limitación.']]])
     pages.append([para('9. Soluciones orientativas y autoevaluación', 'H1CC'), para('No existe una única solución válida. La revisión debe comprobar el contrato, no si el código se parece exactamente al de otra persona. Para cada práctica, compara las entradas, el resultado y la estrategia de validación.'), para('Solución orientativa', 'H2CC'), para(f'Una solución aceptable para «{title}» identifica los datos relevantes, aplica la regla principal de forma explícita y produce una salida que se puede comprobar. Si el caso admite valores inválidos, los rechaza o los representa mediante un error claro. La lógica repetida se extrae solo cuando mejora la comprensión o evita inconsistencias.'), para('Rúbrica de revisión', 'H2CC'), Table([[para('Criterio','SmallCC'),para('0 · Por revisar','SmallCC'),para('1 · Adecuado','SmallCC'),para('2 · Sólido','SmallCC')],[para('Corrección','SmallCC'),para('No cumple el contrato','SmallCC'),para('Cumple el caso básico','SmallCC'),para('Incluye límites y errores','SmallCC')],[para('Claridad','SmallCC'),para('Difícil de seguir','SmallCC'),para('Legible en general','SmallCC'),para('Nombres y estructura expresivos','SmallCC')],[para('Pruebas','SmallCC'),para('Sin comprobaciones','SmallCC'),para('Un caso válido','SmallCC'),para('Normal, límite y error','SmallCC')],[para('Justificación','SmallCC'),para('Sin explicación','SmallCC'),para('Explica la idea','SmallCC'),para('Compara alternativas','SmallCC')]], colWidths=[3*cm,3.6*cm,3.7*cm,4.9*cm], style=TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eaf0ff')),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#d9dee8')),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5),('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5)])), Spacer(1,8), para('Preguntas para explicar en voz alta', 'H2CC'), *[bullet(x) for x in [f'¿Qué problema resuelve {title.lower()} y cuándo no lo utilizarías?', '¿Qué prueba añadirías primero si apareciera un fallo?', '¿Qué parte cambiarías si el requisito creciera?', '¿Qué información consultarías en la documentación oficial?']]])
-    refs = [para('10. Repaso, glosario y fuentes', 'H1CC'), para('Resumen', 'H2CC'), para(f'Has estudiado {title.lower()} desde el concepto, el diseño, la implementación y las pruebas. Antes de continuar, intenta explicar el tema sin leer y reconstruye el ejemplo desde cero. Si no puedes explicar un paso, vuelve a la sección correspondiente y crea una prueba pequeña.'), para('Glosario', 'H2CC'), *[bullet(x) for x in [f'{title}: concepto central de este capítulo; consulta la sección de fundamentos.', 'Contrato: comportamiento que la solución promete cumplir.', 'Caso límite: entrada que pone a prueba una frontera o supuesto.', 'Regresión: fallo introducido al modificar algo que antes funcionaba.', 'Documentación primaria: referencia mantenida por el proyecto o equipo responsable de la tecnología.']], para('Fuentes oficiales de consulta', 'H2CC')]
-    for label, url in ref:
-        refs.append(Paragraph(f'• <b>{esc(label)}</b> — <link href="{url}" color="#087f8c">{esc(url)}</link>', styles['SmallCC']))
-    refs += [Spacer(1,6), para('Nota editorial y de verificación', 'H2CC'), para('Material original de CódigoClaro elaborado para estudio. Las referencias enlazan documentación oficial o mantenida por el proyecto de la tecnología. Los ejemplos se han redactado como material didáctico y deben ejecutarse en un entorno compatible antes de usarse en producción. Las APIs y versiones evolucionan; ante discrepancias, prevalece la documentación oficial de la versión instalada. Este documento no reproduce capítulos completos de las fuentes enlazadas.'), para('Registro de estudio', 'H2CC'), para('Fecha de revisión del paquete: octubre de 2026. Versión del temario: 2.0. Anota aquí la versión del runtime y la fecha en que comprobaste los ejemplos en tu equipo.')]
+    glossary = (
+        f'{title}: concepto central del capítulo. Contrato: condiciones de entrada y garantías de salida. '
+        'Caso límite: frontera o supuesto poco común. Regresión: fallo que reaparece tras un cambio. '
+        'Documentación primaria: referencia mantenida por el equipo responsable de la tecnología.'
+    )
+    refs = [para('10. Repaso, glosario y fuentes', 'H1CC'), para('Resumen', 'H2CC'), para(f'Has estudiado {title.lower()} desde el concepto, el diseño, la implementación y las pruebas. Antes de continuar, intenta explicar el tema sin leer y reconstruye el ejemplo desde cero. Si no puedes explicar un paso, vuelve a la sección correspondiente y crea una prueba pequeña.'), para('Glosario', 'H2CC'), para(glossary), para('Fuentes oficiales de consulta', 'H2CC')]
+    source_links = ' · '.join(
+        f'<link href="{esc(url)}" color="#087f8c">{esc(label)}</link>'
+        for label, url in ref
+    )
+    refs.append(Paragraph(source_links, styles['SmallCC']))
     pages.append(refs)
-    # Integra portada y fundamentos para mantener exactamente diez páginas por tema.
+    # Integra la portada y los fundamentos; el temario conserva diez secciones.
     pages[1] = pages[0] + pages[1]
     return pages[1:]
 
@@ -258,12 +279,12 @@ def build_pdf(item):
     dest = PUB / 'temarios' / item['file']
     story=[]
     pages = make_pages(item)
-    for idx, content in enumerate(pages):
+    for content in pages:
+        # Deja fluir las secciones para no reservar una página casi vacía por apartado.
         story.extend(content)
-        if idx < len(pages)-1: story.append(PageBreak())
     doc=SimpleDocTemplate(str(dest), pagesize=A4, rightMargin=1.8*cm, leftMargin=1.8*cm, topMargin=1.65*cm, bottomMargin=1.8*cm, title=f"{item['track']} · Tema {item['num']:02d}: {item['title']}", author='CódigoClaro', subject=f"Temario didáctico de {item['track']} para DAM y DAW")
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
-    return dest
+    return dest, doc.page
 
 
 # Ruta adicional mantenida separada del catálogo principal para no regenerar
@@ -483,7 +504,7 @@ def build_typescript_route():
     shutil.copyfile(output_paths[0], output_paths[1])
     print(f'Generadas {len(TS_ROUTE)} unidades en {len(output_paths)} copias de la ruta TypeScript.')
 
-AUTO_DESCRIPTION_SUFFIX = 'Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.'
+AUTO_DESCRIPTION_SUFFIX = 'Temario ampliado con 10 secciones: fundamentos, ejemplos, depuración, pruebas y prácticas.'
 
 
 def clean_auto_description(description):
@@ -505,6 +526,7 @@ def main():
     if catalog_files != docs_catalog_files:
         raise ValueError('Los catálogos docs/public no contienen los mismos archivos y en el mismo orden.')
 
+    page_counts = {}
     for item in catalog:
         filename = item['file']
         relative_path = Path(filename)
@@ -513,19 +535,21 @@ def main():
 
         # Limpia el sufijo heredado antes de componer prácticas con description.
         item['description'] = clean_auto_description(item['description'])
-        root_pdf = build_pdf(item)
+        root_pdf, page_count = build_pdf(item)
         for mirror_pdf in (ROOT / 'docs' / 'temarios' / filename,):
             mirror_pdf.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(root_pdf, mirror_pdf)
-        item['pages'] = 10
+        item['pages'] = page_count
+        page_counts[filename] = page_count
         item['version'] = '2.0'
 
     for item in docs_catalog:
         item['description'] = clean_auto_description(item['description'])
+        item['pages'] = page_counts[item['file']]
 
     CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     docs_catalog_path.write_text(json.dumps(docs_catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print(f'Generados {len(catalog)} temarios; 10 páginas por documento y dos copias organizadas por tema.')
+    print(f'Generados {len(catalog)} temarios compactados ({min(page_counts.values())}-{max(page_counts.values())} páginas por documento) y dos copias organizadas por tema.')
 if __name__ == '__main__':
     if sys.argv[1:] == ['--typescript-route']:
         build_typescript_route()
