@@ -1,0 +1,37 @@
+name: Monitor de salud de Render
+
+on:
+  schedule:
+    - cron: '37 8 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/render-health.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    name: Consultar el endpoint público
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Comprobar /api/health con reintentos para arranques en frío
+        env:
+          HEALTH_URL: https://codigoclaro.onrender.com/api/health
+        run: |
+          response="$(curl --location --fail --silent --show-error \
+            --connect-timeout 15 --max-time 75 \
+            --retry 2 --retry-delay 10 --retry-all-errors \
+            "$HEALTH_URL")"
+          printf '%s' "$response" | python -c '
+          import json
+          import sys
+
+          health = json.load(sys.stdin)
+          if health.get("ok") is not True:
+              raise SystemExit("El endpoint no informó ok=true.")
+          safe_status = {key: health.get(key) for key in ("ok", "service", "version", "storage")}
+          print(json.dumps(safe_status, ensure_ascii=False))
+          '
