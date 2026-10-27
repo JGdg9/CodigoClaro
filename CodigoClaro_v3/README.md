@@ -148,4 +148,4 @@ Consulta [`docs/ESTRUCTURA_PROYECTO.md`](docs/ESTRUCTURA_PROYECTO.md) para conoc
 
 ## PostgreSQL y Neon (experimental)
 
-`server-postgres.js` y `migrations/001_postgres_core.sql` son una variante optativa de staging; aún no tienen paridad con la API SQLite ni transfieren sus datos. Las pruebas de PostgreSQL se omiten si no se configura explícitamente una base de pruebas. No uses esta variante con Neon ni en producción hasta completar la paridad, las migraciones y las pruebas de integración.
+`server-postgres.js` y las migraciones `migrations/001_postgres_core.sql` y `migrations/002_postgres_question_rewards.sql` son una variante optativa de staging; aún no tienen paridad con la API SQLite ni transfieren sus datos. Las pruebas de PostgreSQL se omiten si no se configura explícitamente una base de pruebas. No uses esta variante con Neon ni en producción hasta completar la paridad, las migraciones y las pruebas de integración.

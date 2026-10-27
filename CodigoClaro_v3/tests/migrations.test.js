@@ -17,11 +17,11 @@ function withDatabase(run) {
 }
 
 test('SQLite migrations are versioned, repeatable, and preserve existing rows', () => withDatabase(db => {
-  assert.deepEqual(runMigrations(db), ['001_initial_schema']);
+  assert.deepEqual(runMigrations(db), ['001_initial_schema', '002_quiz_question_rewards']);
   db.prepare('INSERT INTO users(email,display_name,password_hash) VALUES(?,?,?)')
     .run('learner@codigoclaro.test', 'Learner', 'test-hash');
   assert.deepEqual(runMigrations(db), []);
-  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM schema_migrations').get().count, 1);
+  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM schema_migrations').get().count, 2);
   assert.equal(db.prepare('SELECT email FROM users').get().email, 'learner@codigoclaro.test');
 }));
 
@@ -29,7 +29,7 @@ test('an existing current SQLite schema is baselined without deleting data', () 
   initialSchema.up(db);
   db.prepare('INSERT INTO users(email,display_name,password_hash) VALUES(?,?,?)')
     .run('existing@codigoclaro.test', 'Existing', 'test-hash');
-  assert.deepEqual(runMigrations(db), ['001_initial_schema']);
+  assert.deepEqual(runMigrations(db), ['001_initial_schema', '002_quiz_question_rewards']);
   assert.equal(db.prepare('SELECT email FROM users').get().email, 'existing@codigoclaro.test');
 }));
 
@@ -64,4 +64,3 @@ test('the migration command creates or updates only the configured SQLite file',
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
-
