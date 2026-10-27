@@ -29,4 +29,6 @@ Accede a la plataforma desde aquí:
 - Python y ReportLab para generar los temarios PDF.
 - `node:test` para pruebas de integración y regresión.
 
+## Administración
 
+El registro público crea cuentas de estudiante. El correo configurado en `ADMIN_EMAIL` no concede privilegios; consulta [`ADMINISTRACION.md`](ADMINISTRACION.md) para promover una cuenta de forma explícita.

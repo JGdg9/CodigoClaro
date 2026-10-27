@@ -1,6 +1,6 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const net = require('node:net');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -46,12 +46,16 @@ after(async () => { if(proc && proc.exitCode===null) { proc.kill('SIGTERM'); awa
 test('flujo de usuario piloto: registro, sesión, progreso, test, feedback y administración', async () => {
   const home=await request('/');assert.equal(home.res.status,200);assert.match(home.res.headers.get('content-type'),/text\/html/);
   const hidden=await request('/server.js');assert.equal(hidden.res.status,404);
-  let r=await request('/api/health');assert.equal(r.res.status,200);assert.equal(r.data.ok,true);assert.equal(r.data.version,'1.2.0');assert.ok(r.data.features.includes('quiz-attempts'));assert.ok(r.data.features.includes('admin-content-crud'));assert.ok(r.data.features.includes('topic-learning-statistics'));assert.ok(r.data.features.includes('question-bank-json-import-export'));assert.ok(r.data.features.includes('student-learning-statistics-ui'));assert.ok(r.data.features.includes('date-based-learning-trends'));assert.ok(r.data.features.includes('technology-comparison'));assert.ok(r.data.features.includes('weekly-learning-goals'));assert.ok(r.data.features.includes('persistent-study-timer'));assert.ok(r.data.features.includes('study-session-history'));
+  let r=await request('/api/health');assert.equal(r.res.status,200);assert.equal(r.data.ok,true);assert.equal(r.data.version,require('../package.json').version);assert.ok(r.data.features.includes('quiz-attempts'));assert.ok(r.data.features.includes('admin-content-crud'));assert.ok(r.data.features.includes('topic-learning-statistics'));assert.ok(r.data.features.includes('question-bank-json-import-export'));assert.ok(r.data.features.includes('student-learning-statistics-ui'));assert.ok(r.data.features.includes('date-based-learning-trends'));assert.ok(r.data.features.includes('technology-comparison'));assert.ok(r.data.features.includes('weekly-learning-goals'));assert.ok(r.data.features.includes('persistent-study-timer'));assert.ok(r.data.features.includes('study-session-history'));
   r=await request('/api/catalog');assert.equal(r.res.status,200);assert.equal(r.data.topics.length,75);assert.ok(r.data.docs.length>=5);assert.ok(r.data.topics.every(t=>t.title&&t.description&&t.pages===10&&t.version==='2.0'));assert.equal(r.data.topics.find(t=>t.id==='Python_Tema_01').title,'Instalación y primer programa');
   r=await request('/api/learning/topics');assert.equal(r.res.status,200);assert.ok(r.data.topics.length>=12);assert.ok(r.data.totalQuestions>=30);assert.ok(r.data.topics.every(t=>Number.isInteger(t.questionCount)&&t.slug));const javaTopic=r.data.topics.find(t=>t.name==='Java');assert.ok(javaTopic&&javaTopic.questionCount>0);r=await request('/api/learning/topics/'+javaTopic.slug);assert.equal(r.res.status,200);assert.equal(r.data.topic.name,'Java');assert.equal(r.data.questionCount,javaTopic.questionCount);r=await request('/api/learning/topics/no-existe');assert.equal(r.res.status,404);
 
   r=await request('/api/register',{method:'POST',body:{email:'admin@codigoclaro.test',password:'UnaClaveDePrueba_2026!',name:'Admin piloto',consent:true}});
-  assert.equal(r.res.status,201,JSON.stringify(r.data));assert.equal(r.data.user.role,'admin');adminCookie=r.cookie;assert.ok(adminCookie.includes('cc.sid='));
+  assert.equal(r.res.status,201,JSON.stringify(r.data));assert.equal(r.data.user.role,'student','el correo configurado no debe elevar privilegios al registrarse');adminCookie=r.cookie;assert.ok(adminCookie.includes('cc.sid='));
+  r=await request('/api/admin/learning/topics',{cookie:adminCookie});assert.equal(r.res.status,403,'el registro no concede permisos administrativos');
+  const promotionEnv={...process.env,DB_PATH:path.join(temp,'test.sqlite'),ADMIN_EMAIL:'admin@codigoclaro.test'};
+  const confirmationRequired=spawnSync(process.execPath,['scripts/promote-admin.js','admin@codigoclaro.test'],{cwd:path.resolve(__dirname,'..'),env:promotionEnv,encoding:'utf8'});assert.notEqual(confirmationRequired.status,0,'la promoción requiere confirmación explícita');
+  const promotion=spawnSync(process.execPath,['scripts/promote-admin.js','admin@codigoclaro.test','--confirm'],{cwd:path.resolve(__dirname,'..'),env:promotionEnv,encoding:'utf8'});assert.equal(promotion.status,0,promotion.stderr);r=await request('/api/admin/learning/topics',{cookie:adminCookie});assert.equal(r.res.status,200,'la promoción explícita concede permisos administrativos');
   r=await request('/api/admin/learning/topics',{method:'POST',cookie:studentCookie,body:{name:'Tema prohibido'}});assert.equal(r.res.status,401,'la API de administración exige sesión');
   r=await request('/api/admin/learning/topics',{cookie:adminCookie});assert.equal(r.res.status,200);assert.ok(r.data.topics.length>=12);
   r=await request('/api/admin/learning/topics',{method:'POST',cookie:adminCookie,body:{name:'Tema de prueba CRUD',description:'Tema temporal para probar la API'}});assert.equal(r.res.status,201,JSON.stringify(r.data));const crudTopic=r.data.topic;assert.ok(crudTopic.id&&crudTopic.slug);
@@ -76,6 +80,8 @@ test('flujo de usuario piloto: registro, sesión, progreso, test, feedback y adm
   r=await request('/api/admin/learning/questions?search=import-test-001&active=all',{cookie:adminCookie});assert.equal(r.res.status,200);assert.equal(r.data.questions.filter(q=>q.id==='import-test-001').length,1);assert.equal(r.data.questions.find(q=>q.id==='import-test-001').prompt,'Pregunta importada editada?');
   r=await request('/api/register',{method:'POST',body:{email:'alumno@codigoclaro.test',password:'UnaClaveDePrueba_2026!',name:'Alumno piloto',consent:true}});
   assert.equal(r.res.status,201,JSON.stringify(r.data));assert.equal(r.data.user.role,'student');studentCookie=r.cookie;
+  r=await request('/api/progress',{method:'PUT',cookie:studentCookie,body:{xp:1},expectedOrigin:false});assert.equal(r.res.status,403,'las peticiones que cambian datos deben incluir un origen');
+  const unauthorizedPromotion=spawnSync(process.execPath,['scripts/promote-admin.js','alumno@codigoclaro.test','--confirm'],{cwd:path.resolve(__dirname,'..'),env:promotionEnv,encoding:'utf8'});assert.notEqual(unauthorizedPromotion.status,0,'el comando solo puede promover el correo configurado');
   r=await request('/api/admin/learning/questions',{cookie:studentCookie});assert.equal(r.res.status,403,'los estudiantes no pueden acceder al catálogo administrativo');
   r=await request('/api/register',{method:'POST',body:{email:'alumno@codigoclaro.test',password:'UnaClaveDePrueba_2026!',name:'Duplicado',consent:true}});assert.equal(r.res.status,409);
   r=await request('/api/progress');assert.equal(r.res.status,401);
