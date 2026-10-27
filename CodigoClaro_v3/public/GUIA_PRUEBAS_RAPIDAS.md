@@ -5,7 +5,7 @@
 ## 1. Probar la plataforma con una cuenta
 
 1. Abre `http://localhost:3000`.
-2. Crea una cuenta; el correo configurado previamente como `ADMIN_EMAIL` tendrá permisos de administración.
+2. Crea una cuenta normal: el registro siempre concede el rol de estudiante. Para administrar, sigue `ADMINISTRACION.md` y promueve la cuenta localmente tras verificar el correo.
 3. En Temarios, filtra por tecnología, abre un PDF y marca un tema como visto.
 4. Haz un test y revisa las explicaciones.
 5. En Plan de estudio, añade una tarea, márcala y recarga.
@@ -23,7 +23,7 @@ Usa solo una red Wi-Fi de confianza. En el ordenador servidor ejecuta `ipconfig`
 - Python y React cargan bibliotecas desde CDN y requieren Internet en la primera ejecución.
 - SQL usa SQLite en WebAssembly: no es un servidor Oracle, MySQL ni PostgreSQL.
 - MongoDB y Firestore son simuladores didácticos; no conectan a servicios cloud reales.
-- Java, Kotlin y Node.js requieren un compilador remoto compatible configurado expresamente; si se configura, el código se envía al servicio remoto.
+- Java y Kotlin permiten editar y analizar código, pero no lo compilan en esta versión. Node.js usa un simulador de backend; el botón Ejecutar no envía código a un compilador remoto.
 - PL/SQL no se ejecuta sin Oracle Database.
 
 No introduzcas contraseñas, tokens, claves API, información personal ni código confidencial en el IDE.

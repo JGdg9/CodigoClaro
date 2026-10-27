@@ -14,7 +14,7 @@ MOTORES DEL IDE
 - Python: Pyodide/WebAssembly cargado desde CDN; primera ejecución requiere Internet.
 - React/JSX: React y Babel desde CDN; no instala paquetes npm arbitrarios.
 - SQL: SQLite en WebAssembly; no es Oracle, MySQL ni PostgreSQL.
-- Java/Kotlin/Node.js: requieren un servicio compatible configurado a propósito y pueden enviar el código a ese servicio remoto.
+- Java/Kotlin: editor y análisis estático, sin compilación remota en esta versión. Node.js: simulador didáctico de backend, no un runtime de Node real.
 - MongoDB y Firestore: simuladores didácticos, no conexiones reales a servicios cloud.
 - PL/SQL no se ejecuta sin Oracle Database.
 

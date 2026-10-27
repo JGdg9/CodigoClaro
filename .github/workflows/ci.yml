@@ -29,6 +29,11 @@ jobs:
         run: npm ci
       - name: Check server syntax
         run: node --check server.js
+      - name: Check experimental PostgreSQL tooling syntax
+        run: |
+          node --check server-postgres.js
+          node --check scripts/migrate-postgres.js
+          node --check scripts/promote-admin.js
       - name: Run automated tests
         run: npm test
       - name: Check Python tooling syntax
