@@ -4,19 +4,19 @@
 
 - `server.js` y `render.yaml` no se han sustituido: el backend SQLite existente sigue siendo el inicio predeterminado.
 - El nuevo backend es opt-in: `npm run start:postgres` exige `DATABASE_URL` y, en producción, `SESSION_SECRET` de al menos 32 caracteres.
-- `migrations/001_postgres_core.sql` crea el esquema de forma idempotente; no contiene DROP/TRUNCATE ni migra datos SQLite automáticamente.
-- No apuntes el script de migración a producción durante las pruebas. Crea una base PostgreSQL separada para staging.
+- Las migraciones `migrations/001_postgres_core.sql` y `migrations/002_postgres_question_rewards.sql` crean y amplían el esquema en orden; no contienen DROP/TRUNCATE ni migran datos SQLite automáticamente. La segunda registra aciertos históricos para evitar volver a conceder XP por las mismas preguntas, sin recalcular los saldos existentes.
+- `npm run migrate:postgres` aplica las migraciones SQL numeradas. No apuntes el script a producción durante las pruebas; crea una base PostgreSQL separada para staging.
 
 ## Tablas
 
-`users`, `sessions`, `courses`, `course_lessons`, `questions`, `quiz_attempts`, `lesson_progress`, `study_tasks`, `study_sessions`, `schema_migrations`.
+`users`, `sessions`, `courses`, `course_lessons`, `questions`, `quiz_attempts`, `quiz_question_rewards`, `lesson_progress`, `study_tasks`, `study_sessions`, `schema_migrations`.
 
 ## Rutas añadidas en el backend PostgreSQL
 
 - Cuentas: `POST /api/register`, `POST /api/login`, `POST /api/logout`, `GET /api/me`.
 - Cursos: `GET /api/courses`, `GET /api/courses/:slug`, creación/edición de cursos para admin y creación de lecciones para admin.
 - Tests: `GET /api/quiz`, `POST /api/quiz/submit`.
-- Progreso: `GET /api/progress`, `PUT /api/progress/lesson`.
+- Progreso: `GET /api/progress`, `PUT /api/progress` (sincroniza solo lecciones completadas; conserva posiciones, XP e intentos validados), `PUT /api/progress/lesson`.
 - Tareas: `GET/POST /api/tasks`, `PATCH/DELETE /api/tasks/:id`.
 - Estudio y estadísticas: `GET/POST /api/study/sessions`, `POST /api/study/sessions/stop`, `GET /api/stats/overview`.
 
@@ -48,9 +48,8 @@ npm run test:postgres
 
 El test aplica el esquema a esa base y crea/borra exclusivamente usuarios con email `integration-*`; usa una base vacía y desechable.
 
-## Estado de validación en este paquete
+## Validación documentada antes de la migración 002
 
-- La suite existente de CódigoClaro se ejecutó: 55 pasaron y 5 pruebas de integración PostgreSQL se omitieron por no haber una base de test configurada.
-- La nueva suite de contrato verifica tablas, rutas, consultas parametrizadas y que la migración no incluya operaciones destructivas.
-- La sintaxis de `server-postgres.js`, `scripts/migrate-postgres.js` y las pruebas de integración se comprobó con Node.
-- No se pudo validar una conexión real a PostgreSQL desde este entorno; tampoco se modificó ni desplegó el servicio de Render existente.
+- La ejecución anterior de la suite registró 55 pruebas pasadas y 5 pruebas de integración PostgreSQL omitidas por no haber una base de test configurada. Esa ejecución no incluye los cambios actuales de XP y la migración 002.
+- La migración 002 y la ruta de envío requieren una nueva revisión en staging; no se ejecutaron pruebas automatizadas tras esos cambios.
+- No se validó una conexión real a PostgreSQL desde este entorno ni se modificó o desplegó el servicio de Render.

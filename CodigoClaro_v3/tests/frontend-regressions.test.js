@@ -30,6 +30,22 @@ test('fetch de API muestra errores de red y HTTP con la ruta', () => {
   assert.match(aula, /No se pudo conectar con '\+url/);
 });
 
+test('el XP del panel solo procede de tests del servidor y el aula explica su sincronización local', () => {
+  const saveStart = panel.indexOf('async function saveProgress()');
+  const saveEnd = panel.indexOf('// stats:', saveStart);
+  assert.ok(saveStart >= 0 && saveEnd > saveStart, 'se debe encontrar la sincronización del progreso');
+  const save = panel.slice(saveStart, saveEnd);
+  assert.doesNotMatch(save, /xp:|attempts:/, 'el panel no debe enviar XP ni intentos del cliente');
+  const lessonStart = panel.indexOf('async function completeLesson(');
+  const lessonEnd = panel.indexOf('// quizView:', lessonStart);
+  const lesson = panel.slice(lessonStart, lessonEnd);
+  assert.ok(lessonStart >= 0 && lessonEnd > lessonStart);
+  assert.doesNotMatch(lesson, /progress\.xp|\+5 XP/, 'marcar una lección no debe prometer XP que el servidor no concede');
+  assert.match(aula, /id="ccAccountStatus" role="status" aria-live="polite"/);
+  assert.match(aula, /if\(!sync\.ok\)ccStatus\('Sesión iniciada, pero no se sincronizaron/);
+  assert.match(aula, /if\(message\)ccStatus\(message\)/, 'el inicio de sesión no debe ocultar errores de sincronización');
+});
+
 test('aula usa tema claro también en el IDE', () => {
   assert.match(aula, /color-scheme:light/);
   assert.match(aula, /--bg:#f5f7fb/);

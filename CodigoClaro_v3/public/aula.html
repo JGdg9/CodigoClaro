@@ -64,7 +64,7 @@ h3{font-size:20px;font-weight:400;letter-spacing:-.2px}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
 </style></head><!-- Contenido visible de la página. -->
-<body><div class="wrap"><header class="top"><div class="brand">〈/〉 CódigoClaro <small> · aprender haciendo</small></div><button class="btn primary" onclick="page('practice')">Practicar</button></header><div id="ccAccountBar" class="cc-account"><div><b>Sincronización de progreso</b><br><small id="ccAccountStatus">Modo invitado: el progreso está en este navegador.</small></div><div style="display:flex;gap:7px;flex-wrap:wrap"><a href="/index.html">Panel del piloto</a><button class="primary" id="ccAccountAction" type="button">Iniciar sesión</button></div></div><nav class="nav" id="nav"></nav><main id="main"></main><footer class="footer">CódigoClaro v1.1.5 · IDE con ejecución en sandbox para JavaScript, simuladores MongoDB/Firestore, Python con Pyodide, SQL sobre SQLite y vista previa React (estos motores requieren Internet); análisis estático para Java/Kotlin/PL-SQL. Modo invitado: progreso local. Inicia sesión en la barra superior para sincronizarlo con tu cuenta. · <a href="diagnostico.html" style="color:var(--b)">Diagnóstico y ayuda</a></footer></div><nav class="bottom"><button onclick="page('home')">⌂<br>Inicio</button><button onclick="page('syllabus')">▤<br>Temarios</button><button onclick="page('practice')">⌘<br>Ejercicios</button><button onclick="page('assignments')">▣<br>Prácticas</button><button onclick="page('tests')">✓<br>Tests</button><button onclick="page('ide')">⌨<br>IDE</button></nav><script>
+<body><div class="wrap"><header class="top"><div class="brand">〈/〉 CódigoClaro <small> · aprender haciendo</small></div><button class="btn primary" onclick="page('practice')">Practicar</button></header><div id="ccAccountBar" class="cc-account"><div><b>Sincronización de progreso</b><br><small id="ccAccountStatus" role="status" aria-live="polite" aria-atomic="true">Los temas y prácticas completados pueden sincronizarse; el XP y los intentos solo se guardan en este navegador.</small></div><div style="display:flex;gap:7px;flex-wrap:wrap"><a href="/index.html">Panel del piloto</a><button class="primary" id="ccAccountAction" type="button">Iniciar sesión</button></div></div><nav class="nav" id="nav"></nav><main id="main"></main><footer class="footer">CódigoClaro v1.1.5 · IDE con ejecución en sandbox para JavaScript, simuladores MongoDB/Firestore, Python con Pyodide, SQL sobre SQLite y vista previa React (estos motores requieren Internet); análisis estático para Java/Kotlin/PL-SQL. Los temas y prácticas completados pueden sincronizarse con tu cuenta. El XP y los intentos de esta aula solo se guardan en este navegador; no se envían a la cuenta ni se sincronizan entre dispositivos. · <a href="diagnostico.html" style="color:var(--b)">Diagnóstico y ayuda</a></footer></div><nav class="bottom"><button onclick="page('home')">⌂<br>Inicio</button><button onclick="page('syllabus')">▤<br>Temarios</button><button onclick="page('practice')">⌘<br>Ejercicios</button><button onclick="page('assignments')">▣<br>Prácticas</button><button onclick="page('tests')">✓<br>Tests</button><button onclick="page('ide')">⌨<br>IDE</button></nav><script>
 // Lógica de la página: interacción de la interfaz y comunicación con las funciones del proyecto.
 const C=[
 ['html','HTML','Web','Estructura semántica, formularios, enlaces y accesibilidad.',[['Estructura','HTML estructura el contenido. Una página incluye doctype, html, head y body.','<!doctype html>\\n<html lang="es"><head><meta charset="utf-8"><title>Mi web</title></head><body><main><h1>Hola</h1><p>Mi página</p></main></body></html>'],['Semántica','Usa main, nav, article, section, header y footer por su significado.','<main><article><h2>Curso Java</h2><p>Aprende desde cero.</p><a href="/java">Abrir curso</a></article></main>'],['Formularios','Asocia label e input con for/id. Valida en el navegador y también en servidor.','<label for="email">Correo</label><input id="email" name="email" type="email" required>']],['Usa jerarquía de encabezados.','Alt describe imágenes informativas.','No dependas solo del placeholder.']],
@@ -119,7 +119,18 @@ function ccStorageGet(key){try{const v=localStorage.getItem(key);if(v!==null)ret
 function ccStorageSet(key,value){const v=String(value);ccMemoryStorage.set(key,v);try{localStorage.setItem(key,v)}catch(e){}}
 // ccStorageRemove: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ccStorageRemove(key){ccMemoryStorage.delete(key);try{localStorage.removeItem(key)}catch(e){}}
-let s=load();function load(){try{return JSON.parse(ccStorageGet('cc-entrega1'))||{xp:0,done:[],attempts:[]}}catch(e){return {xp:0,done:[],attempts:[]}}}function save(){ccStorageSet('cc-entrega1',JSON.stringify(s));ccCloudSaveLater()}
+const CC_PROGRESS_OWNER_KEY='cc-entrega1:progress-owner',CC_GUEST_DONE_KEY='cc-entrega1:guest-done',CC_ACCOUNT_DONE_PREFIX='cc-entrega1:account-done:';
+let s=load();
+function load(){try{return JSON.parse(ccStorageGet('cc-entrega1'))||{xp:0,done:[],attempts:[]}}catch(e){return {xp:0,done:[],attempts:[]}}}
+function normalizedDone(value){return Array.isArray(value)?[...new Set(value.filter(x=>typeof x==='string'&&x.length<=180))]:[]}
+function doneSignature(value){return JSON.stringify(normalizedDone(value).sort())}
+function accountDoneKey(id){return CC_ACCOUNT_DONE_PREFIX+encodeURIComponent(String(id))}
+function readDone(key){try{return normalizedDone(JSON.parse(ccStorageGet(key)))}catch(e){return []}}
+function writeDone(key,value){ccStorageSet(key,JSON.stringify(normalizedDone(value)))}
+// Separa el progreso invitado y el de cada cuenta para no transferir completados entre usuarios.
+function useAccountCompletions(userId,remoteDone){const id=String(userId),owner=ccStorageGet(CC_PROGRESS_OWNER_KEY);if(owner===id){writeDone(accountDoneKey(id),s.done)}else{if(owner)writeDone(accountDoneKey(owner),s.done);else writeDone(CC_GUEST_DONE_KEY,s.done);s.done=readDone(accountDoneKey(id))}s.done=[...new Set([...s.done,...normalizedDone(remoteDone)])];writeDone(accountDoneKey(id),s.done);ccStorageSet(CC_PROGRESS_OWNER_KEY,id)}
+function useGuestCompletions(){const owner=ccStorageGet(CC_PROGRESS_OWNER_KEY);if(owner)writeDone(accountDoneKey(owner),s.done);else writeDone(CC_GUEST_DONE_KEY,s.done);s.done=readDone(CC_GUEST_DONE_KEY);ccStorageRemove(CC_PROGRESS_OWNER_KEY)}
+function save(){const completedChanged=doneSignature(load().done)!==doneSignature(s.done);ccStorageSet('cc-entrega1',JSON.stringify(s));const owner=ccStorageGet(CC_PROGRESS_OWNER_KEY);if(ccCloudUser&&ccCloudReady&&owner===String(ccCloudUser.id))writeDone(accountDoneKey(owner),s.done);else if(!ccCloudUser&&!owner)writeDone(CC_GUEST_DONE_KEY,s.done);if(completedChanged)ccCloudSaveLater()}
 const nav=[['home','Inicio'],['syllabus','Temarios'],['practice','Ejercicios de código'],['assignments','Prácticas'],['tests','Tests y exámenes'],['progress','Progreso'],['stats','Estadísticas'],['plan','Plan de estudio'],['pdfs','Biblioteca PDF'],['ide','IDE interno']];let courseId='java',topicId=0,quiz=[];
 document.getElementById('nav').innerHTML=nav.map(([id,n],i)=>`<button data-id="${id}" class="${i===0?'active':''}" onclick="page('${id}')">${n}</button>`).join('');
 // page: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
@@ -335,27 +346,126 @@ async function stopStudySession(){const status=document.getElementById('ccStudyS
 // saveWeeklyGoal: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 async function saveWeeklyGoal(event){event.preventDefault();const testsTarget=Number(document.getElementById('ccGoalTests')?.value),minutesTarget=Number(document.getElementById('ccGoalMinutes')?.value),status=document.getElementById('ccGoalProgress');if(!status)return;status.textContent='Guardando objetivo…';try{const r=await fetch('/api/goals/weekly',{method:'PUT',credentials:'same-origin',headers:{'content-type':'application/json','accept':'application/json'},body:JSON.stringify({testsTarget,minutesTarget})});const d=await r.json();if(!r.ok)throw new Error(d.error||'No se pudo guardar el objetivo.');status.textContent='Objetivo guardado. Actualizando progreso…';await loadLearningStats();}catch(e){status.textContent=e.message||'No se pudo guardar el objetivo.'}}
 // progressPage: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function progressPage(){return `<section class="section"><h2>Mi progreso</h2><div class="stats"><div class="stat"><strong>${s.xp}</strong><span>XP</span></div><div class="stat"><strong>${s.done.length}</strong><span>Lecciones/prácticas completadas</span></div><div class="stat"><strong>${s.attempts.length}</strong><span>Intentos</span></div></div><div class="panel"><h3>Últimos intentos</h3>${s.attempts.length?s.attempts.slice(0,20).map(a=>`<p>${a.date} · ${a.id==='test'?'Test general':'Ejercicio '+(a.id+1)} · ${a.p}%</p>`).join(''):'<p class="muted">Aún no hay intentos.</p>'}<button class="btn" onclick="exportP()">Exportar progreso JSON</button><button class="btn" onclick="clearP()">Borrar progreso local</button></div><div class="callout">El progreso se guarda en este navegador y no se sincroniza con otros dispositivos.</div></section>`}
+function progressPage(){return `<section class="section"><h2>Mi progreso</h2><div class="stats"><div class="stat"><strong>${s.xp}</strong><span>XP</span></div><div class="stat"><strong>${s.done.length}</strong><span>Lecciones/prácticas completadas</span></div><div class="stat"><strong>${s.attempts.length}</strong><span>Intentos</span></div></div><div class="panel"><h3>Últimos intentos</h3>${s.attempts.length?s.attempts.slice(0,20).map(a=>`<p>${a.date} · ${a.id==='test'?'Test general':'Ejercicio '+(a.id+1)} · ${a.p}%</p>`).join(''):'<p class="muted">Aún no hay intentos.</p>'}<button class="btn" onclick="exportP()">Exportar progreso JSON</button><button class="btn" onclick="clearP()">${ccCloudUser&&ccCloudReady&&!ccCloudLogoutPending?'Borrar progreso local y de la cuenta':'Borrar progreso local'}</button></div><div class="callout">${ccCloudUser&&ccCloudReady?'Los temas y prácticas completados se sincronizan con tu cuenta. El XP y los intentos de esta aula solo se guardan en este navegador; no se envían a la cuenta ni se sincronizan entre dispositivos.':ccCloudUser?'No se pudo cargar el progreso de la cuenta; vuelve a cargar antes de sincronizar. El XP y los intentos siguen locales.':'El progreso se guarda solo en este navegador y no se sincroniza con otros dispositivos.'}</div></section>`}
 // exportP: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function exportP(){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(s,null,2)],{type:'application/json'}));a.href=u;a.download='codigoclaro-progreso.json';a.click();URL.revokeObjectURL(u)}function clearP(){if(confirm('¿Borrar progreso local?')){s={xp:0,done:[],attempts:[]};save();page('progress')}}function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function exportP(){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(s,null,2)],{type:'application/json'}));a.href=u;a.download='codigoclaro-progreso.json';a.click();URL.revokeObjectURL(u)}function clearP(){const syncAccount=!!(ccCloudUser&&ccCloudReady&&!ccCloudLogoutPending),message=syncAccount?'¿Borrar el progreso local de esta aula? También se quitarán de tu cuenta los temas y prácticas completados. El XP y los intentos solo se guardan en este navegador; no se envían a la cuenta ni se sincronizan entre dispositivos.':'¿Borrar el progreso local de esta aula?';if(confirm(message)){s={xp:0,done:[],attempts:[]};save();page('progress')}}function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 page('home');
 
-let ccCloudUser=null,ccCloudTimer=null,ccCloudBusy=false;
+let ccCloudUser=null,ccCloudReady=false,ccCloudAuthVersion=0,ccCloudAuthBusy=false,ccCloudLogoutPending=false,ccCloudTimer=null,ccCloudBusy=false,ccCloudSavePromise=null,ccCloudSaveOwner=null,ccCloudSaveVersion=null,ccCloudSyncVersion=0,ccCloudLogoutError='';
 // ccApi: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 async function ccApi(url,opts={}){let r;try{r=await fetch(url,{credentials:'same-origin',...opts,headers:{...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}})}catch(e){throw Error('No se pudo conectar con '+url+'. Comprueba que el servidor siga activo en localhost:3000. '+(e.message||e))}let d={};try{const type=r.headers.get('content-type')||'';d=type.includes('application/json')?await r.json():{error:(await r.text()).slice(0,250)}}catch{}if(!r.ok)throw Error(d.error||'Error HTTP '+r.status+' en '+url);return d}
 // ccStatus: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ccStatus(t){const el=document.getElementById('ccAccountStatus');if(el)el.textContent=t}
 // ccRenderUser: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ccRenderUser(){const b=document.getElementById('ccAccountAction');if(!b)return;if(ccCloudUser){ccStatus('Sesión iniciada: '+ccCloudUser.email+' · progreso sincronizado con tu cuenta');b.textContent='Cerrar sesión';b.onclick=ccLogout}else{ccStatus('Modo invitado: el progreso está en este navegador. Inicia sesión para sincronizarlo.');b.textContent='Iniciar sesión';b.onclick=ccLogin}}
-// ccCloudSaveLater: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ccCloudSaveLater(){if(!ccCloudUser||ccCloudBusy)return;clearTimeout(ccCloudTimer);ccCloudTimer=setTimeout(ccCloudSave,900)}
+function ccRenderUser(){const b=document.getElementById('ccAccountAction');if(!b)return;if(ccCloudUser){const status=ccCloudReady?'Sesión iniciada: '+ccCloudUser.email+' · se sincronizan los temas y prácticas completados; el XP y los intentos de esta aula solo se guardan en este navegador; no se envían a la cuenta ni se sincronizan entre dispositivos':'Sesión iniciada, pero no se pudo cargar el progreso remoto. No se sincronizará el estado local hasta que lo vuelvas a cargar.';ccStatus(ccCloudLogoutError||status);b.textContent='Cerrar sesión';b.onclick=ccLogout}else{ccStatus('Modo invitado: el progreso está en este navegador. Inicia sesión para sincronizar los temas y prácticas completados.');b.textContent='Iniciar sesión';b.onclick=ccLogin}}
+// Cada cambio incrementa la versión para guardar después la instantánea más reciente, en orden.
+function ccCloudSaveLater(){if(!ccCloudUser||!ccCloudReady)return;ccCloudSyncVersion++;clearTimeout(ccCloudTimer);if(ccCloudLogoutPending){ccStatus('Cierre de sesión en curso; los cambios nuevos permanecen en este navegador.');return}if(!ccCloudLogoutError)ccStatus('Sincronización de temas y prácticas pendiente…');ccCloudTimer=setTimeout(ccCloudSave,900)}
 // ccCloudSave: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function ccCloudSave(){if(!ccCloudUser)return;try{const result=await ccApi('/api/progress',{method:'PUT',body:JSON.stringify({xp:Number(s.xp)||0,completed:Array.isArray(s.done)?s.done:[],attempts:(Array.isArray(s.attempts)?s.attempts:[]).map(a=>({...a,pct:Number(a.pct??a.p)||0}))})});ccStatus('Guardado en tu cuenta · '+new Date().toLocaleTimeString())}catch(e){ccStatus('No se ha podido sincronizar: '+e.message)}}
+async function ccCloudSave(){
+ clearTimeout(ccCloudTimer);ccCloudTimer=null;
+ if(!ccCloudUser)return {ok:false,error:'No hay una sesión activa.'};
+ if(ccCloudLogoutPending)return {ok:true,pending:true};
+ if(!ccCloudReady)return {ok:false,error:'No se pudo cargar el progreso remoto; vuelve a cargarlo antes de sincronizar.'};
+ if(ccCloudBusy){
+  // Espera a la petición activa y repite si entretanto cambió la cuenta o el progreso.
+  const active=ccCloudSavePromise,owner=ccCloudSaveOwner,version=ccCloudSaveVersion;
+  if(!active){ccCloudTimer=setTimeout(ccCloudSave,0);return {ok:true,pending:true}}
+  const result=await active;
+  if(ccCloudUser&&(ccCloudUser!==owner||ccCloudSyncVersion!==version))return ccCloudSave();
+  return result
+ }
+ ccCloudBusy=true;
+ const owner=ccCloudUser,version=ccCloudSyncVersion,completed=Array.isArray(s.done)?[...s.done]:[];
+ const request=(async()=>{
+  try{
+   await ccApi('/api/progress',{method:'PUT',body:JSON.stringify({completed})});
+   if(ccCloudUser===owner&&version===ccCloudSyncVersion&&!ccCloudLogoutError)ccStatus('Temas y prácticas guardados en tu cuenta · '+new Date().toLocaleTimeString());
+   return {ok:true}
+  }catch(e){
+   if(ccCloudUser===owner&&!ccCloudLogoutError)ccStatus('No se pudieron sincronizar los temas y prácticas: '+e.message);
+   return {ok:false,error:e.message}
+  }finally{
+   ccCloudBusy=false;
+   if(ccCloudSavePromise===request){ccCloudSavePromise=null;ccCloudSaveOwner=null;ccCloudSaveVersion=null}
+   if(ccCloudUser&&ccCloudReady&&!ccCloudLogoutPending&&(ccCloudUser!==owner||version!==ccCloudSyncVersion)){
+    clearTimeout(ccCloudTimer);
+    if(!ccCloudLogoutError)ccStatus('Sincronización de temas y prácticas pendiente…');
+    ccCloudTimer=setTimeout(ccCloudSave,0)
+   }
+  }
+ })();
+ ccCloudSavePromise=request;ccCloudSaveOwner=owner;ccCloudSaveVersion=version;
+ return request
+}
 // ccLogin: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function ccLogin(){const email=prompt('Correo de tu cuenta CódigoClaro (o crea una cuenta en el Panel del piloto):');if(!email)return;const password=prompt('Contraseña:');if(password===null)return;try{const d=await ccApi('/api/login',{method:'POST',body:JSON.stringify({email:email.trim(),password})});ccCloudUser=d.user;const p=d.progress||{};s.xp=Math.max(Number(s.xp)||0,Number(p.xp)||0);s.done=[...new Set([...(s.done||[]),...(p.completed||[])])];const cloudAttempts=(p.attempts||[]).map(a=>({...a,p:Number(a.pct??a.p)||0}));const localKeys=new Set((s.attempts||[]).map(a=>String(a.id)+'|'+String(a.date)+'|'+String(a.p??a.pct)));s.attempts=[...(s.attempts||[]),...cloudAttempts.filter(a=>!localKeys.has(String(a.id)+'|'+String(a.date)+'|'+String(a.p??a.pct)))].slice(0,200);save();await ccCloudSave();ccRenderUser();alert('Sesión iniciada. El progreso de esta aula ya se sincroniza con tu cuenta.')}catch(e){alert('No se pudo iniciar sesión: '+e.message)}}
+async function ccLogin(){
+ if(ccCloudAuthBusy)return;
+ ccCloudAuthBusy=true;
+ const button=document.getElementById('ccAccountAction');if(button)button.disabled=true;
+ const authVersion=++ccCloudAuthVersion;
+ let loginAccepted=false;
+ try{
+  const email=prompt('Correo de tu cuenta CódigoClaro (o crea una cuenta en el Panel del piloto):');if(!email)return;
+  const password=prompt('Contraseña:');if(password===null)return;
+  const d=await ccApi('/api/login',{method:'POST',body:JSON.stringify({email:email.trim(),password})});
+  if(authVersion!==ccCloudAuthVersion)return;
+  loginAccepted=true;ccCloudLogoutError='';ccCloudUser=d.user;ccCloudReady=false;
+  // PostgreSQL devuelve el usuario sin progreso; primero se lee el servidor para no reemplazar su lista.
+  const p=d.progress||(await ccApi('/api/progress')).progress;
+  if(authVersion!==ccCloudAuthVersion)return;
+  if(!p||!Array.isArray(p.completed))throw Error('El servidor no devolvió una lista válida de temas completados.');
+  useAccountCompletions(d.user.id,p.completed);
+  ccCloudReady=true;
+  save();const sync=await ccCloudSave();ccRenderUser();
+  if(!sync.ok)ccStatus('Sesión iniciada, pero no se sincronizaron los temas y prácticas: '+sync.error);
+  alert(sync.ok?'Sesión iniciada. Los temas y prácticas completados se sincronizan; el XP y los intentos de esta aula no se envían a la cuenta ni se sincronizan entre dispositivos.':'Sesión iniciada, pero no se pudieron sincronizar los temas y prácticas. '+sync.error)
+ }catch(e){
+  if(authVersion!==ccCloudAuthVersion)return;
+  if(loginAccepted){
+   ccRenderUser();
+   const message='Sesión iniciada, pero no se pudo cargar el progreso remoto. No se han sobrescrito los completados; vuelve a cargar la página antes de sincronizar. '+e.message;
+   ccStatus(message);alert(message)
+  }else alert('No se pudo iniciar sesión: '+e.message)
+ }finally{
+  ccCloudAuthBusy=false;if(button)button.disabled=false;
+  // Si se canceló o falló un login, vuelve a consultar una sesión que ya existiera.
+  if(!loginAccepted&&!ccCloudUser)await ccBoot()
+ }
+}
 // ccLogout: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function ccLogout(){try{await ccApi('/api/logout',{method:'POST',body:'{}'})}catch{}ccCloudUser=null;ccRenderUser()}
+async function ccLogout(){if(ccCloudAuthBusy)return;ccCloudAuthBusy=true;ccCloudLogoutPending=true;const authVersion=++ccCloudAuthVersion,button=document.getElementById('ccAccountAction');if(button)button.disabled=true;clearTimeout(ccCloudTimer);ccCloudTimer=null;try{const activeSave=ccCloudSavePromise;if(activeSave)await activeSave;await ccApi('/api/logout',{method:'POST',body:'{}'});if(authVersion!==ccCloudAuthVersion)return;ccCloudLogoutError='';useGuestCompletions();ccCloudUser=null;ccCloudReady=false;ccCloudSyncVersion++;save();ccRenderUser()}catch(e){if(authVersion!==ccCloudAuthVersion)return;ccCloudLogoutError='No se pudo confirmar el cierre de sesión; la sesión podría seguir activa. '+e.message;ccStatus(ccCloudLogoutError)}finally{ccCloudLogoutPending=false;ccCloudAuthBusy=false;if(button)button.disabled=false}}
 // ccBoot: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function ccBoot(){try{const me=await ccApi('/api/me');if(me.user){ccCloudUser=me.user;const d=await ccApi('/api/progress');const p=d.progress||{};s.xp=Math.max(Number(s.xp)||0,Number(p.xp)||0);s.done=[...new Set([...(s.done||[]),...(p.completed||[])])];const ca=(p.attempts||[]).map(a=>({...a,p:Number(a.pct??a.p)||0}));const seenAttempts=new Set();s.attempts=[...(s.attempts||[]),...ca].filter(a=>{const k=String(a.id)+'|'+String(a.date)+'|'+String(a.p??a.pct);if(seenAttempts.has(k))return false;seenAttempts.add(k);return true}).slice(0,200);save();await ccCloudSave()} }catch(e){ccStatus('Servidor no disponible; seguimos en modo local.')}ccRenderUser()}
+async function ccBoot(){
+ if(ccCloudAuthBusy)return;
+ ccCloudAuthBusy=true;
+ const authVersion=ccCloudAuthVersion,button=document.getElementById('ccAccountAction');
+ if(button)button.disabled=true;
+ let message='';
+ try{
+  // Muestra primero el estado invitado mientras comprueba si existe una sesión.
+  const hadAccountProgress=!!ccStorageGet(CC_PROGRESS_OWNER_KEY);
+  useGuestCompletions();save();
+  if(hadAccountProgress)page('home');
+  const me=await ccApi('/api/me');
+  if(authVersion!==ccCloudAuthVersion)return;
+  if(me.user){
+   ccCloudUser=me.user;ccCloudReady=false;
+   const d=await ccApi('/api/progress');
+   if(authVersion!==ccCloudAuthVersion)return;
+   const p=d.progress;
+   if(!p||!Array.isArray(p.completed))throw Error('El servidor no devolvió una lista válida de temas completados.');
+   useAccountCompletions(me.user.id,p.completed);
+   ccCloudReady=true;save();
+   const sync=await ccCloudSave();
+   if(!sync.ok)message='No se pudieron sincronizar los temas y prácticas: '+sync.error
+  }
+ }catch(e){
+  if(authVersion!==ccCloudAuthVersion)return;
+  message=(ccCloudUser?'Sesión iniciada, pero no se pudo cargar el progreso. ':'No se pudo comprobar la cuenta; el progreso local sigue disponible. ')+(e.message||'')
+ }finally{
+  ccCloudAuthBusy=false;if(button)button.disabled=false;
+  if(authVersion===ccCloudAuthVersion){ccRenderUser();if(message)ccStatus(message)}
+ }
+}
 window.addEventListener('online',()=>{if(ccCloudUser)ccCloudSave()});ccBoot();
 </script></body></html>
