@@ -1,4 +1,11 @@
+"""Genera o valida los materiales PDF de los temarios de CódigoClaro.
+
+Las rutas de entrada y salida se resuelven respecto al proyecto para facilitar
+la ejecución desde distintas carpetas de trabajo.
+"""
+
 #!/usr/bin/env python3
+"""Genera los PDF didácticos desde el catálogo de temas. Las funciones separan la preparación del contenido, el formato y la escritura de los archivos."""
 """Genera los 75 temarios de CódigoClaro a partir del catálogo versionado.
 
 Los textos son material didáctico original. Los enlaces al final de cada PDF
@@ -7,6 +14,8 @@ versiones de los lenguajes antes de reutilizar ejemplos en producción.
 """
 from pathlib import Path
 import json, re
+import shutil
+import sys
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4
@@ -55,7 +64,7 @@ TOPIC = {
   'Arrays y objetos': ('Los arrays ordenan elementos; map transforma, filter selecciona y reduce acumula. Los objetos representan propiedades. La desestructuración facilita extraer campos, mientras que spread crea copias superficiales, no profundas.', 'const persona = { nombre: "Ada", edad: 22 };\nconst { nombre, ...resto } = persona;\nconst actualizada = { ...persona, edad: 23 };', 'Evita mutaciones accidentales en estado compartido. Comprueba propiedades ausentes y recuerda que una copia superficial mantiene referencias a objetos anidados.'),
   'DOM y eventos': ('El DOM representa el documento como nodos. querySelector obtiene el primer elemento coincidente; addEventListener registra un manejador. Los datos introducidos por usuarios deben insertarse como texto, no como HTML sin sanear.', 'const boton = document.querySelector("#guardar");\nboton?.addEventListener("click", () => {\n  document.querySelector("#estado").textContent = "Guardado";\n});', 'Usa textContent para texto. Gestiona estados de carga/error, evita listeners duplicados y considera accesibilidad por teclado.'),
   'Módulos': ('Los módulos ES usan export e import. Separar módulos permite definir límites, reutilizar código y reducir variables globales. En navegador, el script se declara como type=module; Node interpreta módulos según configuración y extensión.', 'export function sumar(a, b) { return a + b; }\nimport { sumar } from "./matematica.js";\nconsole.log(sumar(2, 3));', 'Comprueba rutas y mayúsculas de archivo. Evita ciclos de dependencias complejos y exportaciones con nombres ambiguos.'),
-  'Promesas y async/await': ('Una Promise representa el resultado eventual de una operación. async devuelve una Promise; await espera su resolución dentro de una función async. Los errores deben propagarse o tratarse de forma deliberada.', 'async function cargar(url) {\n  const respuesta = await fetch(url);\n  if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);\n  return respuesta.json();\n}', 'No olvides comprobar response.ok: fetch no rechaza la promesa solo por recibir HTTP 404/500. Usa AbortController para cancelaciones cuando proceda.'),
+  'Promesas y async/await': ('Una Promise representa el resultado eventual de una operación. async devuelve una Promise; await espera el resultado dentro de una función async o al nivel superior de un módulo. Si la promesa se rechaza, await propaga el rechazo como excepción.', 'async function cargar(url) {\n  const respuesta = await fetch(url);\n  if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);\n  return respuesta.json();\n}', 'No olvides comprobar response.ok: fetch no rechaza la promesa solo por recibir HTTP 404/500. Usa AbortController para cancelaciones cuando proceda.'),
   'JSON y APIs': ('JSON es un formato textual de intercambio. JSON.parse convierte texto en valores JavaScript y puede lanzar SyntaxError; JSON.stringify serializa valores compatibles. Una API HTTP requiere tratar estados, formato y errores de red.', 'const texto = JSON.stringify({ tema: "DAM", nivel: 2 });\nconst datos = JSON.parse(texto);', 'Valida la estructura de la respuesta: que sea JSON válido no garantiza que tenga los campos esperados. No confíes en datos recibidos del servidor.'),
   'Clases y POO': ('class ofrece una sintaxis para construir objetos con métodos y estado. Los métodos de instancia viven en el prototipo; los métodos static pertenecen a la clase. La herencia debe reflejar una relación conceptual y no ser solo reutilización de código.', 'class Contador {\n  #valor = 0;\n  incrementar() { this.#valor++; }\n  get valor() { return this.#valor; }\n}', 'Los campos privados con # tienen restricciones reales de acceso. Comprueba el valor de this al pasar métodos como callbacks.'),
   'Errores y depuración': ('Error y sus subclases permiten representar fallos. try/catch trata excepciones síncronas y rechazos esperados si se coloca alrededor de await. Las herramientas del navegador permiten breakpoints, call stack e inspección de red.', 'try {\n  const resultado = await operacion();\n  mostrar(resultado);\n} catch (error) {\n  console.error("La operación ha fallado", error);\n}', 'No muestres detalles internos sensibles al usuario final. Registra contexto suficiente, pero evita tokens, contraseñas y datos personales.'),
@@ -75,17 +84,17 @@ COMMON = {
 # Mapeo de términos a ejemplos y explicaciones específicas adicionales.
 DETAILS = {
  'Python': {
- 'Instalación y primer programa': ('El intérprete ejecuta código fuente o bytecode gestionado por Python. `python -m venv .venv` crea un entorno virtual aislado para las dependencias del proyecto. `pip` instala paquetes en el entorno activo.', 'python --version\npython -m venv .venv\n# Windows: .venv\\Scripts\\activate\npython main.py'),
+ 'Instalación y primer programa': ('El intérprete ejecuta código fuente o bytecode gestionado por Python. `python -m venv .venv` crea un entorno virtual aislado para las dependencias del proyecto. `pip` instala paquetes en el entorno activo. Para activarlo en Windows, CMD usa `.venv\\Scripts\\activate.bat` y PowerShell usa `.\\.venv\\Scripts\\Activate.ps1`.', 'python --version\npython -m venv .venv\npython main.py'),
  'Variables y tipos': ('Los nombres enlazan objetos; no son cajas tipadas de forma estática. int, float, str y bool son tipos integrados comunes. Las cadenas son inmutables y las asignaciones enlazan nombres a objetos.', 'edad = 22\nprecio = 12.5\nactivo = True\nnombre = "Ada"\nprint(f"{nombre}: {edad}")'),
  'Operadores y condiciones': ('`and` y `or` cortocircuitan y devuelven uno de sus operandos; `is` compara identidad y `==` igualdad. Para pertenencia se utiliza `in` y para comprobar ausencia de valor se usa `is None`.', 'if edad >= 18 and activo:\n    print("Acceso permitido")\nelse:\n    print("Revisar acceso")'),
  'Bucles': ('for itera sobre elementos de un iterable; range produce una secuencia aritmética. while repite mientras la condición sea verdadera. break y continue alteran el flujo y deben facilitar, no dificultar, la lectura.', 'for numero in range(1, 4):\n    print(numero)\n\nwhile False:\n    print("No se ejecuta")'),
  'Listas y tuplas': ('Las listas son secuencias mutables; las tuplas son secuencias inmutables a nivel estructural. Los índices negativos cuentan desde el final y los slices usan un límite final excluido.', 'notas = [7, 8, 10]\nnotas.append(9)\nprimeras = notas[:2]\ncoordenadas = (36.7, -4.4)'),
- 'Diccionarios y conjuntos': ('dict asocia claves hashables con valores; set almacena elementos únicos. Desde Python moderno, los diccionarios conservan orden de inserción, pero eso no implica ordenación por clave.', 'alumno = {"nombre": "Ada", "nota": 9}\nalumno["nota"] = 10\ntecnologias = {"Python", "Java", "Python"}'),
+ 'Diccionarios y conjuntos': ('dict asocia claves hashables con valores; set almacena elementos únicos. Desde Python 3.7, dict garantiza el orden de inserción; en CPython 3.6 se conservaba como detalle de implementación. Ese orden no implica ordenación por clave.', 'alumno = {"nombre": "Ada", "nota": 9}\nalumno["nota"] = 10\ntecnologias = {"Python", "Java", "Python"}'),
  'Funciones': ('def crea una función; return devuelve un resultado y sin return explícito se devuelve None. Los valores por defecto se evalúan al definir la función, por lo que no conviene usar listas mutables como valor por defecto.', 'def añadir(item, destino=None):\n    if destino is None:\n        destino = []\n    destino.append(item)\n    return destino'),
  'Comprensiones y generadores': ('Las comprensiones construyen colecciones de forma concisa. Un generador produce valores bajo demanda y puede reducir memoria cuando se procesa una secuencia grande; se consume al iterarlo.', 'cuadrados = [n * n for n in range(5)]\npares = (n for n in range(1000) if n % 2 == 0)'),
  'Módulos y paquetes': ('Un módulo suele ser un archivo .py; un paquete agrupa módulos. `if __name__ == "__main__"` distingue ejecución directa de importación. Evita nombres de archivos que oculten módulos estándar.', 'from pathlib import Path\n\ndef main():\n    print(Path.cwd())\n\nif __name__ == "__main__":\n    main()'),
  'Excepciones': ('try/except captura excepciones concretas; else se ejecuta si no hubo excepción; finally se ejecuta al salir del bloque. Las excepciones deben comunicar fallos reales, no usarse como flujo normal de cada operación.', 'try:\n    numero = int(entrada)\nexcept ValueError:\n    print("Introduce un entero válido")'),
- 'Ficheros y JSON': ('pathlib.Path ofrece operaciones de rutas; open con `with` cierra el archivo automáticamente. json.load/read convierte JSON a objetos Python, pero hay que validar que la estructura coincide con lo esperado.', 'import json\nfrom pathlib import Path\ndatos = {"tema": "DAM", "nivel": 2}\nPath("datos.json").write_text(json.dumps(datos, ensure_ascii=False), encoding="utf-8")'),
+ 'Ficheros y JSON': ('pathlib.Path ofrece operaciones de rutas; open con `with` cierra el archivo automáticamente. `json.load(fp)` deserializa desde un archivo; `json.loads(s)` lo hace desde texto o bytes. Ambas convierten JSON a objetos Python, cuya estructura debe validarse.', 'import json\nfrom pathlib import Path\ndatos = {"tema": "DAM", "nivel": 2}\ntexto = json.dumps(datos, ensure_ascii=False)\nPath("datos.json").write_text(texto, encoding="utf-8")\nrecuperado = json.loads(texto)'),
  'POO y dataclasses': ('Las clases agrupan estado y comportamiento. `dataclass` genera métodos comunes a partir de los campos declarados; no sustituye la validación de dominio ni hace inmutables los objetos salvo configuración específica.', 'from dataclasses import dataclass\n\n@dataclass\nclass Alumno:\n    nombre: str\n    nota: float'),
  'Librerías y entornos': ('Un entorno virtual separa las dependencias del proyecto del Python global. El archivo de dependencias debe documentar lo necesario para reconstruir el entorno; instalar paquetes requiere confiar en el origen.', 'python -m venv .venv\npython -m pip install paquete\npython -m pip freeze'),
  'Pruebas y depuración': ('Una prueba automatizada comprueba resultados esperados. unittest está en la biblioteca estándar; pytest es una herramienta externa. El depurador permite pausar ejecución y examinar variables en el punto del fallo.', 'def sumar(a, b):\n    return a + b\n\ndef test_sumar():\n    assert sumar(2, 3) == 5'),
@@ -93,7 +102,7 @@ DETAILS = {
  },
  'Kotlin': {
  'Primer programa Kotlin': ('El compilador Kotlin puede generar bytecode JVM y también tiene otros destinos. En JVM, el código puede ejecutarse desde una función main. La configuración del proyecto define versión del plugin y JDK objetivo.', 'fun main() {\n    println("Hola, DAM")\n}'),
- 'val, var y tipos': ('`val` crea una referencia de solo lectura y `var` permite reasignarla; eso no convierte automáticamente un objeto mutable en inmutable. Kotlin infiere tipos cuando la expresión lo permite.', 'val nombre: String = "Ada"\nvar intentos = 0\nintentos += 1'),
+ 'val, var y tipos': ('`val` declara una variable o propiedad de solo lectura que no puede reasignarse; `var` sí permite reasignarla. Un `val` puede referirse a un objeto mutable: no se puede reasignar la variable, pero sí cambiar el estado del objeto. Kotlin infiere tipos cuando la expresión lo permite.', 'val nombre: String = "Ada"\nvar intentos = 0\nintentos += 1'),
  'Null safety': ('Los tipos `String` y `String?` son distintos. El acceso seguro `?.` evita dereferenciar null; `?:` proporciona alternativa; `!!` fuerza una aserción y puede lanzar NullPointerException.', 'val nombre: String? = obtenerNombre()\nval longitud = nombre?.length ?: 0'),
  'Condiciones y when': ('if puede ser una expresión que devuelve un valor. `when` permite comparar con valores, rangos, tipos o condiciones, y puede usarse como expresión exhaustiva.', 'val etiqueta = when (nota) {\n    in 9..10 -> "Sobresaliente"\n    in 7..8 -> "Notable"\n    else -> "Revisar"\n}'),
  'Bucles y rangos': ('Los rangos `..` incluyen el límite final; `until` lo excluye. `downTo` recorre hacia atrás y `step` define el incremento. Comprueba límites al recorrer índices.', 'for (i in 0 until 3) {\n    println(i)\n}'),
@@ -104,7 +113,7 @@ DETAILS = {
  'Lambdas y funciones de orden superior': ('Una función de orden superior recibe o devuelve funciones. `it` es el nombre implícito de un único parámetro de lambda. Las referencias a funciones pueden mejorar la claridad si la firma es evidente.', 'val nombres = listOf("Ada", "Lía")\nval largos = nombres.filter { it.length > 3 }'),
  'Excepciones': ('Kotlin no distingue excepciones checked y unchecked en el sistema de tipos. try puede ser una expresión. `use` cierra recursos Closeable/AutoCloseable al finalizar el bloque.', 'val numero = try { texto.toInt() } catch (e: NumberFormatException) { 0 }'),
  'Genéricos': ('Los parámetros de tipo permiten reutilizar código con seguridad estática. Kotlin admite declaración de varianza con `out` y `in`; la proyección de tipos limita qué operaciones se pueden realizar.', 'fun <T> primero(elementos: List<T>): T? = elementos.firstOrNull()'),
- 'Coroutines': ('Las coroutines permiten escribir código asíncrono secuencial con funciones suspend. `launch` inicia una tarea sin resultado directo; `async` produce un Deferred. El alcance estructurado facilita cancelar trabajo relacionado.', 'suspend fun cargar(): String {\n    delay(100)\n    return "listo"\n}'),
+ 'Coroutines': ('Las funciones suspend pueden pausar y reanudarse sin bloquear el hilo. `delay`, `launch` y `async` pertenecen a `kotlinx.coroutines`, que debe añadirse como dependencia. `launch` devuelve un Job; `async`, un Deferred con resultado; ambos se inician dentro de un CoroutineScope.', 'import kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\n\nsuspend fun cargar(): String {\n    delay(100L)\n    return "listo"\n}\n\nfun main() = runBlocking {\n    // Solo como puente didáctico desde main: runBlocking bloquea este hilo.\n    println(cargar())\n}'),
  'Ficheros y serialización': ('La E/S de archivos depende del destino de Kotlin y de las bibliotecas utilizadas. Serializar transforma objetos a un formato intercambiable; el formato, versión y validación deben ser explícitos.', 'val ruta = java.nio.file.Path.of("datos.txt")\njava.nio.file.Files.writeString(ruta, "CódigoClaro")'),
  'Pruebas y arquitectura': ('Las pruebas de unidad aíslan reglas; las de integración verifican colaboración. Separar dominio, infraestructura y presentación reduce acoplamiento, pero conviene adaptar la arquitectura al tamaño real del proyecto.', 'import kotlin.test.Test\nimport kotlin.test.assertEquals\nclass SumaTest {\n    @Test fun suma() { assertEquals(5, 2 + 3) }\n}'),
  },
@@ -119,9 +128,9 @@ DETAILS = {
  'Hooks personalizados': ('Un hook personalizado encapsula lógica reutilizable de estado o efectos. Su nombre comienza por use y debe respetar las reglas de hooks; no comparte automáticamente el mismo estado entre componentes.', 'function useContadorInicial(valor = 0) {\n  const [n, setN] = useState(valor);\n  return [n, () => setN(x => x + 1)];\n}'),
  'Context': ('Context permite compartir un valor con componentes descendientes sin prop drilling en cada nivel. No es una base de datos global universal; dividir contextos y memoizar valores puede evitar renders innecesarios.', 'const TemaContext = createContext("claro");\n// El proveedor coloca el valor disponible para descendientes.'),
  'React Router': ('Una biblioteca de enrutado permite relacionar rutas con componentes y parámetros. Los detalles de API dependen de la versión instalada; consulta la documentación de la versión del proyecto.', '<Routes>\n  <Route path="/" element={<Inicio />} />\n  <Route path="/temas/:id" element={<Tema />} />\n</Routes>'),
- 'Peticiones a APIs': ('Una petición debe modelar estados de carga, éxito y error. El efecto debe cancelar o ignorar respuestas obsoletas si el componente cambia o se desmonta; comprueba códigos HTTP y forma de los datos.', 'useEffect(() => {\n  const controller = new AbortController();\n  fetch(url, { signal: controller.signal });\n  return () => controller.abort();\n}, [url]);'),
+ 'Peticiones a APIs': ('Una petición debe modelar estados de carga, éxito y error. Si se obtienen datos manualmente con useEffect, hay que cancelar o ignorar respuestas obsoletas y comprobar códigos HTTP y forma de los datos. En proyectos con framework, prioriza su mecanismo integrado de datos o una caché: Effects manuales no resuelven por sí solos caché ni renderizado en servidor.', 'useEffect(() => {\n  const controller = new AbortController();\n  fetch(url, { signal: controller.signal });\n  return () => controller.abort();\n}, [url]);'),
  'Validación de formularios': ('La validación de interfaz ayuda al usuario a corregir entradas, pero el servidor debe validar de nuevo. Los errores deben asociarse a campos, anunciarse de forma accesible y no borrar datos válidos innecesariamente.', '<label htmlFor="email">Correo</label>\n<input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} />'),
- 'Rendimiento': ('Primero mide el problema. React.memo, useMemo y useCallback pueden evitar trabajo en casos concretos, pero añaden complejidad y no son necesarios para todo componente. Las keys estables ayudan a reconciliar listas.', 'const total = useMemo(() => calcularTotal(items), [items]);'),
+ 'Rendimiento': ('Primero mide el problema. React.memo, useMemo y useCallback pueden reducir trabajo en casos concretos, pero añaden complejidad y no hacen falta en todo componente. Si React Compiler está configurado, puede memoizar componentes y valores automáticamente. Las keys estables ayudan a reconciliar listas.', 'const total = useMemo(() => calcularTotal(items), [items]);'),
  'Pruebas de componentes': ('Una prueba de componente debe comprobar el comportamiento observable desde la perspectiva del usuario. Las pruebas robustas consultan roles, etiquetas y texto accesible en vez de depender de detalles internos.', 'render(<Boton onClick={guardar}>Guardar</Boton>);\nawait user.click(screen.getByRole("button", { name: "Guardar" }));\nexpect(guardar).toHaveBeenCalled();'),
  'Seguridad y despliegue': ('El cliente no puede guardar secretos de servidor. Evita renderizar HTML no confiable, valida en servidor y revisa configuración de variables de entorno. El despliegue debe producir artefactos reproducibles y servir por HTTPS.', 'const textoSeguro = String(mensajeUsuario);\nreturn <p>{textoSeguro}</p>;'),
  }
@@ -129,6 +138,7 @@ DETAILS = {
 
 # Enriquecimiento temático: cada apartado incluye preguntas y ejercicios relacionados con el título real.
 def topic_specific(track, title, desc):
+    """Añade contenido adaptado a un tema concreto del catálogo didáctico."""
     detail = DETAILS.get(track, {}).get(title)
     if detail:
         return detail[0], detail[1]
@@ -158,13 +168,17 @@ styles.add(ParagraphStyle(name='BulletCC', parent=styles['BodyCC'], leftIndent=1
 
 
 def esc(s):
+    """Escapa texto para insertarlo de forma segura en el marcado de un PDF."""
     return str(s).replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
 def para(s, style='BodyCC'):
+    """Crea un párrafo PDF con el estilo editorial solicitado."""
     return Paragraph(esc(s).replace('\n','<br/>'), styles[style])
 def bullet(s):
+    """Crea un elemento de lista para los documentos generados."""
     return Paragraph('• ' + esc(s), styles['BulletCC'])
 
 def footer(canvas, doc):
+    """Dibuja el pie de página y la numeración de cada página del PDF."""
     canvas.saveState(); w,h=A4
     canvas.setStrokeColor(colors.HexColor('#d9dee8')); canvas.line(1.8*cm,1.35*cm,w-1.8*cm,1.35*cm)
     canvas.setFont(FONT,7); canvas.setFillColor(colors.HexColor('#667085'))
@@ -173,6 +187,7 @@ def footer(canvas, doc):
     canvas.restoreState()
 
 def make_pages(item):
+    """Construye los bloques de contenido que forman un temario completo."""
     track, num, title, desc = item['track'], item['num'], item['title'], item['description']
     concept, code = topic_specific(track, title, desc)
     if track in DETAILS and title in DETAILS[track]:
@@ -185,6 +200,26 @@ def make_pages(item):
     else:
         warning = 'Valida las entradas, contempla los casos límite y comprueba el comportamiento con una prueba reproducible.'
     ref = REFS[track]
+    if track == 'JavaScript' and title == 'Promesas y async/await':
+        ref = [*ref, ('MDN: await', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await')]
+    if track == 'Kotlin' and title == 'Coroutines':
+        ref = [*ref, ('Kotlin Documentation: Coroutines basics', 'https://kotlinlang.org/docs/coroutines-basics.html')]
+    if track == 'Kotlin' and title == 'val, var y tipos':
+        ref = [*ref, ('Kotlin Documentation: Basic syntax — Variables', 'https://kotlinlang.org/docs/basic-syntax.html#variables')]
+    if track == 'Python' and title == 'Diccionarios y conjuntos':
+        ref = [*ref, ('Python Data Model: Dictionaries', 'https://docs.python.org/3/reference/datamodel.html#dictionaries')]
+    if track == 'Python' and title == 'Instalación y primer programa':
+        ref = [*ref, ('Python: venv', 'https://docs.python.org/es/3/library/venv.html')]
+    if track == 'Python' and title == 'Ficheros y JSON':
+        ref = [*ref, ('Python: json', 'https://docs.python.org/es/3/library/json.html')]
+    if track == 'React' and title == 'React Router':
+        ref = [*ref, ('React Router: Routing', 'https://reactrouter.com/start/declarative/routing')]
+    if track == 'React' and title == 'Peticiones a APIs':
+        ref = [*ref, ('React: useEffect y obtención de datos', 'https://react.dev/reference/react/useEffect')]
+    if track == 'React' and title == 'Rendimiento':
+        ref = [*ref, ('React: React Compiler', 'https://react.dev/learn/react-compiler/introduction'), ('React: useMemo', 'https://react.dev/reference/react/useMemo')]
+    if track == 'React' and title == 'Pruebas de componentes':
+        ref = [*ref, ('React Testing Library: introducción', 'https://testing-library.com/docs/react-testing-library/intro/')]
     pages = []
     pages.append([
       para(f'CÓDIGOCLARO · RUTA {track.upper()}', 'H2CC'),
@@ -206,7 +241,8 @@ def make_pages(item):
     pages.append([para('5. Casos límite, errores y buenas prácticas', 'H1CC'), para('Una solución que funciona con un ejemplo no demuestra que funcione con todos los casos relevantes. Los errores más comunes suelen venir de supuestos no escritos: datos vacíos, valores fuera de rango, diferencias de mayúsculas, operaciones que fallan, estado desactualizado o dependencias de la versión.'), para('Lista de comprobación', 'H2CC'), *[bullet(x) for x in [f'Caso mínimo: ¿qué pasa con la entrada más pequeña válida para {title.lower()}?', 'Caso vacío: ¿se acepta, se devuelve un resultado vacío o se informa de un error?', 'Caso límite: ¿qué ocurre justo en la frontera de una condición?', 'Caso inválido: ¿se valida antes de usar el dato?', 'Error externo: ¿qué ocurre si falla el archivo, la red o la dependencia?', 'Legibilidad: ¿otra persona entiende el propósito sin conocer tu intención?', 'Seguridad: ¿se evita ejecutar o interpretar contenido no confiable?']], para('Buenas prácticas', 'H2CC'), para('Prefiere un comportamiento explícito a una conversión o mutación sorprendente. Evita capturar errores sin actuar, duplicar reglas de negocio y exponer información sensible en mensajes. Documenta el porqué de una decisión no obvia, no cada línea de código.'), para('Criterio profesional', 'H2CC'), para(warning)])
     pages.append([para('6. Depuración sistemática', 'H1CC'), para('Depurar no es cambiar líneas al azar: es reducir la distancia entre lo que esperabas y lo que observas. Reproduce el fallo con los pasos mínimos, guarda la entrada problemática y formula una hipótesis que pueda confirmarse o descartarse.'), para('Procedimiento recomendado', 'H2CC'), *[bullet(x) for x in ['Reproduce el fallo de forma consistente.', 'Lee el primer mensaje de error relevante y la traza completa.', 'Inspecciona los valores justo antes de la operación que falla.', 'Cambia una sola hipótesis por iteración.', 'Añade una prueba de regresión cuando hayas corregido el defecto.', 'Retira logs temporales que contengan datos sensibles y conserva los útiles.']], para('Tabla de diagnóstico', 'H2CC'), Table([[para('Síntoma','SmallCC'),para('Hipótesis','SmallCC'),para('Comprobación','SmallCC')],[para('Resultado inesperado','SmallCC'),para('La regla o entrada no era la esperada','SmallCC'),para('Inspeccionar valores y repetir el caso','SmallCC')],[para('Falla solo en algunos datos','SmallCC'),para('Caso límite o supuesto incorrecto','SmallCC'),para('Reducir entrada y crear prueba específica','SmallCC')],[para('Falla en otra máquina','SmallCC'),para('Versión, configuración o dependencia','SmallCC'),para('Registrar runtime y reproducir instalación','SmallCC')]], colWidths=[4*cm,5.2*cm,6*cm], style=TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eaf0ff')),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#d9dee8')),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)])), Spacer(1,7), para('Qué evitar', 'H2CC'), para('No declares resuelto un fallo porque desapareció una vez. Repite el escenario, prueba un caso vecino y verifica que la corrección no rompe un comportamiento anterior. Si no entiendes la causa raíz, la solución puede ser accidental.')])
     pages.append([para('7. Pruebas y criterios de calidad', 'H1CC'), para('Una prueba útil establece una condición inicial, ejecuta una acción y comprueba un resultado observable. Las pruebas no tienen que cubrir cada línea para ser valiosas; deben cubrir riesgos y contratos importantes. Separa las pruebas rápidas de unidad de las pruebas que requieren base de datos, navegador o red.'), para('Matriz mínima de pruebas', 'H2CC'), Table([[para('Tipo','SmallCC'),para('Qué valida','SmallCC'),para('Ejemplo para este tema','SmallCC')],[para('Normal','SmallCC'),para('Camino habitual','SmallCC'),para('Entrada válida y resultado esperado','SmallCC')],[para('Límite','SmallCC'),para('Frontera de una regla','SmallCC'),para('Mínimo/máximo o colección vacía','SmallCC')],[para('Error','SmallCC'),para('Fallo controlado','SmallCC'),para('Dato inválido o dependencia fallida','SmallCC')],[para('Regresión','SmallCC'),para('Corrección anterior','SmallCC'),para('Repetir un caso que fallaba','SmallCC')]], colWidths=[2.6*cm,5*cm,7.6*cm], style=TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eaf0ff')),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#d9dee8')),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)])), Spacer(1,7), para('Revisión de calidad', 'H2CC'), *[bullet(x) for x in ['Los nombres expresan intención y no inducen a error.', 'Los errores tienen mensajes útiles y no filtran secretos.', 'Las pruebas se pueden ejecutar otra vez con el mismo resultado.', 'Las dependencias y versiones necesarias están documentadas.', 'El cambio se ha revisado con control de versiones.']]])
-    pages.append([para('8. Laboratorio práctico', 'H1CC'), para('Resuelve los ejercicios sin copiar el código anterior. Guarda cada solución en un archivo separado y añade comentarios solo cuando aclaren una decisión. Si trabajas en pareja, una persona implementa y la otra revisa entradas, salidas y casos límite; después intercambiad los papeles.'), para('Práctica A · Básica', 'H2CC'), para(f'Crea un ejemplo mínimo que demuestre {title.lower()}. Incluye una entrada válida, un resultado esperado y una explicación de tres o cuatro líneas sobre cómo funciona.'), para('Práctica B · Intermedia', 'H2CC'), para(f'Extiende el ejemplo con una segunda condición de negocio relacionada con {desc.lower()}. Separa la lógica repetible y crea al menos tres casos de prueba: normal, límite y dato inválido.'), para('Práctica C · Aplicación DAM/DAW', 'H2CC'), para('Integra la solución en una pequeña aplicación de consola o en un módulo de tu proyecto. Define una interfaz clara, valida las entradas en el límite adecuado y evita mezclar el acceso a datos con la lógica central.'), para('Práctica D · Revisión', 'H2CC'), para('Entrega el código a otra persona sin explicarlo oralmente. Pídele que identifique qué hace, qué puede fallar y cómo probarlo. Corrige cualquier parte que dependa de una explicación que solo tú conoces.'), para('Criterios de evaluación', 'H2CC'), *[bullet(x) for x in ['Cumple el enunciado y produce resultados verificables.', 'Maneja al menos un caso límite relevante.', 'Tiene nombres claros y estructura sencilla.', 'Incluye pruebas o pasos de reproducción.', 'Explica una decisión técnica y una limitación.']]])
+    practice_description = desc.lower().rstrip().rstrip('.')
+    pages.append([para('8. Laboratorio práctico', 'H1CC'), para('Resuelve los ejercicios sin copiar el código anterior. Guarda cada solución en un archivo separado y añade comentarios solo cuando aclaren una decisión. Si trabajas en pareja, una persona implementa y la otra revisa entradas, salidas y casos límite; después intercambiad los papeles.'), para('Práctica A · Básica', 'H2CC'), para(f'Crea un ejemplo mínimo que demuestre {title.lower()}. Incluye una entrada válida, un resultado esperado y una explicación de tres o cuatro líneas sobre cómo funciona.'), para('Práctica B · Intermedia', 'H2CC'), para(f'Extiende el ejemplo con una segunda condición de negocio relacionada con {practice_description}. Separa la lógica repetible y crea al menos tres casos de prueba: normal, límite y dato inválido.'), para('Práctica C · Aplicación DAM/DAW', 'H2CC'), para('Integra la solución en una pequeña aplicación de consola o en un módulo de tu proyecto. Define una interfaz clara, valida las entradas en el límite adecuado y evita mezclar el acceso a datos con la lógica central.'), para('Práctica D · Revisión', 'H2CC'), para('Entrega el código a otra persona sin explicarlo oralmente. Pídele que identifique qué hace, qué puede fallar y cómo probarlo. Corrige cualquier parte que dependa de una explicación que solo tú conoces.'), para('Criterios de evaluación', 'H2CC'), *[bullet(x) for x in ['Cumple el enunciado y produce resultados verificables.', 'Maneja al menos un caso límite relevante.', 'Tiene nombres claros y estructura sencilla.', 'Incluye pruebas o pasos de reproducción.', 'Explica una decisión técnica y una limitación.']]])
     pages.append([para('9. Soluciones orientativas y autoevaluación', 'H1CC'), para('No existe una única solución válida. La revisión debe comprobar el contrato, no si el código se parece exactamente al de otra persona. Para cada práctica, compara las entradas, el resultado y la estrategia de validación.'), para('Solución orientativa', 'H2CC'), para(f'Una solución aceptable para «{title}» identifica los datos relevantes, aplica la regla principal de forma explícita y produce una salida que se puede comprobar. Si el caso admite valores inválidos, los rechaza o los representa mediante un error claro. La lógica repetida se extrae solo cuando mejora la comprensión o evita inconsistencias.'), para('Rúbrica de revisión', 'H2CC'), Table([[para('Criterio','SmallCC'),para('0 · Por revisar','SmallCC'),para('1 · Adecuado','SmallCC'),para('2 · Sólido','SmallCC')],[para('Corrección','SmallCC'),para('No cumple el contrato','SmallCC'),para('Cumple el caso básico','SmallCC'),para('Incluye límites y errores','SmallCC')],[para('Claridad','SmallCC'),para('Difícil de seguir','SmallCC'),para('Legible en general','SmallCC'),para('Nombres y estructura expresivos','SmallCC')],[para('Pruebas','SmallCC'),para('Sin comprobaciones','SmallCC'),para('Un caso válido','SmallCC'),para('Normal, límite y error','SmallCC')],[para('Justificación','SmallCC'),para('Sin explicación','SmallCC'),para('Explica la idea','SmallCC'),para('Compara alternativas','SmallCC')]], colWidths=[3*cm,3.6*cm,3.7*cm,4.9*cm], style=TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eaf0ff')),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#d9dee8')),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5),('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5)])), Spacer(1,8), para('Preguntas para explicar en voz alta', 'H2CC'), *[bullet(x) for x in [f'¿Qué problema resuelve {title.lower()} y cuándo no lo utilizarías?', '¿Qué prueba añadirías primero si apareciera un fallo?', '¿Qué parte cambiarías si el requisito creciera?', '¿Qué información consultarías en la documentación oficial?']]])
     refs = [para('10. Repaso, glosario y fuentes', 'H1CC'), para('Resumen', 'H2CC'), para(f'Has estudiado {title.lower()} desde el concepto, el diseño, la implementación y las pruebas. Antes de continuar, intenta explicar el tema sin leer y reconstruye el ejemplo desde cero. Si no puedes explicar un paso, vuelve a la sección correspondiente y crea una prueba pequeña.'), para('Glosario', 'H2CC'), *[bullet(x) for x in [f'{title}: concepto central de este capítulo; consulta la sección de fundamentos.', 'Contrato: comportamiento que la solución promete cumplir.', 'Caso límite: entrada que pone a prueba una frontera o supuesto.', 'Regresión: fallo introducido al modificar algo que antes funcionaba.', 'Documentación primaria: referencia mantenida por el proyecto o equipo responsable de la tecnología.']], para('Fuentes oficiales de consulta', 'H2CC')]
     for label, url in ref:
@@ -218,7 +254,8 @@ def make_pages(item):
     return pages[1:]
 
 def build_pdf(item):
-    dest = PUB / item['file']
+    """Genera el PDF de un tema en la carpeta pública organizada de temarios."""
+    dest = PUB / 'temarios' / item['file']
     story=[]
     pages = make_pages(item)
     for idx, content in enumerate(pages):
@@ -228,13 +265,269 @@ def build_pdf(item):
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
     return dest
 
+
+# Ruta adicional mantenida separada del catálogo principal para no regenerar
+# los 75 temarios ni sobrescribir su índice al producir estos materiales.
+TS_ROUTE_SOURCES = {
+    'intro': ('Handbook: introducción', 'https://www.typescriptlang.org/docs/handbook/intro.html'),
+    'everyday': ('Handbook: tipos cotidianos', 'https://www.typescriptlang.org/docs/handbook/2/everyday-types.html'),
+    'objects': ('Handbook: tipos de objeto', 'https://www.typescriptlang.org/docs/handbook/2/objects.html'),
+    'exact_optional': ('TSConfig: exactOptionalPropertyTypes', 'https://www.typescriptlang.org/tsconfig/exactOptionalPropertyTypes.html'),
+    'strict': ('TSConfig: strict', 'https://www.typescriptlang.org/tsconfig/strict.html'),
+    'strict_null_checks': ('TSConfig: strictNullChecks', 'https://www.typescriptlang.org/tsconfig/strictNullChecks.html'),
+    'narrowing': ('Handbook: narrowing', 'https://www.typescriptlang.org/docs/handbook/2/narrowing.html'),
+    'functions': ('Handbook: funciones', 'https://www.typescriptlang.org/docs/handbook/2/functions.html'),
+    'generics': ('Handbook: genéricos', 'https://www.typescriptlang.org/docs/handbook/2/generics.html'),
+    'types_from_types': ('Handbook: creación de tipos a partir de tipos', 'https://www.typescriptlang.org/docs/handbook/2/types-from-types.html'),
+    'utility': ('Handbook: tipos de utilidad', 'https://www.typescriptlang.org/docs/handbook/utility-types.html'),
+    'classes': ('Handbook: clases', 'https://www.typescriptlang.org/docs/handbook/2/classes.html'),
+    'modules': ('Handbook: módulos', 'https://www.typescriptlang.org/docs/handbook/2/modules.html'),
+    'tsconfig': ('Referencia oficial de TSConfig', 'https://www.typescriptlang.org/tsconfig/'),
+    'migration': ('Handbook: migrar desde JavaScript', 'https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html'),
+    'jsdoc': ('Handbook: tipos JSDoc', 'https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html'),
+    'declarations': ('Handbook: archivos de declaración', 'https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html'),
+    'allow_js': ('TSConfig: allowJs', 'https://www.typescriptlang.org/tsconfig/allowJs.html'),
+    'check_js': ('TSConfig: checkJs', 'https://www.typescriptlang.org/tsconfig/checkJs.html'),
+    'react': ('React: usar TypeScript', 'https://react.dev/learn/typescript'),
+    'node_typescript': ('Node.js: TypeScript en ejecución', 'https://nodejs.org/api/typescript.html'),
+}
+
+TS_ROUTE = [
+    {
+        'title': 'Del JavaScript al verificador de TypeScript',
+        'concept': 'TypeScript analiza estáticamente programas JavaScript y permite describir sus valores con tipos. El análisis ayuda a detectar incompatibilidades antes de ejecutar; no inspecciona ni valida por sí solo los datos que llegan en tiempo de ejecución.',
+        'objective': 'Distinguir verificación estática, ejecución JavaScript y opciones del proyecto; reconocer qué cambia al activar strict.',
+        'practice': 'Toma una función JavaScript que calcule el total de una compra. Añade tipos gradualmente, configura un tsconfig mínimo con strict y registra qué defectos detecta el compilador y cuáles requieren comprobaciones en ejecución.',
+        'criterion': 'Explica un hallazgo estático y un riesgo que sigue en tiempo de ejecución.',
+        'sources': ['intro', 'tsconfig', 'strict'],
+    },
+    {
+        'title': 'Inferencia, anotaciones y tipos básicos',
+        'concept': 'El compilador puede inferir un tipo a partir del valor inicial y del contexto. Las anotaciones son útiles cuando aclaran una frontera o un contrato; no hace falta repetir automáticamente información que ya está bien inferida.',
+        'objective': 'Leer tipos inferidos y usar string, number, boolean y tipos literales donde aclaren el contrato.',
+        'practice': 'Convierte una función de descuento de JS: acepta un precio y un código promocional limitado a "ESTUDIANTE" o "GENERAL". Anota solo las fronteras necesarias y compara los errores con la versión sin tipos.',
+        'criterion': 'Predice qué llamadas son aceptadas sin recurrir a any.',
+        'sources': ['everyday'],
+    },
+    {
+        'title': 'Arrays, tuplas y colecciones de solo lectura',
+        'concept': 'Los arrays representan secuencias de elementos de un tipo; las tuplas expresan una secuencia con posiciones y tipos conocidos. Las variantes readonly limitan las operaciones de escritura disponibles desde esa referencia.',
+        'objective': 'Elegir entre array y tupla según si importa el tamaño o el significado de cada posición.',
+        'practice': 'Modela productos de inventario como pares [codigo, unidades], con codigo string y unidades number. Escribe una función que sume las unidades por código y explica por qué su entrada es una colección y cada fila una tupla.',
+        'criterion': 'Detecta una fila incompleta y evita mutar la entrada si el contrato la declara readonly.',
+        'sources': ['everyday', 'objects'],
+    },
+    {
+        'title': 'Tipos de objeto y propiedades opcionales',
+        'concept': 'Un tipo de objeto describe las propiedades que una operación puede leer. `?` permite omitir una propiedad y al leerla se debe contemplar `undefined`; `exactOptionalPropertyTypes` cambia si también se permite asignar `undefined` explícitamente. `readonly` restringe la asignación a través de esa referencia, pero no convierte todo el objeto en inmutable.',
+        'objective': 'Describir registros con propiedades requeridas, opcionales y de solo lectura.',
+        'practice': 'Define `Modulo` con identificador readonly, nombre, curso opcional y plazas. Presenta el curso ausente como "sin asignar"; compara la asignación explícita de `undefined` con `exactOptionalPropertyTypes` activado y desactivado, y revisa un objeto literal con una propiedad mal escrita.',
+        'criterion': 'Al leer `curso`, contempla `undefined` y explica qué cambia al asignarlo explícitamente.',
+        'sources': ['objects', 'exact_optional'],
+    },
+    {
+        'title': 'Uniones y narrowing del flujo de control',
+        'concept': 'Una unión expresa varios estados posibles. Comprobaciones como typeof, in y una propiedad discriminante permiten al compilador estrechar esa unión dentro de una rama; la lógica de ejecución sigue siendo necesaria.',
+        'objective': 'Representar alternativas sin campos contradictorios y estrecharlas antes de usar propiedades específicas.',
+        'practice': 'Modela el resultado de buscar un módulo con los estados encontrado, no encontrado y error. Usa `kind` y, en `default`, asigna el valor restante a una variable de tipo `never`; añade un estado y comprueba que el compilador señala esa asignación hasta que incluyas su rama.',
+        'criterion': 'Cada rama accede solo a los datos presentes en ese estado.',
+        'sources': ['narrowing', 'everyday'],
+    },
+    {
+        'title': 'Funciones, callbacks y contratos',
+        'concept': 'Los tipos de función describen parámetros y resultado. Los callbacks pueden recibir sus propios contratos; parámetros opcionales y rest deben reflejar las llamadas que el código realmente permite.',
+        'objective': 'Tipar entradas, salidas y callbacks sin usar Function ni debilitar el contrato con any.',
+        'practice': 'Escribe `filtrarModulos` con una lista y un predicado `(modulo: Modulo) => boolean`; úsalo para filtrar por curso. Después define `buscarModulos(lista, curso?: string)` para que, si se omite el curso, devuelva todos los módulos. Comprueba también el resultado con una lista vacía.',
+        'criterion': '`filtrarModulos` entrega un módulo al predicado y recibe un booleano; `buscarModulos` acepta que se omita el curso.',
+        'sources': ['functions'],
+    },
+    {
+        'title': 'type, interface y composición de contratos',
+        'concept': 'Los alias dan nombre a tipos y pueden representar uniones, primitivas u objetos. Las interfaces describen formas de objeto y pueden extender otras interfaces. La compatibilidad de objetos de TypeScript se basa normalmente en la forma requerida.',
+        'objective': 'Escoger una forma legible de compartir y ampliar contratos de datos.',
+        'practice': 'Define `Persona` y `Docente`; expresa que un docente conserva nombre e identificador y añade departamento. Crea una función que reciba `Persona` y analiza por qué también acepta un docente.',
+        'criterion': 'Justifica la composición por los campos requeridos, no por el nombre del tipo.',
+        'sources': ['objects'],
+    },
+    {
+        'title': 'null, unknown y límites de confianza',
+        'concept': 'Con strictNullChecks, null y undefined deben tratarse explícitamente. unknown admite un valor no conocido, pero exige estrecharlo antes de operar. Un tipo estático no demuestra que una respuesta JSON cumpla el esquema esperado.',
+        'objective': 'Modelar ausencia y estrechar valores externos antes de tratarlos como datos de dominio.',
+        'practice': 'Escribe `leerModulo(valor: unknown)` que acepte solo un objeto con `id` string y `nombre` string. Comprueba null, una cadena, un objeto incompleto y uno válido; devuelve un resultado explícito para cada caso.',
+        'criterion': 'La función valida en ejecución y no convierte datos con una aserción ciega.',
+        'sources': ['everyday', 'narrowing', 'strict_null_checks'],
+    },
+    {
+        'title': 'Genéricos y restricciones',
+        'concept': 'Un parámetro genérico conserva la relación entre tipos de entrada y salida. Una restricción expresa qué propiedades necesita una operación sin eliminar el tipo concreto del valor recibido.',
+        'objective': 'Crear funciones reutilizables que preserven el tipo de su entrada y limiten solo lo necesario.',
+        'practice': 'Implementa `buscarPorId<T extends { id: string }>` para una colección de módulos o profesores. Devuelve el elemento con su tipo original y representa explícitamente el caso sin coincidencia.',
+        'criterion': 'El resultado mantiene campos propios de T sin añadir aserciones.',
+        'sources': ['generics'],
+    },
+    {
+        'title': 'Tipos derivados y operadores de tipos',
+        'concept': '`keyof` obtiene claves de un tipo y el acceso indexado consulta el tipo asociado a una clave. Los tipos de utilidad Pick y Partial expresan transformaciones comunes sobre esos contratos.',
+        'objective': 'Derivar una forma de actualización sin duplicar el tipo completo del dominio.',
+        'practice': 'Construye `CambiosDeModulo` a partir de `Modulo`: solo se pueden cambiar nombre y plazas, ambos opcionales. Usa el tipo en una función de actualización y provoca un error intentando editar el id.',
+        'criterion': 'El tipo derivado acepta cambios permitidos y rechaza `id` en un objeto literal comprobado.',
+        'sources': ['types_from_types', 'utility'],
+    },
+    {
+        'title': 'Clases y compatibilidad estructural',
+        'concept': 'Las clases añaden constructores, campos y métodos; no son la única forma de describir objetos. El sistema de tipos estructural permite que valores distintos sean compatibles cuando ofrecen los miembros requeridos.',
+        'objective': 'Separar un contrato de servicio de una implementación concreta y evitar jerarquías sin una relación de sustitución clara.',
+        'practice': 'Declara un contrato `RepositorioModulo` y crea una clase que lo implemente. Pasa también un objeto literal con los mismos métodos; compara qué garantiza el contrato y qué comportamiento debe comprobarse aparte.',
+        'criterion': 'El consumidor depende del contrato y no de campos internos de la clase.',
+        'sources': ['classes', 'objects'],
+    },
+    {
+        'title': 'Módulos TypeScript en un proyecto Node',
+        'concept': 'import y export describen dependencias entre módulos. En TypeScript, module define el formato que se interpreta y emite, mientras moduleResolution guía cómo se resuelven importaciones durante el análisis. El cargador de Node ejecuta y resuelve con sus propias reglas. La ejecución nativa de .ts depende de la versión y la sintaxis; el soporte integrado de Node no admite .tsx, y su type stripping no comprueba tipos ni aplica tsconfig al runtime.',
+        'objective': 'Comparar la resolución de TypeScript con el formato de módulo, las extensiones y el comportamiento del Node objetivo.',
+        'practice': 'Separa un modelo de módulo, una función de búsqueda y el punto de entrada en archivos distintos. Sigue cada importación y compara la resolución de tsc con la de Node. Si ejecutas archivos .ts directamente, verifica qué sintaxis admite esa versión y separa esa ejecución de la comprobación de tipos con tsc.',
+        'criterion': 'Distingue una comprobación del compilador de la resolución real del cargador.',
+        'sources': ['modules', 'tsconfig', 'node_typescript'],
+    },
+    {
+        'title': 'Migración gradual de JavaScript y declaraciones',
+        'concept': 'La migración puede admitir archivos JS junto a TS mediante allowJs; JSDoc aporta información de tipos a archivos JavaScript. Los archivos .d.ts describen una API existente y no implementan su comportamiento.',
+        'objective': 'Planificar una conversión por módulos y decidir cuándo basta JSDoc o hace falta una declaración.',
+        'practice': 'Elige un helper JS sin dependencias externas. Activa `allowJs` y `checkJs`, incluye el archivo en tsconfig y añade JSDoc para sus parámetros y retorno; después conviértelo a TS conservando las llamadas. Redacta una declaración mínima para una dependencia sin tipos.',
+        'criterion': 'La migración mantiene la API y separa descripción de implementación.',
+        'sources': ['migration', 'jsdoc', 'declarations', 'allow_js', 'check_js'],
+    },
+    {
+        'title': 'React con TSX: props, children y eventos',
+        'concept': 'Los archivos que contienen JSX usan .tsx y necesitan opciones JSX válidas. TypeScript puede inferir el tipo del evento por el contexto del handler JSX; los tipos de React ofrecen ChangeEvent y ReactNode para children.',
+        'objective': 'Definir props explícitas y tratar el evento adecuado sin anotar cada expresión por costumbre.',
+        'practice': 'Crea `FiltroModulo.tsx` con props para texto, valor y callback. Compara el evento inferido en un handler inline con un handler extraído tipado como `React.ChangeEvent<HTMLInputElement>`; ofrece `children` opcionales como `React.ReactNode` y consulta la guía para `@types/react`, `@types/react-dom` y una opción `jsx` válida en tsconfig.',
+        'criterion': 'Una llamada JSX inválida se detecta y el callback expone el valor correcto.',
+        'sources': ['react'],
+    },
+    {
+        'title': 'React con estado tipado y estados de petición',
+        'concept': 'useState suele inferir su tipo inicial. Una unión discriminada puede representar estados mutuamente excluyentes de una petición; useReducer acepta un estado y acciones que pueden describirse con tipos.',
+        'objective': 'Evitar combinaciones de estado imposibles y estrechar el estado antes de mostrar datos o errores.',
+        'practice': 'Construye una pantalla de módulos con idle, loading, success y error. Tipifica estado y acciones, implementa un reducer con switch y renderiza los datos solo en success; añade una acción para volver a intentar.',
+        'criterion': 'Cada transición conserva los campos que corresponden a su estado.',
+        'sources': ['react', 'narrowing'],
+    },
+]
+
+
+def typescript_route_footer(canvas, doc):
+    """Dibuja un pie propio de la ruta sin modificar el generador principal."""
+    canvas.saveState()
+    width, _ = A4
+    canvas.setStrokeColor(colors.HexColor('#d9dee8'))
+    canvas.line(1.8 * cm, 1.35 * cm, width - 1.8 * cm, 1.35 * cm)
+    canvas.setFont(FONT, 7)
+    canvas.setFillColor(colors.HexColor('#667085'))
+    canvas.drawString(1.8 * cm, .95 * cm, 'CódigoClaro · Ruta complementaria de TypeScript · Fuentes oficiales')
+    canvas.drawRightString(width - 1.8 * cm, .95 * cm, f'Página {doc.page}')
+    canvas.restoreState()
+
+
+def build_typescript_route():
+    """Genera solo la ruta TypeScript y sus dos copias documentales."""
+    filename = 'Ruta_TypeScript_JavaScript_React_Node_15_Temas.pdf'
+    output_paths = [ROOT / 'docs' / 'temarios' / filename, PUB / 'temarios' / filename]
+    for output_path in output_paths:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        story = [
+            para('CÓDIGOCLARO · RUTA COMPLEMENTARIA', 'H2CC'),
+            para('TypeScript: de JavaScript a React y Node', 'CoverTitleCC'),
+            para('15 temas · Para quienes ya conocen JavaScript · Revisión documental: 27 de octubre de 2026', 'SubCC'),
+            para('Propósito de la ruta', 'H1CC'),
+            para('El recorrido parte de funciones y objetos JavaScript y añade, paso a paso, el sistema de tipos de TypeScript. Termina usando los contratos en módulos orientados a Node y en componentes React con TSX. La documentación oficial enlazada guía cada tema; los ejemplos y prácticas de este material están redactados para este curso.', 'BodyCC'),
+            para('Cómo trabajar', 'H2CC'),
+            para('En cada tema, predice primero qué acepta el verificador. Después resuelve la práctica y compara el resultado con el criterio de dominio. Las comprobaciones estáticas describen el programa; valida en ejecución las entradas externas y consulta la configuración del proyecto antes de aplicar opciones a Node o React.', 'BodyCC'),
+            Spacer(1, 5),
+        ]
+
+        for index, topic in enumerate(TS_ROUTE, start=1):
+            source_links = []
+            for source_key in topic['sources']:
+                label, url = TS_ROUTE_SOURCES[source_key]
+                source_links.append(f'<link href="{url}" color="#087f8c">{esc(label)}</link>')
+            topic_block = [
+                para(f"Tema {index:02d} · {topic['title']}", 'H2CC'),
+                para(topic['concept']),
+                Paragraph(f"<b>Objetivo:</b> {esc(topic['objective'])}", styles['BodyCC']),
+                Paragraph(f"<b>Práctica:</b> {esc(topic['practice'])}", styles['BodyCC']),
+                Paragraph(f"<b>Criterio de dominio:</b> {esc(topic['criterion'])}", styles['SmallCC']),
+                Paragraph('<b>Documentación:</b> ' + ' · '.join(source_links), styles['SmallCC']),
+                Spacer(1, 4),
+            ]
+            story.append(KeepTogether(topic_block))
+            if index in (4, 8, 12):
+                story.append(PageBreak())
+
+        story.append(KeepTogether([
+            para('Laboratorio integrador · catálogo de módulos', 'H2CC'),
+            para('Organiza una solución en tres piezas: un módulo compartido con el tipo `Modulo` y funciones puras; una entrada Node que importe esas funciones; y un componente React que reciba resultados mediante props y represente estados de petición con una unión discriminada. Antes de aceptar JSON como `Modulo`, valida sus campos en tiempo de ejecución. Entrega los tres módulos, un caso normal, uno vacío y uno inválido, y explica qué garantiza el verificador y qué comprobación protege la frontera de datos.'),
+            Paragraph('<b>Documentación:</b> <link href="https://www.typescriptlang.org/docs/handbook/2/modules.html" color="#087f8c">Handbook: módulos</link> · <link href="https://react.dev/learn/typescript" color="#087f8c">React: usar TypeScript</link> · <link href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html" color="#087f8c">Handbook: narrowing</link>', styles['SmallCC']),
+        ]))
+
+        doc = SimpleDocTemplate(
+            str(output_path), pagesize=A4,
+            rightMargin=1.8 * cm, leftMargin=1.8 * cm,
+            topMargin=1.35 * cm, bottomMargin=1.8 * cm,
+            title='TypeScript: de JavaScript a React y Node · 15 temas',
+            author='CódigoClaro',
+            subject='Ruta complementaria de aprendizaje de TypeScript',
+        )
+        doc.build(story, onFirstPage=typescript_route_footer, onLaterPages=typescript_route_footer)
+    # Ambas ubicaciones se publican como una misma versión del documento.
+    shutil.copyfile(output_paths[0], output_paths[1])
+    print(f'Generadas {len(TS_ROUTE)} unidades en {len(output_paths)} copias de la ruta TypeScript.')
+
+AUTO_DESCRIPTION_SUFFIX = 'Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.'
+
+
+def clean_auto_description(description):
+    """Quita únicamente las copias finales del sufijo añadido por el generador."""
+    cleaned = str(description).rstrip()
+    while cleaned.endswith(AUTO_DESCRIPTION_SUFFIX):
+        cleaned = cleaned[:-len(AUTO_DESCRIPTION_SUFFIX)].rstrip()
+    return cleaned
+
+
 def main():
-    catalog=json.loads(CATALOG.read_text(encoding='utf-8'))
+    """Regenera los 75 temas del catálogo y sincroniza sus copias documentales."""
+    catalog = json.loads(CATALOG.read_text(encoding='utf-8'))
+    docs_catalog_path = ROOT / 'docs' / 'catalogo_temas.json'
+    docs_catalog = json.loads(docs_catalog_path.read_text(encoding='utf-8'))
+
+    catalog_files = [item['file'] for item in catalog]
+    docs_catalog_files = [item['file'] for item in docs_catalog]
+    if catalog_files != docs_catalog_files:
+        raise ValueError('Los catálogos docs/public no contienen los mismos archivos y en el mismo orden.')
+
     for item in catalog:
-        build_pdf(item)
-        item['pages']=10
-        item['version']='2.0'
-        item['description']=re.sub(r'\s*Temario ampliado de 10 páginas:.*$', '', item['description']).rstrip('.') + '. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.'
-    CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
-    print(f'Generados {len(catalog)} temarios; 10 páginas por documento.')
-if __name__ == '__main__': main()
+        filename = item['file']
+        relative_path = Path(filename)
+        if relative_path.name != filename or relative_path.suffix.lower() != '.pdf':
+            raise ValueError(f'Nombre de PDF inesperado en el catálogo: {filename!r}')
+
+        # Limpia el sufijo heredado antes de componer prácticas con description.
+        item['description'] = clean_auto_description(item['description'])
+        root_pdf = build_pdf(item)
+        for mirror_pdf in (ROOT / 'docs' / 'temarios' / filename,):
+            mirror_pdf.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(root_pdf, mirror_pdf)
+        item['pages'] = 10
+        item['version'] = '2.0'
+
+    for item in docs_catalog:
+        item['description'] = clean_auto_description(item['description'])
+
+    CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    docs_catalog_path.write_text(json.dumps(docs_catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    print(f'Generados {len(catalog)} temarios; 10 páginas por documento y dos copias organizadas por tema.')
+if __name__ == '__main__':
+    if sys.argv[1:] == ['--typescript-route']:
+        build_typescript_route()
+    else:
+        main()
