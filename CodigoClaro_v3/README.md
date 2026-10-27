@@ -29,4 +29,10 @@ Accede a la plataforma desde aquí:
 - Python y ReportLab para generar los temarios PDF.
 - `node:test` para pruebas de integración y regresión.
 
+## Administración
 
+El registro público crea cuentas de estudiante. El correo configurado en `ADMIN_EMAIL` no concede privilegios; consulta [`ADMINISTRACION.md`](ADMINISTRACION.md) para promover una cuenta de forma explícita.
+
+## Base de datos
+
+El servidor aplica migraciones versionadas de SQLite al arrancar. Consulta [`DATABASE_MIGRATIONS.md`](DATABASE_MIGRATIONS.md) para el procedimiento local y las precauciones. PostgreSQL/Neon todavía no está implementado.
