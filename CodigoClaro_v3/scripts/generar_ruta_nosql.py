@@ -318,8 +318,6 @@ def build_story():
                   Spacer(1, 3 * mm), para("Fuentes fiables", "h2")]
         for source in topic["sources"]:
             story.append(source_paragraph(source))
-        if index < len(TOPICS):
-            story.append(PageBreak())
     story += [PageBreak(), para("Referencias de la ruta", "h1"),
               para("Cada tema enlaza las fuentes más cercanas a sus afirmaciones. MongoDB y Firebase mantienen esta documentación primaria para sus productos.", "body"), Spacer(1, 3 * mm)]
     for name in SOURCES:
