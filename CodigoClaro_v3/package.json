@@ -17,7 +17,8 @@
     "test:render": "node scripts/smoke-render.js",
     "start:postgres": "node server-postgres.js",
     "migrate:postgres": "node scripts/migrate-postgres.js",
-    "test:postgres": "node --test tests/postgres.integration.test.js"
+    "test:postgres": "node --test tests/postgres.integration.test.js",
+    "quizzes:build": "node scripts/generar_banco_aula.js"
   },
   "dependencies": {
     "pg": "^8.16.3"

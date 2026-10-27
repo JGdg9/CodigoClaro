@@ -16,7 +16,7 @@
 - Cuentas: `POST /api/register`, `POST /api/login`, `POST /api/logout`, `GET /api/me`.
 - Cursos: `GET /api/courses`, `GET /api/courses/:slug`, creación/edición de cursos para admin y creación de lecciones para admin.
 - Tests: `GET /api/quiz`, `POST /api/quiz/submit`.
-- Progreso: `GET /api/progress`, `PUT /api/progress` (sincroniza solo lecciones completadas; conserva posiciones, XP e intentos validados), `PUT /api/progress/lesson`.
+- Progreso: `GET /api/progress`, `PUT /api/progress` (sincroniza solo lecciones completadas; conserva posiciones, XP e intentos validados), `PUT /api/progress/lesson`. Las dos escrituras bloquean la fila del usuario en una transacción para dar un orden a cambios simultáneos del progreso.
 - Tareas: `GET/POST /api/tasks`, `PATCH/DELETE /api/tasks/:id`.
 - Estudio y estadísticas: `GET/POST /api/study/sessions`, `POST /api/study/sessions/stop`, `GET /api/stats/overview`.
 

@@ -398,13 +398,14 @@ LESSONS = [
             "WHERE curso_id = 4;",
         ],
         "reading": "El índice puede servir a filtros y uniones por curso_id. La salida de EXPLAIN muestra nodos del plan y estimaciones; que no aparezca un Index Scan no prueba por sí solo un error.",
-        "note": "PostgreSQL documenta EXPLAIN y EXPLAIN ANALYZE por separado. MySQL 8.4 ofrece EXPLAIN y EXPLAIN ANALYZE con sus propias salidas y alcance; no compares literalmente nombres de nodos entre motores.",
+        "note": "PostgreSQL documenta EXPLAIN y EXPLAIN ANALYZE por separado; las variantes ANALYZE ejecutan la sentencia. MySQL 8.4 tiene su propio alcance y salida. Oracle EXPLAIN PLAN guarda el plan estimado en una tabla y puede diferir del plan de ejecución real. No compares literalmente nombres de nodos entre motores.",
         "practice": "Busca una consulta frecuente del proyecto. Anota el filtro o unión, predice qué índice podría ayudar y luego inspecciona el plan con datos representativos.",
         "check": "Una mejora real compara el mismo caso antes y después, considera tiempo y escrituras, y confirma que el plan usa una estrategia razonable para ese volumen.",
         "sources": [
             ("Introducción a índices PostgreSQL", PG + "indexes-intro.html"),
             ("EXPLAIN PostgreSQL", PG + "using-explain.html"),
             ("EXPLAIN MySQL 8.4", MYSQL + "explain.html"),
+            ("EXPLAIN PLAN Oracle 26", ORACLE + "EXPLAIN-PLAN.html"),
         ],
     },
     {

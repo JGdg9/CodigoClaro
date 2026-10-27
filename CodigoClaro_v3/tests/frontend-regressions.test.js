@@ -65,8 +65,10 @@ test('el IDE dirige cada lenguaje al motor que realmente ofrece', () => {
   assert.match(run, /l\.id==='react'\)return ideRunReact\(\)/);
   assert.match(run, /l\.id\.startsWith\('sql-'\).*ideRunSQL\(\)/);
   assert.match(run, /l\.id==='js'\)return ideRunJS\(\)/);
-  assert.match(run, /La compilación real necesita un JDK\/runtime local/);
-  assert.doesNotMatch(run, /ideRunJudge0\(\)/);
+  assert.match(run, /l\.id==='java'\)return ideRunJudge0\(\)/);
+  assert.match(aula, /id="ideJavaRemoteConsent" type="checkbox"/);
+  assert.match(aula, /consent\.dataset\.endpoint!==base/);
+  assert.doesNotMatch(run, /La compilación real necesita un JDK\/runtime local/);
 });
 
 test('tests incluyen tipo test, verdadero/falso, mixto y retos de código con rúbrica', () => {
@@ -126,7 +128,7 @@ test('temporizador de estudio se conecta a sesiones persistentes del backend', (
 });
 
 test('cada filtro individual de tests tiene al menos cinco preguntas y el aleatorizador no usa sort aleatorio', () => {
-  const match = aula.match(/const Q=(\[.*?\]);\s*const ccMemoryStorage/s);
+  const match = aula.match(/const Q=(\[.*?\]);\s*Q\.push\(\.\.\.\(window\.CC_LOCAL_QUIZ_EXPANSION\s*\|\|\s*\[\]\)\);\s*const ccMemoryStorage/s);
   assert.ok(match, 'se debe poder localizar el banco de preguntas del aula');
   const questions = Function('return (' + match[1] + ')')();
   for (const technology of ['java','python','js','html','css','xml','sql','plsql','mongo','react','node','hibernate','kotlin','git','api','security','database']) {
