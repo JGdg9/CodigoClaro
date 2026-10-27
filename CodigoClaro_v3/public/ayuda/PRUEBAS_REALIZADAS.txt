@@ -1,0 +1,13 @@
+INVENTARIO Y CALIDAD DE PDF
+- Los 75 temarios principales tienen 10 páginas cada uno. Los 90 PDF entregados (75 temarios, seis rutas y nueve documentos anteriores) están en docs/temarios y public/temarios; las dos carpetas contienen el mismo inventario y los 90 pares coinciden byte a byte.
+- Las seis rutas complementarias incluyen TypeScript, SQL, NoSQL, Backend/APIs, POO y gestión de bases de datos. Los enlaces de la página pública apuntan a los recursos organizados.
+- Kotlin Tema 02 aclara que val impide reasignar la referencia, pero no hace inmutable el objeto. React 10, 11, 13 y 14 y Python 01 y 11 incluyen ajustes editoriales y enlaces de referencia.
+- Las antiguas URL de los 89 PDF y de las siete guías se sirven mediante redirecciones internas a public/temarios y public/ayuda. Las copias planas antiguas se retiraron de public/ después de verificar sus destinos.
+- Se hizo revisión visual de páginas representativas durante la revisión editorial. No se renderizaron visualmente todos los PDF individualmente.
+
+VERIFICACIÓN Y ALCANCE
+- `npm test`: 69 pruebas contabilizadas; 64 pasaron, 0 fallaron y 5 pruebas de integración PostgreSQL quedaron omitidas porque no se configuró TEST_DATABASE_URL, RUN_POSTGRES_INTEGRATION ni una base PostgreSQL de pruebas.
+- `python verificar_entrega.py`: superado. Verificó los 75 temas, sus 10 páginas, los 90 PDF públicos y recursos, enlaces y sintaxis de las páginas.
+- `node --check` pasó para servidores, migraciones y módulos JavaScript. `python -m py_compile` pasó para los seis generadores Python. `git diff --check` no detectó espacios incorrectos en archivos de texto; Git mostró avisos de normalización LF/CRLF.
+- No se conectó a Neon ni a otra base PostgreSQL real, ni se configuró Render. La variante PostgreSQL continúa siendo experimental y sin paridad completa con SQLite.
+- No se encontró `a.md` en el repositorio ni en Documents/Codex. Para la revisión visual de la interfaz se usaron `GUIA_TEMARIOS.md` y `public/guia-temarios.html`; no estuvo disponible una vista previa del navegador local. Tampoco se validaron los motores externos/CDN del IDE.

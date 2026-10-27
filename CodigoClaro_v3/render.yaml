@@ -5,7 +5,7 @@ services:
     name: codigoclaro
     runtime: node
     plan: starter
-    rootDir: CodigoClaro_v1.2.1/CodigoClaro_Piloto_Actualizado
+    rootDir: CodigoClaro_v3
     buildCommand: node --check server.js
     startCommand: npm start
     healthCheckPath: /api/health

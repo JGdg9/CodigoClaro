@@ -4,674 +4,749 @@
     "num": 1,
     "title": "Instalación y primer programa",
     "file": "Java_Tema_01.pdf",
-    "description": "JDK, JRE, JVM, compilación y ejecución. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "JDK, JRE, JVM, compilación y ejecución.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_01.pdf"
   },
   {
     "track": "Java",
     "num": 2,
     "title": "Variables y tipos",
     "file": "Java_Tema_02.pdf",
-    "description": "Tipos primitivos, referencias, constantes y conversión de tipos. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Tipos primitivos, referencias, constantes y conversión de tipos.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_02.pdf"
   },
   {
     "track": "Java",
     "num": 3,
     "title": "Operadores y expresiones",
     "file": "Java_Tema_03.pdf",
-    "description": "Aritméticos, relacionales, lógicos, precedencia y cortocircuito. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Aritméticos, relacionales, lógicos, precedencia y cortocircuito.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_03.pdf"
   },
   {
     "track": "Java",
     "num": 4,
     "title": "Condicionales",
     "file": "Java_Tema_04.pdf",
-    "description": "if/else, switch y expresiones switch. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "if/else, switch y expresiones switch.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_04.pdf"
   },
   {
     "track": "Java",
     "num": 5,
     "title": "Bucles",
     "file": "Java_Tema_05.pdf",
-    "description": "for, while, do-while, break y continue. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "for, while, do-while, break y continue.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_05.pdf"
   },
   {
     "track": "Java",
     "num": 6,
     "title": "Arrays",
     "file": "Java_Tema_06.pdf",
-    "description": "Declaración, índices, recorrido y Arrays utilidades. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Declaración, índices, recorrido y Arrays utilidades.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_06.pdf"
   },
   {
     "track": "Java",
     "num": 7,
     "title": "Métodos",
     "file": "Java_Tema_07.pdf",
-    "description": "Parámetros, retorno, ámbito y sobrecarga. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Parámetros, retorno, ámbito y sobrecarga.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_07.pdf"
   },
   {
     "track": "Java",
     "num": 8,
     "title": "Clases y objetos",
     "file": "Java_Tema_08.pdf",
-    "description": "Estado, comportamiento, instancias y encapsulación. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Estado, comportamiento, instancias y encapsulación.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_08.pdf"
   },
   {
     "track": "Java",
     "num": 9,
     "title": "Constructores y this",
     "file": "Java_Tema_09.pdf",
-    "description": "Inicialización, constructores sobrecargados y encadenamiento. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Inicialización, constructores sobrecargados y encadenamiento.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_09.pdf"
   },
   {
     "track": "Java",
     "num": 10,
     "title": "Herencia y polimorfismo",
     "file": "Java_Tema_10.pdf",
-    "description": "extends, super, sobrescritura y despacho dinámico. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "extends, super, sobrescritura y despacho dinámico.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_10.pdf"
   },
   {
     "track": "Java",
     "num": 11,
     "title": "Interfaces y abstractas",
     "file": "Java_Tema_11.pdf",
-    "description": "Contratos, clases abstractas, default methods y composición. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Contratos, clases abstractas, default methods y composición.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_11.pdf"
   },
   {
     "track": "Java",
     "num": 12,
     "title": "Excepciones",
     "file": "Java_Tema_12.pdf",
-    "description": "try/catch/finally, throw, throws y excepciones propias. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "try/catch/finally, throw, throws y excepciones propias.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_12.pdf"
   },
   {
     "track": "Java",
     "num": 13,
     "title": "Colecciones",
     "file": "Java_Tema_13.pdf",
-    "description": "List, Set, Map, ArrayList, HashSet y HashMap. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "List, Set, Map, ArrayList, HashSet y HashMap.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_13.pdf"
   },
   {
     "track": "Java",
     "num": 14,
     "title": "Genéricos y lambdas",
     "file": "Java_Tema_14.pdf",
-    "description": "Tipos parametrizados, Comparator, streams y expresiones lambda. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Tipos parametrizados, Comparator, streams y expresiones lambda.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_14.pdf"
   },
   {
     "track": "Java",
     "num": 15,
     "title": "Ficheros y pruebas",
     "file": "Java_Tema_15.pdf",
-    "description": "Path, Files, try-with-resources y pruebas unitarias. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Path, Files, try-with-resources y pruebas unitarias.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Java_Tema_15.pdf"
   },
   {
     "track": "JavaScript",
     "num": 1,
     "title": "Sintaxis y consola",
     "file": "JavaScript_Tema_01.pdf",
-    "description": "let, const, tipos dinámicos, console y strict mode. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "let, const, tipos dinámicos, console y strict mode.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_01.pdf"
   },
   {
     "track": "JavaScript",
     "num": 2,
     "title": "Tipos y coerción",
     "file": "JavaScript_Tema_02.pdf",
-    "description": "Primitivos, typeof, conversión explícita, NaN y null. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Primitivos, typeof, conversión explícita, NaN y null.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_02.pdf"
   },
   {
     "track": "JavaScript",
     "num": 3,
     "title": "Operadores y condiciones",
     "file": "JavaScript_Tema_03.pdf",
-    "description": "===, &&, ||, ??, ternario y truthiness. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "===, &&, ||, ??, ternario y truthiness.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_03.pdf"
   },
   {
     "track": "JavaScript",
     "num": 4,
     "title": "Bucles e iteración",
     "file": "JavaScript_Tema_04.pdf",
-    "description": "for, while, for...of, for...in y métodos de arrays. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "for, while, for...of, for...in y métodos de arrays.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_04.pdf"
   },
   {
     "track": "JavaScript",
     "num": 5,
     "title": "Funciones",
     "file": "JavaScript_Tema_05.pdf",
-    "description": "Declaración, expresión, arrow functions, parámetros y closures. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Declaración, expresión, arrow functions, parámetros y closures.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_05.pdf"
   },
   {
     "track": "JavaScript",
     "num": 6,
     "title": "Arrays y objetos",
     "file": "JavaScript_Tema_06.pdf",
-    "description": "Map, filter, find, reduce, spread y destructuring. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Map, filter, find, reduce, spread y destructuring.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_06.pdf"
   },
   {
     "track": "JavaScript",
     "num": 7,
     "title": "DOM y eventos",
     "file": "JavaScript_Tema_07.pdf",
-    "description": "querySelector, textContent, classList y addEventListener. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "querySelector, textContent, classList y addEventListener.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_07.pdf"
   },
   {
     "track": "JavaScript",
     "num": 8,
     "title": "Módulos",
     "file": "JavaScript_Tema_08.pdf",
-    "description": "export, import, módulos ESM y organización. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "export, import, módulos ESM y organización.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_08.pdf"
   },
   {
     "track": "JavaScript",
     "num": 9,
     "title": "Promesas y async/await",
     "file": "JavaScript_Tema_09.pdf",
-    "description": "Promise, then/catch, async, await y errores. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Promise, then/catch, async, await y errores.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_09.pdf"
   },
   {
     "track": "JavaScript",
     "num": 10,
     "title": "JSON y APIs",
     "file": "JavaScript_Tema_10.pdf",
-    "description": "JSON.parse/stringify, fetch, códigos HTTP y cabeceras. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "JSON.parse/stringify, fetch, códigos HTTP y cabeceras.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_10.pdf"
   },
   {
     "track": "JavaScript",
     "num": 11,
     "title": "Clases y POO",
     "file": "JavaScript_Tema_11.pdf",
-    "description": "class, constructor, métodos, herencia y composición. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "class, constructor, métodos, herencia y composición.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_11.pdf"
   },
   {
     "track": "JavaScript",
     "num": 12,
     "title": "Errores y depuración",
     "file": "JavaScript_Tema_12.pdf",
-    "description": "Error, throw, stack trace, breakpoints y console.table. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Error, throw, stack trace, breakpoints y console.table.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_12.pdf"
   },
   {
     "track": "JavaScript",
     "num": 13,
     "title": "Node.js y backend",
     "file": "JavaScript_Tema_13.pdf",
-    "description": "process, módulos, variables de entorno y servidor HTTP. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "process, módulos, variables de entorno y servidor HTTP.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_13.pdf"
   },
   {
     "track": "JavaScript",
     "num": 14,
     "title": "Pruebas y calidad",
     "file": "JavaScript_Tema_14.pdf",
-    "description": "Pruebas unitarias, casos límite, lint y funciones puras. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Pruebas unitarias, casos límite, lint y funciones puras.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_14.pdf"
   },
   {
     "track": "JavaScript",
     "num": 15,
     "title": "Seguridad web",
     "file": "JavaScript_Tema_15.pdf",
-    "description": "XSS, sanitización, CORS, cookies y validación. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "XSS, sanitización, CORS, cookies y validación.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/JavaScript_Tema_15.pdf"
   },
   {
     "track": "Python",
     "num": 1,
     "title": "Instalación y primer programa",
     "file": "Python_Tema_01.pdf",
-    "description": "Intérprete, scripts, REPL, pip y entornos virtuales. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Intérprete, scripts, REPL, pip y entornos virtuales.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_01.pdf"
   },
   {
     "track": "Python",
     "num": 2,
     "title": "Variables y tipos",
     "file": "Python_Tema_02.pdf",
-    "description": "int, float, str, bool, None y tipado dinámico. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "int, float, str, bool, None y tipado dinámico.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_02.pdf"
   },
   {
     "track": "Python",
     "num": 3,
     "title": "Operadores y condiciones",
     "file": "Python_Tema_03.pdf",
-    "description": "Comparaciones, and/or/not, pertenencia e identidad. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Comparaciones, and/or/not, pertenencia e identidad.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_03.pdf"
   },
   {
     "track": "Python",
     "num": 4,
     "title": "Bucles",
     "file": "Python_Tema_04.pdf",
-    "description": "for, while, range, break, continue y enumerate. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "for, while, range, break, continue y enumerate.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_04.pdf"
   },
   {
     "track": "Python",
     "num": 5,
     "title": "Listas y tuplas",
     "file": "Python_Tema_05.pdf",
-    "description": "Índices, slices, mutabilidad y desempaquetado. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Índices, slices, mutabilidad y desempaquetado.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_05.pdf"
   },
   {
     "track": "Python",
     "num": 6,
     "title": "Diccionarios y conjuntos",
     "file": "Python_Tema_06.pdf",
-    "description": "dict, set, get, items y operaciones de conjuntos. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "dict, set, get, items y operaciones de conjuntos.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_06.pdf"
   },
   {
     "track": "Python",
     "num": 7,
     "title": "Funciones",
     "file": "Python_Tema_07.pdf",
-    "description": "def, return, parámetros por defecto, *args y **kwargs. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "def, return, parámetros por defecto, *args y **kwargs.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_07.pdf"
   },
   {
     "track": "Python",
     "num": 8,
     "title": "Comprensiones y generadores",
     "file": "Python_Tema_08.pdf",
-    "description": "Comprensiones, yield, iteradores y evaluación perezosa. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Comprensiones, yield, iteradores y evaluación perezosa.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_08.pdf"
   },
   {
     "track": "Python",
     "num": 9,
     "title": "Módulos y paquetes",
     "file": "Python_Tema_09.pdf",
-    "description": "import, __name__, paquetes y organización. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "import, __name__, paquetes y organización.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_09.pdf"
   },
   {
     "track": "Python",
     "num": 10,
     "title": "Excepciones",
     "file": "Python_Tema_10.pdf",
-    "description": "try, except, else, finally y excepciones propias. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "try, except, else, finally y excepciones propias.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_10.pdf"
   },
   {
     "track": "Python",
     "num": 11,
     "title": "Ficheros y JSON",
     "file": "Python_Tema_11.pdf",
-    "description": "with, pathlib, encoding UTF-8, json y CSV. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "with, pathlib, encoding UTF-8, json y CSV.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_11.pdf"
   },
   {
     "track": "Python",
     "num": 12,
     "title": "POO y dataclasses",
     "file": "Python_Tema_12.pdf",
-    "description": "Clases, self, propiedades, herencia y composición. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Clases, self, propiedades, herencia y composición.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_12.pdf"
   },
   {
     "track": "Python",
     "num": 13,
     "title": "Librerías y entornos",
     "file": "Python_Tema_13.pdf",
-    "description": "pip, venv, requirements y aislamiento de dependencias. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "pip, venv, requirements y aislamiento de dependencias.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_13.pdf"
   },
   {
     "track": "Python",
     "num": 14,
     "title": "Pruebas y depuración",
     "file": "Python_Tema_14.pdf",
-    "description": "assert, unittest/pytest, logging y debugger. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "assert, unittest/pytest, logging y debugger.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_14.pdf"
   },
   {
     "track": "Python",
     "num": 15,
     "title": "APIs y seguridad",
     "file": "Python_Tema_15.pdf",
-    "description": "requests, HTTP, validación, secretos y manejo de errores. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "requests, HTTP, validación, secretos y manejo de errores.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Python_Tema_15.pdf"
   },
   {
     "track": "Kotlin",
     "num": 1,
     "title": "Primer programa Kotlin",
     "file": "Kotlin_Tema_01.pdf",
-    "description": "Kotlin/JVM, main, compilación y sintaxis concisa. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Kotlin/JVM, main, compilación y sintaxis concisa.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_01.pdf"
   },
   {
     "track": "Kotlin",
     "num": 2,
     "title": "val, var y tipos",
     "file": "Kotlin_Tema_02.pdf",
-    "description": "Inferencia, tipos numéricos, String y conversión. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Inferencia, tipos numéricos, String y conversión.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_02.pdf"
   },
   {
     "track": "Kotlin",
     "num": 3,
     "title": "Null safety",
     "file": "Kotlin_Tema_03.pdf",
-    "description": "Tipos nullable, ?, ?:, !! y safe calls. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Tipos nullable, ?, ?:, !! y safe calls.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_03.pdf"
   },
   {
     "track": "Kotlin",
     "num": 4,
     "title": "Condiciones y when",
     "file": "Kotlin_Tema_04.pdf",
-    "description": "if como expresión, when, rangos y smart casts. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "if como expresión, when, rangos y smart casts.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_04.pdf"
   },
   {
     "track": "Kotlin",
     "num": 5,
     "title": "Bucles y rangos",
     "file": "Kotlin_Tema_05.pdf",
-    "description": "for, while, until, downTo, step y repeat. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "for, while, until, downTo, step y repeat.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_05.pdf"
   },
   {
     "track": "Kotlin",
     "num": 6,
     "title": "Funciones",
     "file": "Kotlin_Tema_06.pdf",
-    "description": "fun, parámetros nombrados, defaults y expresiones. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "fun, parámetros nombrados, defaults y expresiones.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_06.pdf"
   },
   {
     "track": "Kotlin",
     "num": 7,
     "title": "Colecciones",
     "file": "Kotlin_Tema_07.pdf",
-    "description": "List, MutableList, Set, Map y operaciones. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "List, MutableList, Set, Map y operaciones.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_07.pdf"
   },
   {
     "track": "Kotlin",
     "num": 8,
     "title": "Clases y data class",
     "file": "Kotlin_Tema_08.pdf",
-    "description": "Constructores, propiedades, init, data class y copy. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Constructores, propiedades, init, data class y copy.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_08.pdf"
   },
   {
     "track": "Kotlin",
     "num": 9,
     "title": "Herencia e interfaces",
     "file": "Kotlin_Tema_09.pdf",
-    "description": "open, override, abstract, interface y sealed class. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "open, override, abstract, interface y sealed class.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_09.pdf"
   },
   {
     "track": "Kotlin",
     "num": 10,
     "title": "Lambdas y funciones de orden superior",
     "file": "Kotlin_Tema_10.pdf",
-    "description": "it, map, filter, let, apply y run. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "it, map, filter, let, apply y run.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_10.pdf"
   },
   {
     "track": "Kotlin",
     "num": 11,
     "title": "Excepciones",
     "file": "Kotlin_Tema_11.pdf",
-    "description": "try como expresión, throw, require y check. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "try como expresión, throw, require y check.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_11.pdf"
   },
   {
     "track": "Kotlin",
     "num": 12,
     "title": "Genéricos",
     "file": "Kotlin_Tema_12.pdf",
-    "description": "Tipos parametrizados, variance y restricciones. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Tipos parametrizados, variance y restricciones.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_12.pdf"
   },
   {
     "track": "Kotlin",
     "num": 13,
     "title": "Coroutines",
     "file": "Kotlin_Tema_13.pdf",
-    "description": "suspend, launch, async, scopes y cancelación. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "suspend, launch, async, scopes y cancelación.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_13.pdf"
   },
   {
     "track": "Kotlin",
     "num": 14,
     "title": "Ficheros y serialización",
     "file": "Kotlin_Tema_14.pdf",
-    "description": "java.nio.file, streams y manejo de recursos. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "java.nio.file, streams y manejo de recursos.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_14.pdf"
   },
   {
     "track": "Kotlin",
     "num": 15,
     "title": "Pruebas y arquitectura",
     "file": "Kotlin_Tema_15.pdf",
-    "description": "JUnit, pruebas unitarias, capas y separación de responsabilidades. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "JUnit, pruebas unitarias, capas y separación de responsabilidades.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/Kotlin_Tema_15.pdf"
   },
   {
     "track": "React",
     "num": 1,
     "title": "Componentes y JSX",
     "file": "React_Tema_01.pdf",
-    "description": "Componentes función, JSX y renderizado. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Componentes función, JSX y renderizado.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_01.pdf"
   },
   {
     "track": "React",
     "num": 2,
     "title": "Props",
     "file": "React_Tema_02.pdf",
-    "description": "Datos de entrada, destructuring y composición. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Datos de entrada, destructuring y composición.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_02.pdf"
   },
   {
     "track": "React",
     "num": 3,
     "title": "Estado con useState",
     "file": "React_Tema_03.pdf",
-    "description": "Estado local y actualizaciones funcionales. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Estado local y actualizaciones funcionales.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_03.pdf"
   },
   {
     "track": "React",
     "num": 4,
     "title": "Eventos y formularios",
     "file": "React_Tema_04.pdf",
-    "description": "Handlers, controlled inputs y submit. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Handlers, controlled inputs y submit.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_04.pdf"
   },
   {
     "track": "React",
     "num": 5,
     "title": "Renderizado condicional",
     "file": "React_Tema_05.pdf",
-    "description": "&&, ternarios, estados de carga y error. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "&&, ternarios, estados de carga y error.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_05.pdf"
   },
   {
     "track": "React",
     "num": 6,
     "title": "Listas y keys",
     "file": "React_Tema_06.pdf",
-    "description": "map, keys estables y renderizado de colecciones. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "map, keys estables y renderizado de colecciones.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_06.pdf"
   },
   {
     "track": "React",
     "num": 7,
     "title": "useEffect",
     "file": "React_Tema_07.pdf",
-    "description": "Efectos, dependencias y limpieza. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Efectos, dependencias y limpieza.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_07.pdf"
   },
   {
     "track": "React",
     "num": 8,
     "title": "Hooks personalizados",
     "file": "React_Tema_08.pdf",
-    "description": "Reutilizar lógica con useX y reglas de hooks. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Reutilizar lógica con useX y reglas de hooks.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_08.pdf"
   },
   {
     "track": "React",
     "num": 9,
     "title": "Context",
     "file": "React_Tema_09.pdf",
-    "description": "Context API, Provider y consumo. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Context API, Provider y consumo.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_09.pdf"
   },
   {
     "track": "React",
     "num": 10,
     "title": "React Router",
     "file": "React_Tema_10.pdf",
-    "description": "Rutas, navegación, parámetros y páginas 404. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Rutas, navegación, parámetros y páginas 404.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_10.pdf"
   },
   {
     "track": "React",
     "num": 11,
     "title": "Peticiones a APIs",
     "file": "React_Tema_11.pdf",
-    "description": "fetch, estados de carga, errores y cancelación. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "fetch, estados de carga, errores y cancelación.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_11.pdf"
   },
   {
     "track": "React",
     "num": 12,
     "title": "Validación de formularios",
     "file": "React_Tema_12.pdf",
-    "description": "Validación, mensajes accesibles y envío. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Validación, mensajes accesibles y envío.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_12.pdf"
   },
   {
     "track": "React",
     "num": 13,
     "title": "Rendimiento",
     "file": "React_Tema_13.pdf",
-    "description": "memo, useMemo, useCallback y medición. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "memo, useMemo, useCallback y medición.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_13.pdf"
   },
   {
     "track": "React",
     "num": 14,
     "title": "Pruebas de componentes",
     "file": "React_Tema_14.pdf",
-    "description": "Testing Library, interacción y accesibilidad. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "Testing Library, interacción y accesibilidad.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_14.pdf"
   },
   {
     "track": "React",
     "num": 15,
     "title": "Seguridad y despliegue",
     "file": "React_Tema_15.pdf",
-    "description": "XSS, secretos, variables de entorno y build. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas. Temario ampliado de 10 páginas: fundamentos, ejemplos, depuración, pruebas y prácticas.",
+    "description": "XSS, secretos, variables de entorno y build.",
     "pages": 10,
-    "version": "2.0"
+    "version": "2.0",
+    "url": "temarios/React_Tema_15.pdf"
   }
 ]
