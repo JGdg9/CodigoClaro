@@ -68,10 +68,17 @@ function runMigrations(db, migrations = loadMigrations()) {
     if (applied.has(migration.id)) continue;
     db.exec('BEGIN IMMEDIATE');
     try {
+      // Otro proceso puede haber aplicado esta migración mientras este esperaba el bloqueo de escritura.
+      if (db.prepare('SELECT 1 FROM schema_migrations WHERE id=?').get(migration.id)) {
+        db.exec('COMMIT');
+        applied.add(migration.id);
+        continue;
+      }
       migration.up(db);
       db.prepare('INSERT INTO schema_migrations(id) VALUES(?)').run(migration.id);
       db.exec('COMMIT');
       newlyApplied.push(migration.id);
+      applied.add(migration.id);
     } catch (error) {
       try { db.exec('ROLLBACK'); } catch {}
       throw error;

@@ -1,30 +1,251 @@
 <!doctype html>
 <!-- Página: Catálogo de temarios PDF con búsqueda y filtro por tecnología. -->
-<!-- CódigoClaro: página public/temarios.html. Las secciones HTML estructuran la interfaz; los estilos y scripts locales mantienen el funcionamiento sin dependencias remotas obligatorias. -->
+<!-- El catálogo se genera con datos incrustados y JavaScript local, sin una petición de red para cargar sus temas. -->
 <html lang="es"><!-- Metadatos, título y estilos de la página. -->
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CódigoClaro · Rutas PDF DAM</title><style>
-/* Tokens visuales y estados accesibles de la biblioteca. */
-:root{color-scheme:light;--canvas:#faf9f6;--surface:#fff;--linen:#f1eee9;--hairline:#dedbd6;--ink:#111;--secondary:#414141;--graphite:#585858;--violet:#0007cb}
-*{box-sizing:border-box}
-body{font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;max-width:1180px;margin:auto;padding:24px;background:var(--canvas);color:var(--ink)}
-h1,h2{line-height:1.2;letter-spacing:-.025em;font-weight:500}
-h1{font-size:clamp(2rem,5vw,2.7rem);margin:.45em 0}
-h2{font-size:1.55rem;margin-top:2.5rem}
-.bar{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}
-.bar label{display:grid;gap:6px;font:500 .76rem/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.07em;text-transform:uppercase}
-.bar input,.bar select{font:400 1rem/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;padding:11px 12px;border:1px solid #8f8981;border-radius:4px;min-width:220px;background:var(--surface);color:var(--ink)}
-.bar input::placeholder{color:var(--graphite);opacity:1}
-.bar input:focus-visible,.bar select:focus-visible,a:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.card{background:var(--surface);border:1px solid var(--hairline);border-radius:4px;padding:18px}
-.card h3{font-size:1.15rem;line-height:1.3;font-weight:500;margin:.55em 0}
-.card p{color:var(--secondary);margin:.4em 0 1em}
-.chip{font:500 .75rem/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.07em;color:var(--violet)}
-.btn{display:inline-block;background:var(--ink);border:1px solid var(--ink);color:var(--surface);padding:9px 12px;border-radius:4px;text-decoration:none;font-weight:500}
-.btn:hover{background:#333}
-.muted{color:var(--secondary)}
-.notice{padding:14px;background:var(--linen);border:1px solid var(--hairline);border-left:3px solid var(--violet);border-radius:4px;margin:15px 0;color:var(--ink)}
-@media(max-width:560px){body{padding:16px}.bar{display:grid}.bar label,.bar input,.bar select{width:100%;min-width:0}}
+:root {
+  color-scheme: light;
+  --canvas: #fff;
+  --surface: #fff;
+  --linen: #f8fafc;
+  --hairline: #d9dee8;
+  --ink: #182230;
+  --secondary: #344054;
+  --muted: #5d6878;
+  --violet: #4f46e5;
+  --teal: #087f8c;
+}
+* { box-sizing: border-box; }
+body {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px 64px;
+  background: var(--canvas);
+  color: var(--ink);
+  font: 16px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+a { color: var(--teal); }
+.skip-link { position: absolute; z-index: 10; left: 16px; top: -100px; padding: 9px 12px; border-radius: 5px; background: var(--ink); color: #fff; font-weight: 600; }
+.skip-link:focus { top: 12px; }
+a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid var(--violet);
+  outline-offset: 3px;
+}
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand strong, .brand small { display: block; }
+.brand strong { font-weight: 650; }
+.brand small { color: var(--muted); font-size: .78rem; }
+.logo {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--violet);
+  color: #fff;
+  font-weight: 750;
+}
+.back { color: var(--violet); font-weight: 650; text-decoration: none; }
+.back:hover { text-decoration: underline; }
+.hero { max-width: 820px; padding: 42px 0 22px; }
+.eyebrow {
+  margin: 0 0 9px;
+  color: var(--teal);
+  font: 650 .73rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+h1, h2 { line-height: 1.2; letter-spacing: -.025em; font-weight: 550; }
+h1 { margin: .15em 0 .3em; font-size: clamp(2rem, 5vw, 3.1rem); }
+h2 { margin: 0; font-size: 1.55rem; }
+.lead { max-width: 68ch; margin: 0; color: var(--secondary); font-size: 1.08rem; }
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.stats li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--surface);
+}
+.stats strong { color: var(--ink); }
+.stats span { color: var(--muted); font-size: .88rem; }
+.library { margin-top: 18px; }
+.section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 15px;
+}
+.section-head .eyebrow { margin-bottom: 5px; }
+.section-head > p { max-width: 40ch; margin: 0; color: var(--muted); }
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0 14px;
+  padding: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--linen);
+}
+.bar label {
+  display: grid;
+  flex: 1 1 260px;
+  gap: 6px;
+  color: var(--ink);
+  font: 600 .76rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.bar input, .bar select {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid #aeb7c5;
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 400 1rem/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.bar input::placeholder { color: var(--muted); opacity: 1; }
+.notice {
+  min-height: 52px;
+  margin: 14px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--violet);
+  border-radius: 5px;
+  background: var(--linen);
+  color: var(--ink);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 14px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface);
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: #a9a5ee;
+  box-shadow: 0 8px 22px #1f29370d;
+}
+.card h3 { margin: .5em 0 .2em; font-size: 1.12rem; line-height: 1.35; font-weight: 600; }
+.card p { flex: 1; margin: .35em 0 1em; color: var(--secondary); }
+.chip {
+  color: #3730a3;
+  font: 600 .75rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .04em;
+}
+.btn {
+  display: inline-block;
+  padding: 9px 12px;
+  border: 1px solid var(--ink);
+  border-radius: 5px;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+.btn:hover { background: #303b4a; color: #fff; }
+.muted { color: var(--muted); }
+.extras { margin-top: 46px; padding-top: 28px; border-top: 1px solid var(--hairline); }
+@media (max-width: 620px) {
+  body { padding: 0 16px 48px; }
+  .masthead { align-items: flex-start; flex-wrap: wrap; }
+  .back { margin-left: auto; padding-top: 0; font-size: .9rem; }
+  .hero { padding: 32px 0 18px; }
+  .section-head { display: grid; align-items: start; gap: 6px; }
+  .bar { display: grid; padding: 13px; }
+  .bar label { min-width: 0; }
+  .stats li { padding: 6px 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card:hover { transform: none; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
 </style></head><!-- Contenido visible de la página. -->
-<body><p><a href="index.html">← Volver a CódigoClaro</a></p><h1>Biblioteca DAM · 15 temas por tecnología</h1><p class="muted">75 PDFs individuales para Java, JavaScript, Python, Kotlin y React. Cada tema contiene objetivos, conceptos, código, práctica, solución orientativa y checklist.</p><div class="bar"><label for="q">Buscar por tema o concepto<input id="q" type="search" placeholder="Ej.: bucles, APIs, clases…" aria-controls="grid"></label><label for="track">Tecnología<select id="track" aria-controls="grid"><option value="">Todas las tecnologías</option></select></label></div><p class="notice" id="count" role="status" aria-live="polite" aria-atomic="true"></p><div class="grid" id="grid"></div><h2>Rutas complementarias (15 temas cada una)</h2><div class="grid" id="extra"></div><script>
-// Lógica de la página: interacción de la interfaz y comunicación con las funciones del proyecto.const topics=[{"track": "Java", "num": 1, "title": "Instalación y primer programa", "file": "Java_Tema_01.pdf", "description": "JDK, JRE, JVM, compilación y ejecución."}, {"track": "Java", "num": 2, "title": "Variables y tipos", "file": "Java_Tema_02.pdf", "description": "Tipos primitivos, referencias, constantes y conversión de tipos."}, {"track": "Java", "num": 3, "title": "Operadores y expresiones", "file": "Java_Tema_03.pdf", "description": "Aritméticos, relacionales, lógicos, precedencia y cortocircuito."}, {"track": "Java", "num": 4, "title": "Condicionales", "file": "Java_Tema_04.pdf", "description": "if/else, switch y expresiones switch."}, {"track": "Java", "num": 5, "title": "Bucles", "file": "Java_Tema_05.pdf", "description": "for, while, do-while, break y continue."}, {"track": "Java", "num": 6, "title": "Arrays", "file": "Java_Tema_06.pdf", "description": "Declaración, índices, recorrido y Arrays utilidades."}, {"track": "Java", "num": 7, "title": "Métodos", "file": "Java_Tema_07.pdf", "description": "Parámetros, retorno, ámbito y sobrecarga."}, {"track": "Java", "num": 8, "title": "Clases y objetos", "file": "Java_Tema_08.pdf", "description": "Estado, comportamiento, instancias y encapsulación."}, {"track": "Java", "num": 9, "title": "Constructores y this", "file": "Java_Tema_09.pdf", "description": "Inicialización, constructores sobrecargados y encadenamiento."}, {"track": "Java", "num": 10, "title": "Herencia y polimorfismo", "file": "Java_Tema_10.pdf", "description": "extends, super, sobrescritura y despacho dinámico."}, {"track": "Java", "num": 11, "title": "Interfaces y abstractas", "file": "Java_Tema_11.pdf", "description": "Contratos, clases abstractas, default methods y composición."}, {"track": "Java", "num": 12, "title": "Excepciones", "file": "Java_Tema_12.pdf", "description": "try/catch/finally, throw, throws y excepciones propias."}, {"track": "Java", "num": 13, "title": "Colecciones", "file": "Java_Tema_13.pdf", "description": "List, Set, Map, ArrayList, HashSet y HashMap."}, {"track": "Java", "num": 14, "title": "Genéricos y lambdas", "file": "Java_Tema_14.pdf", "description": "Tipos parametrizados, Comparator, streams y expresiones lambda."}, {"track": "Java", "num": 15, "title": "Ficheros y pruebas", "file": "Java_Tema_15.pdf", "description": "Path, Files, try-with-resources y pruebas unitarias."}, {"track": "JavaScript", "num": 1, "title": "Sintaxis y consola", "file": "JavaScript_Tema_01.pdf", "description": "let, const, tipos dinámicos, console y strict mode."}, {"track": "JavaScript", "num": 2, "title": "Tipos y coerción", "file": "JavaScript_Tema_02.pdf", "description": "Primitivos, typeof, conversión explícita, NaN y null."}, {"track": "JavaScript", "num": 3, "title": "Operadores y condiciones", "file": "JavaScript_Tema_03.pdf", "description": "===, &&, ||, ??, ternario y truthiness."}, {"track": "JavaScript", "num": 4, "title": "Bucles e iteración", "file": "JavaScript_Tema_04.pdf", "description": "for, while, for...of, for...in y métodos de arrays."}, {"track": "JavaScript", "num": 5, "title": "Funciones", "file": "JavaScript_Tema_05.pdf", "description": "Declaración, expresión, arrow functions, parámetros y closures."}, {"track": "JavaScript", "num": 6, "title": "Arrays y objetos", "file": "JavaScript_Tema_06.pdf", "description": "Map, filter, find, reduce, spread y destructuring."}, {"track": "JavaScript", "num": 7, "title": "DOM y eventos", "file": "JavaScript_Tema_07.pdf", "description": "querySelector, textContent, classList y addEventListener."}, {"track": "JavaScript", "num": 8, "title": "Módulos", "file": "JavaScript_Tema_08.pdf", "description": "export, import, módulos ESM y organización."}, {"track": "JavaScript", "num": 9, "title": "Promesas y async/await", "file": "JavaScript_Tema_09.pdf", "description": "Promise, then/catch, async, await y errores."}, {"track": "JavaScript", "num": 10, "title": "JSON y APIs", "file": "JavaScript_Tema_10.pdf", "description": "JSON.parse/stringify, fetch, códigos HTTP y cabeceras."}, {"track": "JavaScript", "num": 11, "title": "Clases y POO", "file": "JavaScript_Tema_11.pdf", "description": "class, constructor, métodos, herencia y composición."}, {"track": "JavaScript", "num": 12, "title": "Errores y depuración", "file": "JavaScript_Tema_12.pdf", "description": "Error, throw, stack trace, breakpoints y console.table."}, {"track": "JavaScript", "num": 13, "title": "Node.js y backend", "file": "JavaScript_Tema_13.pdf", "description": "process, módulos, variables de entorno y servidor HTTP."}, {"track": "JavaScript", "num": 14, "title": "Pruebas y calidad", "file": "JavaScript_Tema_14.pdf", "description": "Pruebas unitarias, casos límite, lint y funciones puras."}, {"track": "JavaScript", "num": 15, "title": "Seguridad web", "file": "JavaScript_Tema_15.pdf", "description": "XSS, sanitización, CORS, cookies y validación."}, {"track": "Python", "num": 1, "title": "Instalación y primer programa", "file": "Python_Tema_01.pdf", "description": "Intérprete, scripts, REPL, pip y entornos virtuales."}, {"track": "Python", "num": 2, "title": "Variables y tipos", "file": "Python_Tema_02.pdf", "description": "int, float, str, bool, None y tipado dinámico."}, {"track": "Python", "num": 3, "title": "Operadores y condiciones", "file": "Python_Tema_03.pdf", "description": "Comparaciones, and/or/not, pertenencia e identidad."}, {"track": "Python", "num": 4, "title": "Bucles", "file": "Python_Tema_04.pdf", "description": "for, while, range, break, continue y enumerate."}, {"track": "Python", "num": 5, "title": "Listas y tuplas", "file": "Python_Tema_05.pdf", "description": "Índices, slices, mutabilidad y desempaquetado."}, {"track": "Python", "num": 6, "title": "Diccionarios y conjuntos", "file": "Python_Tema_06.pdf", "description": "dict, set, get, items y operaciones de conjuntos."}, {"track": "Python", "num": 7, "title": "Funciones", "file": "Python_Tema_07.pdf", "description": "def, return, parámetros por defecto, *args y **kwargs."}, {"track": "Python", "num": 8, "title": "Comprensiones y generadores", "file": "Python_Tema_08.pdf", "description": "Comprensiones, yield, iteradores y evaluación perezosa."}, {"track": "Python", "num": 9, "title": "Módulos y paquetes", "file": "Python_Tema_09.pdf", "description": "import, __name__, paquetes y organización."}, {"track": "Python", "num": 10, "title": "Excepciones", "file": "Python_Tema_10.pdf", "description": "try, except, else, finally y excepciones propias."}, {"track": "Python", "num": 11, "title": "Ficheros y JSON", "file": "Python_Tema_11.pdf", "description": "with, pathlib, encoding UTF-8, json y CSV."}, {"track": "Python", "num": 12, "title": "POO y dataclasses", "file": "Python_Tema_12.pdf", "description": "Clases, self, propiedades, herencia y composición."}, {"track": "Python", "num": 13, "title": "Librerías y entornos", "file": "Python_Tema_13.pdf", "description": "pip, venv, requirements y aislamiento de dependencias."}, {"track": "Python", "num": 14, "title": "Pruebas y depuración", "file": "Python_Tema_14.pdf", "description": "assert, unittest/pytest, logging y debugger."}, {"track": "Python", "num": 15, "title": "APIs y seguridad", "file": "Python_Tema_15.pdf", "description": "requests, HTTP, validación, secretos y manejo de errores."}, {"track": "Kotlin", "num": 1, "title": "Primer programa Kotlin", "file": "Kotlin_Tema_01.pdf", "description": "Kotlin/JVM, main, compilación y sintaxis concisa."}, {"track": "Kotlin", "num": 2, "title": "val, var y tipos", "file": "Kotlin_Tema_02.pdf", "description": "Inferencia, tipos numéricos, String y conversión."}, {"track": "Kotlin", "num": 3, "title": "Null safety", "file": "Kotlin_Tema_03.pdf", "description": "Tipos nullable, ?, ?:, !! y safe calls."}, {"track": "Kotlin", "num": 4, "title": "Condiciones y when", "file": "Kotlin_Tema_04.pdf", "description": "if como expresión, when, rangos y smart casts."}, {"track": "Kotlin", "num": 5, "title": "Bucles y rangos", "file": "Kotlin_Tema_05.pdf", "description": "for, while, until, downTo, step y repeat."}, {"track": "Kotlin", "num": 6, "title": "Funciones", "file": "Kotlin_Tema_06.pdf", "description": "fun, parámetros nombrados, defaults y expresiones."}, {"track": "Kotlin", "num": 7, "title": "Colecciones", "file": "Kotlin_Tema_07.pdf", "description": "List, MutableList, Set, Map y operaciones."}, {"track": "Kotlin", "num": 8, "title": "Clases y data class", "file": "Kotlin_Tema_08.pdf", "description": "Constructores, propiedades, init, data class y copy."}, {"track": "Kotlin", "num": 9, "title": "Herencia e interfaces", "file": "Kotlin_Tema_09.pdf", "description": "open, override, abstract, interface y sealed class."}, {"track": "Kotlin", "num": 10, "title": "Lambdas y funciones de orden superior", "file": "Kotlin_Tema_10.pdf", "description": "it, map, filter, let, apply y run."}, {"track": "Kotlin", "num": 11, "title": "Excepciones", "file": "Kotlin_Tema_11.pdf", "description": "try como expresión, throw, require y check."}, {"track": "Kotlin", "num": 12, "title": "Genéricos", "file": "Kotlin_Tema_12.pdf", "description": "Tipos parametrizados, variance y restricciones."}, {"track": "Kotlin", "num": 13, "title": "Coroutines", "file": "Kotlin_Tema_13.pdf", "description": "suspend, launch, async, scopes y cancelación."}, {"track": "Kotlin", "num": 14, "title": "Ficheros y serialización", "file": "Kotlin_Tema_14.pdf", "description": "java.nio.file, streams y manejo de recursos."}, {"track": "Kotlin", "num": 15, "title": "Pruebas y arquitectura", "file": "Kotlin_Tema_15.pdf", "description": "JUnit, pruebas unitarias, capas y separación de responsabilidades."}, {"track": "React", "num": 1, "title": "Componentes y JSX", "file": "React_Tema_01.pdf", "description": "Componentes función, JSX y renderizado."}, {"track": "React", "num": 2, "title": "Props", "file": "React_Tema_02.pdf", "description": "Datos de entrada, destructuring y composición."}, {"track": "React", "num": 3, "title": "Estado con useState", "file": "React_Tema_03.pdf", "description": "Estado local y actualizaciones funcionales."}, {"track": "React", "num": 4, "title": "Eventos y formularios", "file": "React_Tema_04.pdf", "description": "Handlers, controlled inputs y submit."}, {"track": "React", "num": 5, "title": "Renderizado condicional", "file": "React_Tema_05.pdf", "description": "&&, ternarios, estados de carga y error."}, {"track": "React", "num": 6, "title": "Listas y keys", "file": "React_Tema_06.pdf", "description": "map, keys estables y renderizado de colecciones."}, {"track": "React", "num": 7, "title": "useEffect", "file": "React_Tema_07.pdf", "description": "Efectos, dependencias y limpieza."}, {"track": "React", "num": 8, "title": "Hooks personalizados", "file": "React_Tema_08.pdf", "description": "Reutilizar lógica con useX y reglas de hooks."}, {"track": "React", "num": 9, "title": "Context", "file": "React_Tema_09.pdf", "description": "Context API, Provider y consumo."}, {"track": "React", "num": 10, "title": "React Router", "file": "React_Tema_10.pdf", "description": "Rutas, navegación, parámetros y páginas 404."}, {"track": "React", "num": 11, "title": "Peticiones a APIs", "file": "React_Tema_11.pdf", "description": "fetch, estados de carga, errores y cancelación."}, {"track": "React", "num": 12, "title": "Validación de formularios", "file": "React_Tema_12.pdf", "description": "Validación, mensajes accesibles y envío."}, {"track": "React", "num": 13, "title": "Rendimiento", "file": "React_Tema_13.pdf", "description": "memo, useMemo, useCallback y medición."}, {"track": "React", "num": 14, "title": "Pruebas de componentes", "file": "React_Tema_14.pdf", "description": "Testing Library, interacción y accesibilidad."}, {"track": "React", "num": 15, "title": "Seguridad y despliegue", "file": "React_Tema_15.pdf", "description": "XSS, secretos, variables de entorno y build."}];const extras=[{"title": "SQL relacional: Oracle, MySQL y PostgreSQL", "file": "Ruta_SQL_Oracle_MySQL_PostgreSQL_15_Temas.pdf", "description": "Guía de 15 temas con objetivos, práctica y criterios de dominio."}, {"title": "NoSQL: MongoDB, Firebase y Firestore", "file": "Ruta_NoSQL_Firebase_MongoDB_15_Temas.pdf", "description": "Guía de 15 temas con objetivos, práctica y criterios de dominio."}, {"title": "Backend y APIs", "file": "Ruta_Backend_APIs_15_Temas.pdf", "description": "Guía de 15 temas con objetivos, práctica y criterios de dominio."}, {"title": "Programación orientada a objetos", "file": "Ruta_POO_Principios_15_Temas.pdf", "description": "Guía de 15 temas con objetivos, práctica y criterios de dominio."}, {"title": "Gestión de bases de datos", "file": "Ruta_Gestion_Bases_Datos_15_Temas.pdf", "description": "Guía de 15 temas con objetivos, práctica y criterios de dominio."}, {"title": "TypeScript: de JavaScript a React y Node", "file": "Ruta_TypeScript_JavaScript_React_Node_15_Temas.pdf", "description": "Ruta de 15 temas sobre tipos, módulos Node y React con TSX."}];const track=document.getElementById('track');[...new Set(topics.map(x=>x.track))].forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;track.append(o)});function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function draw(){const q=document.getElementById('q').value.toLowerCase(),t=track.value;const a=topics.filter(x=>(!t||x.track===t)&&(!q||(x.title+' '+x.description+' '+x.track).toLowerCase().includes(q)));document.getElementById('count').textContent=a.length+' de '+topics.length+' temas individuales';document.getElementById('grid').innerHTML=a.map(x=>`<article class="card"><div class="chip">${esc(x.track)} · Tema ${String(x.num).padStart(2,'0')}</div><h3>${esc(x.title)}</h3><p>${esc(x.description)}</p><a class="btn" href="/temarios/${esc(x.file)}" target="_blank" rel="noopener">Abrir PDF</a></article>`).join('')||'<p>No hay resultados.</p>'}document.getElementById('q').addEventListener('input',draw);track.addEventListener('change',draw);draw();document.getElementById('extra').innerHTML=extras.map(x=>`<article class="card"><div class="chip">PDF · 15 temas</div><h3>${esc(x.title)}</h3><p>${esc(x.description)}</p><a class="btn" href="/temarios/${esc(x.file)}" target="_blank" rel="noopener">Abrir ruta PDF</a></article>`).join('');</script></body></html>
+<body>
+<a class="skip-link" href="#main-content">Saltar al contenido</a>
+<header class="masthead">
+  <a class="brand" href="index.html" aria-label="CódigoClaro, ir al inicio">
+    <span class="logo" aria-hidden="true">&lt;/&gt;</span>
+    <span><strong>CódigoClaro</strong><small>Biblioteca de aprendizaje</small></span>
+  </a>
+  <a class="back" href="index.html">← Volver al inicio</a>
+</header>
+<main id="main-content">
+  <section class="hero" aria-labelledby="page-title">
+    <p class="eyebrow">Biblioteca de aprendizaje · DAM</p>
+    <h1 id="page-title">Temarios por tecnología</h1>
+    <p class="lead">75 PDFs individuales: 15 temas para Java, JavaScript, Python, Kotlin y React. Cada PDF combina objetivos, conceptos, ejemplos, práctica, autoevaluación y fuentes.</p>
+    <ul class="stats" aria-label="Resumen de la biblioteca">
+      <li><strong>75</strong><span>temas individuales</span></li>
+      <li><strong>5</strong><span>tecnologías</span></li>
+      <li><strong>15</strong><span>temas por ruta</span></li>
+    </ul>
+  </section>
+  <section class="library" aria-labelledby="topics-title">
+    <div class="section-head">
+      <div><p class="eyebrow">Explora la biblioteca</p><h2 id="topics-title">Temas individuales</h2></div>
+      <p>Busca por tema o concepto, o filtra por tecnología.</p>
+    </div>
+    <noscript><p class="notice">Este catálogo necesita JavaScript para mostrar los temas y los enlaces a sus PDF.</p></noscript>
+    <div class="bar">
+      <label for="q">Buscar por tema o concepto<input id="q" type="search" placeholder="Ej.: bucles, APIs, clases…" aria-controls="grid"></label>
+      <label for="track">Tecnología<select id="track" aria-controls="grid"><option value="">Todas las tecnologías</option></select></label>
+    </div>
+    <p class="notice" id="count" role="status" aria-live="polite" aria-atomic="true"></p>
+    <div class="grid" id="grid"></div>
+  </section>
+  <section class="extras" aria-labelledby="extra-title">
+    <div class="section-head">
+      <div><p class="eyebrow">Amplía tu recorrido</p><h2 id="extra-title">Rutas complementarias</h2></div>
+      <p>Guías independientes de 15 temas cada una.</p>
+    </div>
+    <div class="grid" id="extra"></div>
+  </section>
+</main>
+<script>
+// Los nombres file deben corresponder a PDFs publicados en /temarios/.
+const topics=[{"track": "Java", "num": 1, "title": "Instalación y primer programa", "file": "Java_Tema_01.pdf", "description": "JDK, JRE, JVM, compilación y ejecución."}, {"track": "Java", "num": 2, "title": "Variables y tipos", "file": "Java_Tema_02.pdf", "description": "Tipos primitivos, referencias, constantes y conversión de tipos."}, {"track": "Java", "num": 3, "title": "Operadores y expresiones", "file": "Java_Tema_03.pdf", "description": "Aritméticos, relacionales, lógicos, precedencia y cortocircuito."}, {"track": "Java", "num": 4, "title": "Condicionales", "file": "Java_Tema_04.pdf", "description": "if/else, switch y expresiones switch."}, {"track": "Java", "num": 5, "title": "Bucles", "file": "Java_Tema_05.pdf", "description": "for, while, do-while, break y continue."}, {"track": "Java", "num": 6, "title": "Arrays", "file": "Java_Tema_06.pdf", "description": "Declaración, índices, recorrido y Arrays utilidades."}, {"track": "Java", "num": 7, "title": "Métodos", "file": "Java_Tema_07.pdf", "description": "Parámetros, retorno, ámbito y sobrecarga."}, {"track": "Java", "num": 8, "title": "Clases y objetos", "file": "Java_Tema_08.pdf", "description": "Estado, comportamiento, instancias y encapsulación."}, {"track": "Java", "num": 9, "title": "Constructores y this", "file": "Java_Tema_09.pdf", "description": "Inicialización, constructores sobrecargados y encadenamiento."}, {"track": "Java", "num": 10, "title": "Herencia y polimorfismo", "file": "Java_Tema_10.pdf", "description": "extends, super, sobrescritura y despacho dinámico."}, {"track": "Java", "num": 11, "title": "Interfaces y abstractas", "file": "Java_Tema_11.pdf", "description": "Contratos, clases abstractas, default methods y composición."}, {"track": "Java", "num": 12, "title": "Excepciones", "file": "Java_Tema_12.pdf", "description": "try/catch/finally, throw, throws y excepciones propias."}, {"track": "Java", "num": 13, "title": "Colecciones", "file": "Java_Tema_13.pdf", "description": "List, Set, Map, ArrayList, HashSet y HashMap."}, {"track": "Java", "num": 14, "title": "Genéricos y lambdas", "file": "Java_Tema_14.pdf", "description": "Tipos parametrizados, Comparator, streams y expresiones lambda."}, {"track": "Java", "num": 15, "title": "Ficheros y pruebas", "file": "Java_Tema_15.pdf", "description": "Path, Files, try-with-resources y pruebas unitarias."}, {"track": "JavaScript", "num": 1, "title": "Sintaxis y consola", "file": "JavaScript_Tema_01.pdf", "description": "let, const, tipos dinámicos, console y strict mode."}, {"track": "JavaScript", "num": 2, "title": "Tipos y coerción", "file": "JavaScript_Tema_02.pdf", "description": "Primitivos, typeof, conversión explícita, NaN y null."}, {"track": "JavaScript", "num": 3, "title": "Operadores y condiciones", "file": "JavaScript_Tema_03.pdf", "description": "===, &&, ||, ??, ternario y truthiness."}, {"track": "JavaScript", "num": 4, "title": "Bucles e iteración", "file": "JavaScript_Tema_04.pdf", "description": "for, while, for...of, for...in y métodos de arrays."}, {"track": "JavaScript", "num": 5, "title": "Funciones", "file": "JavaScript_Tema_05.pdf", "description": "Declaración, expresión, arrow functions, parámetros y closures."}, {"track": "JavaScript", "num": 6, "title": "Arrays y objetos", "file": "JavaScript_Tema_06.pdf", "description": "Map, filter, find, reduce, spread y destructuring."}, {"track": "JavaScript", "num": 7, "title": "DOM y eventos", "file": "JavaScript_Tema_07.pdf", "description": "querySelector, textContent, classList y addEventListener."}, {"track": "JavaScript", "num": 8, "title": "Módulos", "file": "JavaScript_Tema_08.pdf", "description": "export, import, módulos ESM y organización."}, {"track": "JavaScript", "num": 9, "title": "Promesas y async/await", "file": "JavaScript_Tema_09.pdf", "description": "Promise, then/catch, async, await y errores."}, {"track": "JavaScript", "num": 10, "title": "JSON y APIs", "file": "JavaScript_Tema_10.pdf", "description": "JSON.parse/stringify, fetch, códigos HTTP y cabeceras."}, {"track": "JavaScript", "num": 11, "title": "Clases y POO", "file": "JavaScript_Tema_11.pdf", "description": "class, constructor, métodos, herencia y composición."}, {"track": "JavaScript", "num": 12, "title": "Errores y depuración", "file": "JavaScript_Tema_12.pdf", "description": "Error, throw, stack trace, breakpoints y console.table."}, {"track": "JavaScript", "num": 13, "title": "Node.js y backend", "file": "JavaScript_Tema_13.pdf", "description": "process, módulos, variables de entorno y servidor HTTP."}, {"track": "JavaScript", "num": 14, "title": "Pruebas y calidad", "file": "JavaScript_Tema_14.pdf", "description": "Pruebas unitarias, casos límite, lint y funciones puras."}, {"track": "JavaScript", "num": 15, "title": "Seguridad web", "file": "JavaScript_Tema_15.pdf", "description": "XSS, sanitización, CORS, cookies y validación."}, {"track": "Python", "num": 1, "title": "Instalación y primer programa", "file": "Python_Tema_01.pdf", "description": "Intérprete, scripts, REPL, pip y entornos virtuales."}, {"track": "Python", "num": 2, "title": "Variables y tipos", "file": "Python_Tema_02.pdf", "description": "int, float, str, bool, None y tipado dinámico."}, {"track": "Python", "num": 3, "title": "Operadores y condiciones", "file": "Python_Tema_03.pdf", "description": "Comparaciones, and/or/not, pertenencia e identidad."}, {"track": "Python", "num": 4, "title": "Bucles", "file": "Python_Tema_04.pdf", "description": "for, while, range, break, continue y enumerate."}, {"track": "Python", "num": 5, "title": "Listas y tuplas", "file": "Python_Tema_05.pdf", "description": "Índices, slices, mutabilidad y desempaquetado."}, {"track": "Python", "num": 6, "title": "Diccionarios y conjuntos", "file": "Python_Tema_06.pdf", "description": "dict, set, get, items y operaciones de conjuntos."}, {"track": "Python", "num": 7, "title": "Funciones", "file": "Python_Tema_07.pdf", "description": "def, return, parámetros por defecto, *args y **kwargs."}, {"track": "Python", "num": 8, "title": "Comprensiones y generadores", "file": "Python_Tema_08.pdf", "description": "Comprensiones, yield, iteradores y evaluación perezosa."}, {"track": "Python", "num": 9, "title": "Módulos y paquetes", "file": "Python_Tema_09.pdf", "description": "import, __name__, paquetes y organización."}, {"track": "Python", "num": 10, "title": "Excepciones", "file": "Python_Tema_10.pdf", "description": "try, except, else, finally y excepciones propias."}, {"track": "Python", "num": 11, "title": "Ficheros y JSON", "file": "Python_Tema_11.pdf", "description": "with, pathlib, encoding UTF-8, json y CSV."}, {"track": "Python", "num": 12, "title": "POO y dataclasses", "file": "Python_Tema_12.pdf", "description": "Clases, self, propiedades, herencia y composición."}, {"track": "Python", "num": 13, "title": "Librerías y entornos", "file": "Python_Tema_13.pdf", "description": "pip, venv, requirements y aislamiento de dependencias."}, {"track": "Python", "num": 14, "title": "Pruebas y depuración", "file": "Python_Tema_14.pdf", "description": "assert, unittest/pytest, logging y debugger."}, {"track": "Python", "num": 15, "title": "APIs y seguridad", "file": "Python_Tema_15.pdf", "description": "requests, HTTP, validación, secretos y manejo de errores."}, {"track": "Kotlin", "num": 1, "title": "Primer programa Kotlin", "file": "Kotlin_Tema_01.pdf", "description": "Kotlin/JVM, main, compilación y sintaxis concisa."}, {"track": "Kotlin", "num": 2, "title": "val, var y tipos", "file": "Kotlin_Tema_02.pdf", "description": "Inferencia, tipos numéricos, String y conversión."}, {"track": "Kotlin", "num": 3, "title": "Null safety", "file": "Kotlin_Tema_03.pdf", "description": "Tipos nullable, ?, ?:, !! y safe calls."}, {"track": "Kotlin", "num": 4, "title": "Condiciones y when", "file": "Kotlin_Tema_04.pdf", "description": "if como expresión, when, rangos y smart casts."}, {"track": "Kotlin", "num": 5, "title": "Bucles y rangos", "file": "Kotlin_Tema_05.pdf", "description": "for, while, until, downTo, step y repeat."}, {"track": "Kotlin", "num": 6, "title": "Funciones", "file": "Kotlin_Tema_06.pdf", "description": "fun, parámetros nombrados, defaults y expresiones."}, {"track": "Kotlin", "num": 7, "title": "Colecciones", "file": "Kotlin_Tema_07.pdf", "description": "List, MutableList, Set, Map y operaciones."}, {"track": "Kotlin", "num": 8, "title": "Clases y data class", "file": "Kotlin_Tema_08.pdf", "description": "Constructores, propiedades, init, data class y copy."}, {"track": "Kotlin", "num": 9, "title": "Herencia e interfaces", "file": "Kotlin_Tema_09.pdf", "description": "open, override, abstract, interface y sealed class."}, {"track": "Kotlin", "num": 10, "title": "Lambdas y funciones de orden superior", "file": "Kotlin_Tema_10.pdf", "description": "it, map, filter, let, apply y run."}, {"track": "Kotlin", "num": 11, "title": "Excepciones", "file": "Kotlin_Tema_11.pdf", "description": "try como expresión, throw, require y check."}, {"track": "Kotlin", "num": 12, "title": "Genéricos", "file": "Kotlin_Tema_12.pdf", "description": "Tipos parametrizados, variance y restricciones."}, {"track": "Kotlin", "num": 13, "title": "Coroutines", "file": "Kotlin_Tema_13.pdf", "description": "suspend, launch, async, scopes y cancelación."}, {"track": "Kotlin", "num": 14, "title": "Ficheros y serialización", "file": "Kotlin_Tema_14.pdf", "description": "java.nio.file, streams y manejo de recursos."}, {"track": "Kotlin", "num": 15, "title": "Pruebas y arquitectura", "file": "Kotlin_Tema_15.pdf", "description": "JUnit, pruebas unitarias, capas y separación de responsabilidades."}, {"track": "React", "num": 1, "title": "Componentes y JSX", "file": "React_Tema_01.pdf", "description": "Componentes función, JSX y renderizado."}, {"track": "React", "num": 2, "title": "Props", "file": "React_Tema_02.pdf", "description": "Datos de entrada, destructuring y composición."}, {"track": "React", "num": 3, "title": "Estado con useState", "file": "React_Tema_03.pdf", "description": "Estado local y actualizaciones funcionales."}, {"track": "React", "num": 4, "title": "Eventos y formularios", "file": "React_Tema_04.pdf", "description": "Handlers, controlled inputs y submit."}, {"track": "React", "num": 5, "title": "Renderizado condicional", "file": "React_Tema_05.pdf", "description": "&&, ternarios, estados de carga y error."}, {"track": "React", "num": 6, "title": "Listas y keys", "file": "React_Tema_06.pdf", "description": "map, keys estables y renderizado de colecciones."}, {"track": "React", "num": 7, "title": "useEffect", "file": "React_Tema_07.pdf", "description": "Efectos, dependencias y limpieza."}, {"track": "React", "num": 8, "title": "Hooks personalizados", "file": "React_Tema_08.pdf", "description": "Reutilizar lógica con useX y reglas de hooks."}, {"track": "React", "num": 9, "title": "Context", "file": "React_Tema_09.pdf", "description": "Context API, Provider y consumo."}, {"track": "React", "num": 10, "title": "React Router", "file": "React_Tema_10.pdf", "description": "Rutas, navegación, parámetros y páginas 404."}, {"track": "React", "num": 11, "title": "Peticiones a APIs", "file": "React_Tema_11.pdf", "description": "fetch, estados de carga, errores y cancelación."}, {"track": "React", "num": 12, "title": "Validación de formularios", "file": "React_Tema_12.pdf", "description": "Validación, mensajes accesibles y envío."}, {"track": "React", "num": 13, "title": "Rendimiento", "file": "React_Tema_13.pdf", "description": "memo, useMemo, useCallback y medición."}, {"track": "React", "num": 14, "title": "Pruebas de componentes", "file": "React_Tema_14.pdf", "description": "Testing Library, interacción y accesibilidad."}, {"track": "React", "num": 15, "title": "Seguridad y despliegue", "file": "React_Tema_15.pdf", "description": "XSS, secretos, variables de entorno y build."}];const extras=[{"title": "SQL relacional: Oracle, MySQL y PostgreSQL", "file": "Ruta_SQL_Oracle_MySQL_PostgreSQL_15_Temas.pdf", "description": "SQL común y diferencias entre dialectos, con consultas, integridad, transacciones e índices."}, {"title": "NoSQL: MongoDB y Cloud Firestore", "file": "Ruta_NoSQL_Firebase_MongoDB_15_Temas.pdf", "description": "Modelado documental, consultas, índices, agregaciones, reglas y sincronización sin conexión; Firestore dentro de Firebase."}, {"title": "Backend y APIs", "file": "Ruta_Backend_APIs_15_Temas.pdf", "description": "HTTP y APIs con Node.js: validación, sesiones, autorización, persistencia, límites y pruebas."}, {"title": "Programación orientada a objetos en Java", "file": "Ruta_POO_Principios_15_Temas.pdf", "description": "Clases, encapsulación, herencia, polimorfismo, composición, principios SRP/OCP y pruebas JUnit."}, {"title": "Gestión de bases de datos con PostgreSQL", "file": "Ruta_Gestion_Bases_Datos_15_Temas.pdf", "description": "Diseño, normalización, transacciones, índices, permisos, copias y recuperación con PostgreSQL 18."}, {"title": "TypeScript: de JavaScript a React y Node", "file": "Ruta_TypeScript_JavaScript_React_Node_15_Temas.pdf", "description": "Ruta de 15 temas sobre tipos, módulos Node y React con TSX."}];
+// El selector se deriva de las tecnologías presentes en el catálogo.
+const track=document.getElementById('track');[...new Set(topics.map(x=>x.track))].forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;track.append(o)});
+// Escapa cada campo antes de interpolarlo en tarjetas HTML con innerHTML.
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+// Combina la búsqueda y el filtro, y actualiza el recuento anunciado.
+function draw(){const q=document.getElementById('q').value.toLowerCase(),t=track.value;const a=topics.filter(x=>(!t||x.track===t)&&(!q||(x.title+' '+x.description+' '+x.track).toLowerCase().includes(q)));document.getElementById('count').textContent=a.length+' de '+topics.length+' temas individuales';document.getElementById('grid').innerHTML=a.map(x=>`<article class="card"><div class="chip">${esc(x.track)} · Tema ${String(x.num).padStart(2,'0')}</div><h3>${esc(x.title)}</h3><p>${esc(x.description)}</p><a class="btn" href="/temarios/${esc(x.file)}" target="_blank" rel="noopener" aria-label="Abrir PDF de ${esc(x.track)}, tema ${String(x.num).padStart(2,'0')}: ${esc(x.title)} (se abre en una pestaña nueva)">Abrir PDF</a></article>`).join('')||'<p>No hay resultados.</p>'}document.getElementById('q').addEventListener('input',draw);track.addEventListener('change',draw);draw();document.getElementById('extra').innerHTML=extras.map(x=>`<article class="card"><div class="chip">PDF · 15 temas</div><h3>${esc(x.title)}</h3><p>${esc(x.description)}</p><a class="btn" href="/temarios/${esc(x.file)}" target="_blank" rel="noopener" aria-label="Abrir ruta PDF: ${esc(x.title)} (se abre en una pestaña nueva)">Abrir ruta PDF</a></article>`).join('');</script></body></html>

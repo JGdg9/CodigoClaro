@@ -71,7 +71,7 @@ async function seedQuestions(){
   const {rows:[course]}=await pool.query("SELECT id FROM courses WHERE slug='programacion-general'");
   for(const q of quizzes){await pool.query(`INSERT INTO questions(id,course_id,topic,prompt,options,correct_index,explanation,difficulty,active) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,true) ON CONFLICT(id) DO NOTHING`,[q.id,course.id,q.topic,q.q,JSON.stringify(q.o),q.a,q.e,levelFor(q)]);}
 }
-/** Infiere el nivel del ejercicio a partir del identificador de la pregunta. */
+/** Valida y devuelve la dificultad declarada por la pregunta de origen. */
 function levelFor(q){if(!['basic','intermediate','advanced'].includes(q.difficulty))throw new Error(`La pregunta ${q.id} debe declarar una dificultad válida.`);return q.difficulty;}
 /** Despacha las rutas HTTP del backend PostgreSQL y controla sus errores. */
 async function handler(req,res){
@@ -94,8 +94,49 @@ async function handler(req,res){
   if(adminLessonsMatch&&method==='POST'){const admin=await requireUser(req,res);if(!admin)return;if(admin.role!=='admin')return fail(res,403,'Se requiere una cuenta de administración.');const b=await body(req);if(typeof b.slug!=='string'||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(b.slug)||!textOk(b.title,180)||!Number.isInteger(b.position)||b.position<0||b.position>2147483647)return fail(res,400,'Datos de lección no válidos.');try{const {rows:[lesson]}=await pool.query('INSERT INTO course_lessons(course_id,slug,title,content,position) VALUES($1,$2,$3,$4,$5) RETURNING *',[adminLessonsMatch[1],b.slug,b.title.trim(),String(b.content||'').slice(0,20000),b.position]);return json(res,201,{lesson});}catch(e){if(e.code==='23503')return fail(res,404,'Curso no encontrado.');if(e.code==='23505')return fail(res,409,'Slug o posición de lección duplicados.');throw e;}}
   if(method==='GET'&&route==='/api/learning/topics'){const {rows}=await pool.query('SELECT topic AS name,COUNT(*)::int AS "questionCount",LOWER(REGEXP_REPLACE(topic,\'[^a-zA-Z0-9]+\',\'-\',\'g\')) AS slug FROM questions WHERE active=true GROUP BY topic ORDER BY topic');return json(res,200,{topics:rows,totalQuestions:rows.reduce((n,r)=>n+r.questionCount,0)});}
   if(method==='GET'&&route==='/api/quiz'){const topic=url.searchParams.get('topic')||'all',count=Math.min(30,Math.max(1,Math.floor(Number(url.searchParams.get('count'))||10)));const args=[],where=['active=true'];if(topic!=='all'){args.push(topic);where.push(`topic=$${args.length}`);}args.push(count);const {rows}=await pool.query(`SELECT id,topic,prompt AS q,options,difficulty FROM questions WHERE ${where.join(' AND ')} ORDER BY RANDOM() LIMIT $${args.length}`,args);return json(res,200,{questions:rows.map(q=>({...q,options:typeof q.options==='string'?JSON.parse(q.options):q.options})),available:rows.length,requestedCount:count});}
-  if(method==='POST'&&route==='/api/quiz/submit'){const u=await requireUser(req,res);if(!u)return;const b=await body(req),answers=b.answers;if(!Array.isArray(answers)||answers.length<1||answers.length>30||!answers.every(a=>a&&typeof a.id==='string'&&Number.isInteger(a.answer)&&a.answer>=0&&a.answer<=10)||new Set(answers.map(a=>a.id)).size!==answers.length)return fail(res,400,'Respuestas no válidas o duplicadas.');const ids=answers.map(a=>a.id),{rows}=await pool.query('SELECT id,topic,prompt,options,correct_index,explanation FROM questions WHERE id=ANY($1::text[]) AND active=true',[ids]);if(rows.length!==answers.length)return fail(res,400,'El test contiene preguntas desconocidas.');const map=new Map(rows.map(q=>[q.id,q]));if(answers.some(a=>a.answer>=map.get(a.id).options.length))return fail(res,400,'La respuesta seleccionada no existe.');const detail=answers.map(a=>{const q=map.get(a.id);return{id:q.id,topic:q.topic,correct:a.answer===q.correct_index,correctAnswer:q.correct_index,explanation:q.explanation,question:q.prompt,chosen:a.answer};}),score=detail.filter(a=>a.correct).length,pct=Math.round(score/detail.length*100),id=crypto.randomUUID(),topic=String(b.topic||'all').slice(0,100),mode=b.mode==='exam'?'exam':'practice',xp=score*10+(pct===100?20:0);await pool.query('INSERT INTO quiz_attempts(id,user_id,topic,mode,score,total,pct,xp_awarded,answers) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)',[id,u.id,topic,mode,score,detail.length,pct,xp,JSON.stringify(detail)]);return json(res,201,{id,score,total:detail.length,pct,xpAwarded:xp,answers:detail});}
+  if(method==='POST'&&route==='/api/quiz/submit'){
+    const u=await requireUser(req,res);if(!u)return;
+    const b=await body(req),answers=b.answers;
+    // -1 representa una pregunta sin respuesta; las demás respuestas deben apuntar a una opción existente.
+    if(!Array.isArray(answers)||answers.length<1||answers.length>30||!answers.every(a=>a&&typeof a.id==='string'&&Number.isInteger(a.answer)&&a.answer>=-1&&a.answer<=10)||new Set(answers.map(a=>a.id)).size!==answers.length)return fail(res,400,'Respuestas no válidas o duplicadas.');
+    const ids=answers.map(a=>a.id),{rows}=await pool.query('SELECT id,topic,prompt,options,correct_index,explanation FROM questions WHERE id=ANY($1::text[]) AND active=true',[ids]);
+    if(rows.length!==answers.length)return fail(res,400,'El test contiene preguntas desconocidas.');
+    const map=new Map(rows.map(q=>[q.id,q]));
+    if(answers.some(a=>a.answer!==-1&&a.answer>=map.get(a.id).options.length))return fail(res,400,'La respuesta seleccionada no existe.');
+    const detail=answers.map(a=>{const q=map.get(a.id);return{id:q.id,topic:q.topic,correct:a.answer>=0&&a.answer===q.correct_index,correctAnswer:q.correct_index,explanation:q.explanation,question:q.prompt,chosen:a.answer}});
+    const score=detail.filter(a=>a.correct).length,pct=Math.round(score/detail.length*100),id=crypto.randomUUID(),topic=String(b.topic||'all').slice(0,100),mode=b.mode==='exam'?'exam':'practice';
+    const correctIds=detail.filter(answer=>answer.correct).map(answer=>answer.id),client=await pool.connect();let xpAwarded=0;
+    try{
+      await client.query('BEGIN');
+      // El registro único evita acreditar dos veces una pregunta aunque se repita o se envíe a la vez.
+      const credited=correctIds.length?await client.query('INSERT INTO quiz_question_rewards(user_id,question_id) SELECT $1,ids.question_id FROM UNNEST($2::text[]) AS ids(question_id) WHERE true ON CONFLICT(user_id,question_id) DO NOTHING RETURNING question_id',[u.id,correctIds]):{rows:[]};
+      const newlyMastered=credited.rows.map(row=>row.question_id);
+      // La bonificación perfecta exige al menos dos respuestas nuevas, todas correctas en este intento.
+      xpAwarded=newlyMastered.length*10+(pct===100&&detail.length>=2&&newlyMastered.length===detail.length?20:0);
+      await client.query('INSERT INTO quiz_attempts(id,user_id,topic,mode,score,total,pct,xp_awarded,answers) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)',[id,u.id,topic,mode,score,detail.length,pct,xpAwarded,JSON.stringify(detail)]);
+      await client.query('COMMIT');
+    }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error}
+    finally{client.release()}
+    return json(res,201,{id,score,total:detail.length,pct,xpAwarded,answers:detail});
+  }
   if(method==='GET'&&route==='/api/progress'){const u=await requireUser(req,res);if(!u)return;const [attempts,lessons,tasks]=await Promise.all([pool.query('SELECT id,topic,mode,score,total,pct,xp_awarded AS "xpAwarded",created_at AS "createdAt" FROM quiz_attempts WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100',[u.id]),pool.query('SELECT lesson_key,completed_at,last_position,updated_at FROM lesson_progress WHERE user_id=$1 ORDER BY updated_at DESC',[u.id]),pool.query('SELECT COUNT(*)::int AS total,COUNT(*) FILTER(WHERE completed_at IS NOT NULL)::int AS completed FROM study_tasks WHERE user_id=$1',[u.id])]);return json(res,200,{progress:{attempts:attempts.rows,completed:lessons.rows.filter(x=>x.completed_at).map(x=>x.lesson_key),tasks:tasks.rows[0],updatedAt:new Date().toISOString()}});}
+  if(method==='PUT'&&route==='/api/progress'){
+    const u=await requireUser(req,res);if(!u)return;
+    const b=await body(req),completed=b.completed;
+    if(!Array.isArray(completed)||completed.length>2000||!completed.every(x=>typeof x==='string'&&x.length<=180))return fail(res,400,'Lista de progreso no válida.');
+    const keys=[...new Set(completed)],client=await pool.connect();
+    try{
+      await client.query('BEGIN');
+      // El snapshot reemplaza marcas (vacío las desmarca); mantiene posiciones y el registro de XP validado.
+      await client.query('UPDATE lesson_progress SET completed_at=NULL,updated_at=NOW() WHERE user_id=$1 AND completed_at IS NOT NULL AND NOT (lesson_key=ANY($2::text[]))',[u.id,keys]);
+      if(keys.length)await client.query(`INSERT INTO lesson_progress(user_id,lesson_key,completed_at,updated_at)
+        SELECT $1,incoming.lesson_key,NOW(),NOW() FROM UNNEST($2::text[]) AS incoming(lesson_key)
+        ON CONFLICT(user_id,lesson_key) DO UPDATE SET completed_at=NOW(),updated_at=NOW()`,[u.id,keys]);
+      await client.query('COMMIT');
+    }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error}
+    finally{client.release()}
+    return json(res,200,{ok:true,progress:{completed:keys}});
+  }
   if(method==='PUT'&&route==='/api/progress/lesson'){const u=await requireUser(req,res);if(!u)return;const b=await body(req);if(!textOk(b.lessonKey,180)||!Number.isInteger(b.lastPosition??0)||(b.lastPosition??0)<0||(b.lastPosition??0)>2147483647||(b.completed!==undefined&&typeof b.completed!=='boolean'))return fail(res,400,'Datos de progreso no válidos.');await pool.query(`INSERT INTO lesson_progress(user_id,lesson_key,completed_at,last_position,updated_at) VALUES($1,$2,CASE WHEN $3 THEN NOW() ELSE NULL END,$4,NOW()) ON CONFLICT(user_id,lesson_key) DO UPDATE SET completed_at=CASE WHEN $3 THEN NOW() ELSE lesson_progress.completed_at END,last_position=$4,updated_at=NOW()`,[u.id,b.lessonKey,b.completed===true,b.lastPosition||0]);return json(res,200,{ok:true});}
   if(route==='/api/tasks'&&method==='GET'){const u=await requireUser(req,res);if(!u)return;const {rows}=await pool.query('SELECT id,title,notes,due_at AS "dueAt",completed_at AS "completedAt",created_at AS "createdAt" FROM study_tasks WHERE user_id=$1 ORDER BY completed_at NULLS FIRST,created_at DESC',[u.id]);return json(res,200,{tasks:rows});}
   if(route==='/api/tasks'&&method==='POST'){const u=await requireUser(req,res);if(!u)return;const b=await body(req),dueAt=b.dueAt===undefined||b.dueAt===null||b.dueAt===''?null:b.dueAt;if(!textOk(b.title,180)||typeof (b.notes??'')!=='string'||String(b.notes??'').length>2000)return fail(res,400,'Título o notas no válidos.');if(dueAt!==null&&(typeof dueAt!=='string'||!Number.isFinite(Date.parse(dueAt))))return fail(res,400,'Fecha de vencimiento no válida.');const id=crypto.randomUUID(),{rows:[task]}=await pool.query('INSERT INTO study_tasks(id,user_id,title,notes,due_at) VALUES($1,$2,$3,$4,$5) RETURNING id,title,notes,due_at AS "dueAt",completed_at AS "completedAt",created_at AS "createdAt"',[id,u.id,b.title.trim(),b.notes||'',dueAt]);return json(res,201,{task});}

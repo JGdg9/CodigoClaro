@@ -84,7 +84,7 @@ COMMON = {
 # Mapeo de términos a ejemplos y explicaciones específicas adicionales.
 DETAILS = {
  'Python': {
- 'Instalación y primer programa': ('El intérprete ejecuta código fuente o bytecode gestionado por Python. `python -m venv .venv` crea un entorno virtual aislado para las dependencias del proyecto. `pip` instala paquetes en el entorno activo.', 'python --version\npython -m venv .venv\n# Windows: .venv\\Scripts\\activate\npython main.py'),
+ 'Instalación y primer programa': ('El intérprete ejecuta código fuente o bytecode gestionado por Python. `python -m venv .venv` crea un entorno virtual aislado para las dependencias del proyecto. `pip` instala paquetes en el entorno activo. Para activarlo en Windows, CMD usa `.venv\\Scripts\\activate.bat` y PowerShell usa `.\\.venv\\Scripts\\Activate.ps1`.', 'python --version\npython -m venv .venv\npython main.py'),
  'Variables y tipos': ('Los nombres enlazan objetos; no son cajas tipadas de forma estática. int, float, str y bool son tipos integrados comunes. Las cadenas son inmutables y las asignaciones enlazan nombres a objetos.', 'edad = 22\nprecio = 12.5\nactivo = True\nnombre = "Ada"\nprint(f"{nombre}: {edad}")'),
  'Operadores y condiciones': ('`and` y `or` cortocircuitan y devuelven uno de sus operandos; `is` compara identidad y `==` igualdad. Para pertenencia se utiliza `in` y para comprobar ausencia de valor se usa `is None`.', 'if edad >= 18 and activo:\n    print("Acceso permitido")\nelse:\n    print("Revisar acceso")'),
  'Bucles': ('for itera sobre elementos de un iterable; range produce una secuencia aritmética. while repite mientras la condición sea verdadera. break y continue alteran el flujo y deben facilitar, no dificultar, la lectura.', 'for numero in range(1, 4):\n    print(numero)\n\nwhile False:\n    print("No se ejecuta")'),
@@ -94,7 +94,7 @@ DETAILS = {
  'Comprensiones y generadores': ('Las comprensiones construyen colecciones de forma concisa. Un generador produce valores bajo demanda y puede reducir memoria cuando se procesa una secuencia grande; se consume al iterarlo.', 'cuadrados = [n * n for n in range(5)]\npares = (n for n in range(1000) if n % 2 == 0)'),
  'Módulos y paquetes': ('Un módulo suele ser un archivo .py; un paquete agrupa módulos. `if __name__ == "__main__"` distingue ejecución directa de importación. Evita nombres de archivos que oculten módulos estándar.', 'from pathlib import Path\n\ndef main():\n    print(Path.cwd())\n\nif __name__ == "__main__":\n    main()'),
  'Excepciones': ('try/except captura excepciones concretas; else se ejecuta si no hubo excepción; finally se ejecuta al salir del bloque. Las excepciones deben comunicar fallos reales, no usarse como flujo normal de cada operación.', 'try:\n    numero = int(entrada)\nexcept ValueError:\n    print("Introduce un entero válido")'),
- 'Ficheros y JSON': ('pathlib.Path ofrece operaciones de rutas; open con `with` cierra el archivo automáticamente. json.load/read convierte JSON a objetos Python, pero hay que validar que la estructura coincide con lo esperado.', 'import json\nfrom pathlib import Path\ndatos = {"tema": "DAM", "nivel": 2}\nPath("datos.json").write_text(json.dumps(datos, ensure_ascii=False), encoding="utf-8")'),
+ 'Ficheros y JSON': ('pathlib.Path ofrece operaciones de rutas; open con `with` cierra el archivo automáticamente. `json.load(fp)` deserializa desde un archivo; `json.loads(s)` lo hace desde texto o bytes. Ambas convierten JSON a objetos Python, cuya estructura debe validarse.', 'import json\nfrom pathlib import Path\ndatos = {"tema": "DAM", "nivel": 2}\ntexto = json.dumps(datos, ensure_ascii=False)\nPath("datos.json").write_text(texto, encoding="utf-8")\nrecuperado = json.loads(texto)'),
  'POO y dataclasses': ('Las clases agrupan estado y comportamiento. `dataclass` genera métodos comunes a partir de los campos declarados; no sustituye la validación de dominio ni hace inmutables los objetos salvo configuración específica.', 'from dataclasses import dataclass\n\n@dataclass\nclass Alumno:\n    nombre: str\n    nota: float'),
  'Librerías y entornos': ('Un entorno virtual separa las dependencias del proyecto del Python global. El archivo de dependencias debe documentar lo necesario para reconstruir el entorno; instalar paquetes requiere confiar en el origen.', 'python -m venv .venv\npython -m pip install paquete\npython -m pip freeze'),
  'Pruebas y depuración': ('Una prueba automatizada comprueba resultados esperados. unittest está en la biblioteca estándar; pytest es una herramienta externa. El depurador permite pausar ejecución y examinar variables en el punto del fallo.', 'def sumar(a, b):\n    return a + b\n\ndef test_sumar():\n    assert sumar(2, 3) == 5'),
@@ -102,7 +102,7 @@ DETAILS = {
  },
  'Kotlin': {
  'Primer programa Kotlin': ('El compilador Kotlin puede generar bytecode JVM y también tiene otros destinos. En JVM, el código puede ejecutarse desde una función main. La configuración del proyecto define versión del plugin y JDK objetivo.', 'fun main() {\n    println("Hola, DAM")\n}'),
- 'val, var y tipos': ('`val` crea una referencia de solo lectura y `var` permite reasignarla; eso no convierte automáticamente un objeto mutable en inmutable. Kotlin infiere tipos cuando la expresión lo permite.', 'val nombre: String = "Ada"\nvar intentos = 0\nintentos += 1'),
+ 'val, var y tipos': ('`val` declara una variable o propiedad de solo lectura que no puede reasignarse; `var` sí permite reasignarla. Un `val` puede referirse a un objeto mutable: no se puede reasignar la variable, pero sí cambiar el estado del objeto. Kotlin infiere tipos cuando la expresión lo permite.', 'val nombre: String = "Ada"\nvar intentos = 0\nintentos += 1'),
  'Null safety': ('Los tipos `String` y `String?` son distintos. El acceso seguro `?.` evita dereferenciar null; `?:` proporciona alternativa; `!!` fuerza una aserción y puede lanzar NullPointerException.', 'val nombre: String? = obtenerNombre()\nval longitud = nombre?.length ?: 0'),
  'Condiciones y when': ('if puede ser una expresión que devuelve un valor. `when` permite comparar con valores, rangos, tipos o condiciones, y puede usarse como expresión exhaustiva.', 'val etiqueta = when (nota) {\n    in 9..10 -> "Sobresaliente"\n    in 7..8 -> "Notable"\n    else -> "Revisar"\n}'),
  'Bucles y rangos': ('Los rangos `..` incluyen el límite final; `until` lo excluye. `downTo` recorre hacia atrás y `step` define el incremento. Comprueba límites al recorrer índices.', 'for (i in 0 until 3) {\n    println(i)\n}'),
@@ -128,9 +128,9 @@ DETAILS = {
  'Hooks personalizados': ('Un hook personalizado encapsula lógica reutilizable de estado o efectos. Su nombre comienza por use y debe respetar las reglas de hooks; no comparte automáticamente el mismo estado entre componentes.', 'function useContadorInicial(valor = 0) {\n  const [n, setN] = useState(valor);\n  return [n, () => setN(x => x + 1)];\n}'),
  'Context': ('Context permite compartir un valor con componentes descendientes sin prop drilling en cada nivel. No es una base de datos global universal; dividir contextos y memoizar valores puede evitar renders innecesarios.', 'const TemaContext = createContext("claro");\n// El proveedor coloca el valor disponible para descendientes.'),
  'React Router': ('Una biblioteca de enrutado permite relacionar rutas con componentes y parámetros. Los detalles de API dependen de la versión instalada; consulta la documentación de la versión del proyecto.', '<Routes>\n  <Route path="/" element={<Inicio />} />\n  <Route path="/temas/:id" element={<Tema />} />\n</Routes>'),
- 'Peticiones a APIs': ('Una petición debe modelar estados de carga, éxito y error. El efecto debe cancelar o ignorar respuestas obsoletas si el componente cambia o se desmonta; comprueba códigos HTTP y forma de los datos.', 'useEffect(() => {\n  const controller = new AbortController();\n  fetch(url, { signal: controller.signal });\n  return () => controller.abort();\n}, [url]);'),
+ 'Peticiones a APIs': ('Una petición debe modelar estados de carga, éxito y error. Si se obtienen datos manualmente con useEffect, hay que cancelar o ignorar respuestas obsoletas y comprobar códigos HTTP y forma de los datos. En proyectos con framework, prioriza su mecanismo integrado de datos o una caché: Effects manuales no resuelven por sí solos caché ni renderizado en servidor.', 'useEffect(() => {\n  const controller = new AbortController();\n  fetch(url, { signal: controller.signal });\n  return () => controller.abort();\n}, [url]);'),
  'Validación de formularios': ('La validación de interfaz ayuda al usuario a corregir entradas, pero el servidor debe validar de nuevo. Los errores deben asociarse a campos, anunciarse de forma accesible y no borrar datos válidos innecesariamente.', '<label htmlFor="email">Correo</label>\n<input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} />'),
- 'Rendimiento': ('Primero mide el problema. React.memo, useMemo y useCallback pueden evitar trabajo en casos concretos, pero añaden complejidad y no son necesarios para todo componente. Las keys estables ayudan a reconciliar listas.', 'const total = useMemo(() => calcularTotal(items), [items]);'),
+ 'Rendimiento': ('Primero mide el problema. React.memo, useMemo y useCallback pueden reducir trabajo en casos concretos, pero añaden complejidad y no hacen falta en todo componente. Si React Compiler está configurado, puede memoizar componentes y valores automáticamente. Las keys estables ayudan a reconciliar listas.', 'const total = useMemo(() => calcularTotal(items), [items]);'),
  'Pruebas de componentes': ('Una prueba de componente debe comprobar el comportamiento observable desde la perspectiva del usuario. Las pruebas robustas consultan roles, etiquetas y texto accesible en vez de depender de detalles internos.', 'render(<Boton onClick={guardar}>Guardar</Boton>);\nawait user.click(screen.getByRole("button", { name: "Guardar" }));\nexpect(guardar).toHaveBeenCalled();'),
  'Seguridad y despliegue': ('El cliente no puede guardar secretos de servidor. Evita renderizar HTML no confiable, valida en servidor y revisa configuración de variables de entorno. El despliegue debe producir artefactos reproducibles y servir por HTTPS.', 'const textoSeguro = String(mensajeUsuario);\nreturn <p>{textoSeguro}</p>;'),
  }
@@ -204,8 +204,22 @@ def make_pages(item):
         ref = [*ref, ('MDN: await', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await')]
     if track == 'Kotlin' and title == 'Coroutines':
         ref = [*ref, ('Kotlin Documentation: Coroutines basics', 'https://kotlinlang.org/docs/coroutines-basics.html')]
+    if track == 'Kotlin' and title == 'val, var y tipos':
+        ref = [*ref, ('Kotlin Documentation: Basic syntax — Variables', 'https://kotlinlang.org/docs/basic-syntax.html#variables')]
     if track == 'Python' and title == 'Diccionarios y conjuntos':
         ref = [*ref, ('Python Data Model: Dictionaries', 'https://docs.python.org/3/reference/datamodel.html#dictionaries')]
+    if track == 'Python' and title == 'Instalación y primer programa':
+        ref = [*ref, ('Python: venv', 'https://docs.python.org/es/3/library/venv.html')]
+    if track == 'Python' and title == 'Ficheros y JSON':
+        ref = [*ref, ('Python: json', 'https://docs.python.org/es/3/library/json.html')]
+    if track == 'React' and title == 'React Router':
+        ref = [*ref, ('React Router: Routing', 'https://reactrouter.com/start/declarative/routing')]
+    if track == 'React' and title == 'Peticiones a APIs':
+        ref = [*ref, ('React: useEffect y obtención de datos', 'https://react.dev/reference/react/useEffect')]
+    if track == 'React' and title == 'Rendimiento':
+        ref = [*ref, ('React: React Compiler', 'https://react.dev/learn/react-compiler/introduction'), ('React: useMemo', 'https://react.dev/reference/react/useMemo')]
+    if track == 'React' and title == 'Pruebas de componentes':
+        ref = [*ref, ('React Testing Library: introducción', 'https://testing-library.com/docs/react-testing-library/intro/')]
     pages = []
     pages.append([
       para(f'CÓDIGOCLARO · RUTA {track.upper()}', 'H2CC'),
@@ -240,8 +254,8 @@ def make_pages(item):
     return pages[1:]
 
 def build_pdf(item):
-    """Genera el PDF de un tema y lo guarda en la carpeta pública de temarios."""
-    dest = PUB / item['file']
+    """Genera el PDF de un tema en la carpeta pública organizada de temarios."""
+    dest = PUB / 'temarios' / item['file']
     story=[]
     pages = make_pages(item)
     for idx, content in enumerate(pages):
@@ -258,6 +272,9 @@ TS_ROUTE_SOURCES = {
     'intro': ('Handbook: introducción', 'https://www.typescriptlang.org/docs/handbook/intro.html'),
     'everyday': ('Handbook: tipos cotidianos', 'https://www.typescriptlang.org/docs/handbook/2/everyday-types.html'),
     'objects': ('Handbook: tipos de objeto', 'https://www.typescriptlang.org/docs/handbook/2/objects.html'),
+    'exact_optional': ('TSConfig: exactOptionalPropertyTypes', 'https://www.typescriptlang.org/tsconfig/exactOptionalPropertyTypes.html'),
+    'strict': ('TSConfig: strict', 'https://www.typescriptlang.org/tsconfig/strict.html'),
+    'strict_null_checks': ('TSConfig: strictNullChecks', 'https://www.typescriptlang.org/tsconfig/strictNullChecks.html'),
     'narrowing': ('Handbook: narrowing', 'https://www.typescriptlang.org/docs/handbook/2/narrowing.html'),
     'functions': ('Handbook: funciones', 'https://www.typescriptlang.org/docs/handbook/2/functions.html'),
     'generics': ('Handbook: genéricos', 'https://www.typescriptlang.org/docs/handbook/2/generics.html'),
@@ -269,7 +286,10 @@ TS_ROUTE_SOURCES = {
     'migration': ('Handbook: migrar desde JavaScript', 'https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html'),
     'jsdoc': ('Handbook: tipos JSDoc', 'https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html'),
     'declarations': ('Handbook: archivos de declaración', 'https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html'),
+    'allow_js': ('TSConfig: allowJs', 'https://www.typescriptlang.org/tsconfig/allowJs.html'),
+    'check_js': ('TSConfig: checkJs', 'https://www.typescriptlang.org/tsconfig/checkJs.html'),
     'react': ('React: usar TypeScript', 'https://react.dev/learn/typescript'),
+    'node_typescript': ('Node.js: TypeScript en ejecución', 'https://nodejs.org/api/typescript.html'),
 }
 
 TS_ROUTE = [
@@ -279,7 +299,7 @@ TS_ROUTE = [
         'objective': 'Distinguir verificación estática, ejecución JavaScript y opciones del proyecto; reconocer qué cambia al activar strict.',
         'practice': 'Toma una función JavaScript que calcule el total de una compra. Añade tipos gradualmente, configura un tsconfig mínimo con strict y registra qué defectos detecta el compilador y cuáles requieren comprobaciones en ejecución.',
         'criterion': 'Explica un hallazgo estático y un riesgo que sigue en tiempo de ejecución.',
-        'sources': ['intro', 'tsconfig'],
+        'sources': ['intro', 'tsconfig', 'strict'],
     },
     {
         'title': 'Inferencia, anotaciones y tipos básicos',
@@ -293,17 +313,17 @@ TS_ROUTE = [
         'title': 'Arrays, tuplas y colecciones de solo lectura',
         'concept': 'Los arrays representan secuencias de elementos de un tipo; las tuplas expresan una secuencia con posiciones y tipos conocidos. Las variantes readonly limitan las operaciones de escritura disponibles desde esa referencia.',
         'objective': 'Elegir entre array y tupla según si importa el tamaño o el significado de cada posición.',
-        'practice': 'Modela filas de un CSV de inventario como pares [codigo, unidades]. Escribe una función que sume unidades por código y explica por qué su entrada es una colección y cada fila una tupla.',
+        'practice': 'Modela productos de inventario como pares [codigo, unidades], con codigo string y unidades number. Escribe una función que sume las unidades por código y explica por qué su entrada es una colección y cada fila una tupla.',
         'criterion': 'Detecta una fila incompleta y evita mutar la entrada si el contrato la declara readonly.',
         'sources': ['everyday', 'objects'],
     },
     {
         'title': 'Tipos de objeto y propiedades opcionales',
-        'concept': 'Un tipo de objeto describe las propiedades que una operación puede leer. `?` indica que una propiedad puede faltar; `readonly` restringe la asignación a través de esa referencia, pero no convierte mágicamente todo el objeto en inmutable.',
+        'concept': 'Un tipo de objeto describe las propiedades que una operación puede leer. `?` permite omitir una propiedad y al leerla se debe contemplar `undefined`; `exactOptionalPropertyTypes` cambia si también se permite asignar `undefined` explícitamente. `readonly` restringe la asignación a través de esa referencia, pero no convierte todo el objeto en inmutable.',
         'objective': 'Describir registros con propiedades requeridas, opcionales y de solo lectura.',
-        'practice': 'Define `Modulo` con identificador readonly, nombre, curso opcional y plazas. Implementa una función que presente un curso ausente como "sin asignar" y revisa un objeto literal con una propiedad mal escrita.',
-        'criterion': 'No confunde una propiedad opcional con una propiedad que siempre contiene undefined.',
-        'sources': ['objects'],
+        'practice': 'Define `Modulo` con identificador readonly, nombre, curso opcional y plazas. Presenta el curso ausente como "sin asignar"; compara la asignación explícita de `undefined` con `exactOptionalPropertyTypes` activado y desactivado, y revisa un objeto literal con una propiedad mal escrita.',
+        'criterion': 'Al leer `curso`, contempla `undefined` y explica qué cambia al asignarlo explícitamente.',
+        'sources': ['objects', 'exact_optional'],
     },
     {
         'title': 'Uniones y narrowing del flujo de control',
@@ -317,8 +337,8 @@ TS_ROUTE = [
         'title': 'Funciones, callbacks y contratos',
         'concept': 'Los tipos de función describen parámetros y resultado. Los callbacks pueden recibir sus propios contratos; parámetros opcionales y rest deben reflejar las llamadas que el código realmente permite.',
         'objective': 'Tipar entradas, salidas y callbacks sin usar Function ni debilitar el contrato con any.',
-        'practice': 'Escribe `filtrarModulos` con una lista y un callback de predicado. Añade un callback que compruebe curso y otro que acepte un criterio opcional; documenta qué devuelve la función con una lista vacía.',
-        'criterion': 'El tipo del callback permite leer el módulo y devuelve un booleano.',
+        'practice': 'Escribe `filtrarModulos` con una lista y un predicado `(modulo: Modulo) => boolean`; úsalo para filtrar por curso. Después define `buscarModulos(lista, curso?: string)` para que, si se omite el curso, devuelva todos los módulos. Comprueba también el resultado con una lista vacía.',
+        'criterion': '`filtrarModulos` entrega un módulo al predicado y recibe un booleano; `buscarModulos` acepta que se omita el curso.',
         'sources': ['functions'],
     },
     {
@@ -335,7 +355,7 @@ TS_ROUTE = [
         'objective': 'Modelar ausencia y estrechar valores externos antes de tratarlos como datos de dominio.',
         'practice': 'Escribe `leerModulo(valor: unknown)` que acepte solo un objeto con `id` string y `nombre` string. Comprueba null, una cadena, un objeto incompleto y uno válido; devuelve un resultado explícito para cada caso.',
         'criterion': 'La función valida en ejecución y no convierte datos con una aserción ciega.',
-        'sources': ['everyday', 'narrowing', 'tsconfig'],
+        'sources': ['everyday', 'narrowing', 'strict_null_checks'],
     },
     {
         'title': 'Genéricos y restricciones',
@@ -363,25 +383,25 @@ TS_ROUTE = [
     },
     {
         'title': 'Módulos TypeScript en un proyecto Node',
-        'concept': 'import y export describen dependencias entre módulos. El compilador configura cómo interpreta y emite módulos; el cargador del entorno ejecuta y resuelve dependencias. El formato elegido debe concordar con el runtime objetivo.',
-        'objective': 'Entender por qué module, moduleResolution y las convenciones del entorno Node afectan a la resolución de importaciones.',
-        'practice': 'Separa un modelo de módulo, una función de búsqueda y el punto de entrada en archivos distintos. Sigue cada importación y consulta TSConfig para anotar qué decisión debe coincidir con el Node objetivo antes de ejecutar.',
+        'concept': 'import y export describen dependencias entre módulos. En TypeScript, module define el formato que se interpreta y emite, mientras moduleResolution guía cómo se resuelven importaciones durante el análisis. El cargador de Node ejecuta y resuelve con sus propias reglas. La ejecución nativa de .ts depende de la versión y la sintaxis; el soporte integrado de Node no admite .tsx, y su type stripping no comprueba tipos ni aplica tsconfig al runtime.',
+        'objective': 'Comparar la resolución de TypeScript con el formato de módulo, las extensiones y el comportamiento del Node objetivo.',
+        'practice': 'Separa un modelo de módulo, una función de búsqueda y el punto de entrada en archivos distintos. Sigue cada importación y compara la resolución de tsc con la de Node. Si ejecutas archivos .ts directamente, verifica qué sintaxis admite esa versión y separa esa ejecución de la comprobación de tipos con tsc.',
         'criterion': 'Distingue una comprobación del compilador de la resolución real del cargador.',
-        'sources': ['modules', 'tsconfig'],
+        'sources': ['modules', 'tsconfig', 'node_typescript'],
     },
     {
         'title': 'Migración gradual de JavaScript y declaraciones',
         'concept': 'La migración puede admitir archivos JS junto a TS mediante allowJs; JSDoc aporta información de tipos a archivos JavaScript. Los archivos .d.ts describen una API existente y no implementan su comportamiento.',
         'objective': 'Planificar una conversión por módulos y decidir cuándo basta JSDoc o hace falta una declaración.',
-        'practice': 'Elige un helper JS sin dependencias externas. Activa `allowJs` e incluye el archivo en tsconfig; añade JSDoc para sus parámetros y retorno y conviértelo luego a TS conservando las llamadas. Redacta una declaración mínima para una dependencia sin tipos.',
+        'practice': 'Elige un helper JS sin dependencias externas. Activa `allowJs` y `checkJs`, incluye el archivo en tsconfig y añade JSDoc para sus parámetros y retorno; después conviértelo a TS conservando las llamadas. Redacta una declaración mínima para una dependencia sin tipos.',
         'criterion': 'La migración mantiene la API y separa descripción de implementación.',
-        'sources': ['migration', 'jsdoc', 'declarations'],
+        'sources': ['migration', 'jsdoc', 'declarations', 'allow_js', 'check_js'],
     },
     {
         'title': 'React con TSX: props, children y eventos',
         'concept': 'Los archivos que contienen JSX usan .tsx y necesitan opciones JSX válidas. TypeScript puede inferir el tipo del evento por el contexto del handler JSX; los tipos de React ofrecen ChangeEvent y ReactNode para children.',
         'objective': 'Definir props explícitas y tratar el evento adecuado sin anotar cada expresión por costumbre.',
-        'practice': 'Crea `FiltroModulo.tsx` con props para texto, valor y callback. Conecta un input a `React.ChangeEvent<HTMLInputElement>`, ofrece children opcionales como `React.ReactNode` y consulta la guía para `@types/react`, `@types/react-dom` y una opción `jsx` válida en tsconfig.',
+        'practice': 'Crea `FiltroModulo.tsx` con props para texto, valor y callback. Compara el evento inferido en un handler inline con un handler extraído tipado como `React.ChangeEvent<HTMLInputElement>`; ofrece `children` opcionales como `React.ReactNode` y consulta la guía para `@types/react`, `@types/react-dom` y una opción `jsx` válida en tsconfig.',
         'criterion': 'Una llamada JSX inválida se detecta y el callback expone el valor correcto.',
         'sources': ['react'],
     },
@@ -494,7 +514,7 @@ def main():
         # Limpia el sufijo heredado antes de componer prácticas con description.
         item['description'] = clean_auto_description(item['description'])
         root_pdf = build_pdf(item)
-        for mirror_pdf in (PUB / 'temarios' / filename, ROOT / 'docs' / 'temarios' / filename):
+        for mirror_pdf in (ROOT / 'docs' / 'temarios' / filename,):
             mirror_pdf.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(root_pdf, mirror_pdf)
         item['pages'] = 10
@@ -505,7 +525,7 @@ def main():
 
     CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     docs_catalog_path.write_text(json.dumps(docs_catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print(f'Generados {len(catalog)} temarios; 10 páginas por documento y tres copias por tema.')
+    print(f'Generados {len(catalog)} temarios; 10 páginas por documento y dos copias organizadas por tema.')
 if __name__ == '__main__':
     if sys.argv[1:] == ['--typescript-route']:
         build_typescript_route()
