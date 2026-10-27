@@ -12,7 +12,7 @@ MATERIAL INCLUIDO
 - 15 temas individuales de Python.
 - 15 temas individuales de Kotlin.
 - 15 temas individuales de React.
-- 5 guías complementarias de 15 temas: SQL relacional (Oracle/MySQL/PostgreSQL), NoSQL (MongoDB/Firestore/Firebase), backend/API, POO y gestión de bases de datos.
+- 6 rutas complementarias de 15 temas: TypeScript, SQL relacional (Oracle/MySQL/PostgreSQL), NoSQL (MongoDB/Firestore/Firebase), backend/API, POO y gestión de bases de datos.
 - Los 9 PDFs anteriores, los ejercicios y el IDE integrado.
 - Cada tema individual incluye objetivos, conceptos, ejemplo, práctica, solución orientativa y checklist.
 
@@ -23,7 +23,7 @@ EJECUCIÓN Y COSTES
 - Firestore/MongoDB se presentan como simuladores en el IDE; las conexiones reales requieren motores/configuración propios.
 
 PRUEBAS DE PAQUETE
-- Verificación de que los 75 PDF de temas individuales y 5 guías complementarias se generan y están presentes.
+- Verificación de que los 75 PDF de temas individuales y las 6 rutas complementarias están presentes.
 - Verificación de enlaces de PDF en el catálogo del navegador.
 - Comprobación de sintaxis JavaScript con Node.js sobre los scripts embebidos.
 - Pruebas de ejecución de motores externos no se pueden garantizar sin conexión y configuración en el equipo del usuario.

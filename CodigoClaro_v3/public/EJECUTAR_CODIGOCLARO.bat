@@ -1,3 +1,4 @@
+REM CódigoClaro: Acceso rápido de Windows para iniciar la aplicación local desde la carpeta de recursos.
 @echo off
 setlocal
 cd /d "%~dp0"

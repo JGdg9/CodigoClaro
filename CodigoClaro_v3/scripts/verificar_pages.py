@@ -1,4 +1,5 @@
-"""Checks the static GitHub Pages demo and all linked PDF assets."""
+"""Comprueba la demo estática de GitHub Pages y todos sus PDF enlazados. No inicia ni modifica el backend.
+"""
 import json
 from pathlib import Path
 
