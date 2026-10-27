@@ -1,3 +1,4 @@
+REM CódigoClaro: Arranca el servidor local desde Windows. Mantiene la instalación y el inicio separados de producción.
 @echo off
 setlocal
 cd /d "%~dp0"
@@ -27,7 +28,8 @@ if not exist .env (
 findstr /B /C:"ADMIN_EMAIL=tu-correo-de-administracion@example.com" .env >nul
 if not errorlevel 1 (
   echo ERROR: Edita .env y sustituye ADMIN_EMAIL por tu propio correo.
-  echo La primera cuenta con ese correo recibira permisos de administracion.
+  echo ADMIN_EMAIL identifica el correo que autorizas para una promocion manual.
+  echo El registro publico siempre crea cuentas de estudiante; consulta ADMINISTRACION.md.
   pause
   exit /b 1
 )

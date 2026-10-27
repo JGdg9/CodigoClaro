@@ -1,3 +1,4 @@
+/** CódigoClaro — Protege comportamientos de interfaz y errores corregidos en versiones anteriores. */
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -109,7 +110,7 @@ test('temporizador de estudio se conecta a sesiones persistentes del backend', (
 });
 
 test('cada filtro individual de tests tiene al menos cinco preguntas y el aleatorizador no usa sort aleatorio', () => {
-  const match = aula.match(/const Q=(\[.*?\]);\nconst ccMemoryStorage/s);
+  const match = aula.match(/const Q=(\[.*?\]);\s*const ccMemoryStorage/s);
   assert.ok(match, 'se debe poder localizar el banco de preguntas del aula');
   const questions = Function('return (' + match[1] + ')')();
   for (const technology of ['java','python','js','html','css','xml','sql','plsql','mongo','react','node','hibernate','kotlin','git','api','security','database']) {

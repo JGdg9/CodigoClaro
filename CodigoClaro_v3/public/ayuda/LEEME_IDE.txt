@@ -1,0 +1,36 @@
+CÓDIGOCLARO · IDE INTEGRADO
+===========================
+
+INICIO
+1. Extrae el ZIP completo y ejecuta INICIAR_CODIGOCLARO.bat.
+2. Abre http://localhost:3000/aula.html.
+3. Entra en “IDE interno”. Selecciona lenguaje o carga un reto guiado.
+4. Pulsa Ejecutar o usa Ctrl/Cmd + Enter. Ctrl/Cmd + S descarga el código.
+
+MOTORES DISPONIBLES
+- JavaScript: ejecución en iframe con sandbox y consola capturada; no accede al DOM principal.
+- Python: Pyodide/CPython sobre WebAssembly en un Web Worker con límite de tiempo. La primera ejecución requiere Internet para cargar Pyodide desde CDN.
+- SQL (Oracle/MySQL/PostgreSQL en modo de práctica): ejecuta SQL común sobre SQLite en WebAssembly mediante SQL.js. Requiere Internet para cargar el motor. No equivale a los motores de base de datos originales.
+- React/JSX: transpila y muestra un componente en iframe aislado usando React y Babel desde CDN. Requiere Internet y no resuelve paquetes npm arbitrarios.
+- MongoDB y Firestore: simuladores locales con datos de demostración; no conectan a Atlas ni Firebase.
+- Backend: simulador de lógica de rutas; no crea un servidor HTTP real.
+- Node.js: la plantilla se ejecuta como JavaScript aislado con funciones de demostración, no con las APIs reales de Node.js.
+- Java y Kotlin: editor, plantillas y análisis estático. No compilan ni ejecutan en esta versión; hace falta un JDK/runtime local.
+- PL/SQL: análisis estático. Para ejecutar procedimientos, cursores y triggers hace falta Oracle Database.
+
+TESTS Y RETOS
+- Formatos: selección múltiple, verdadero/falso, examen mixto y retos de código con rúbrica.
+- Los retos de código se evalúan por patrones de texto. Pueden no reconocer soluciones alternativas válidas; no sustituyen a un compilador ni a pruebas unitarias.
+- Cada test conserva su filtro de tecnología; no se mezclan preguntas para completar una cantidad. Si faltan preguntas, la interfaz lo indica.
+
+PERSISTENCIA Y PRIVACIDAD
+- El código del editor se guarda en localStorage del navegador.
+- No se envía código a Judge0 ni a compiladores remotos en esta versión.
+- No pegues contraseñas, tokens, claves API ni código privado en los ejemplos.
+- Los iframes aislados reducen el acceso al documento principal, pero no son una caja de arena de seguridad profesional para ejecutar código no confiable.
+
+LÍMITES
+- Los motores CDN necesitan Internet y pueden fallar si la red bloquea esos dominios.
+- SQLite no es Oracle, MySQL ni PostgreSQL; algunas funciones y sintaxis específicas no funcionarán.
+- Los simuladores MongoDB/Firestore son didácticos y no guardan datos en servicios cloud.
+- No se ha verificado visualmente cada motor en todos los navegadores.

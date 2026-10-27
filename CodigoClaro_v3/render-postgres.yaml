@@ -1,0 +1,29 @@
+# CódigoClaro: Configuración alternativa de staging para probar PostgreSQL de forma aislada; no usar para sustituir producción sin validación.
+# Blueprint alternativo: NO reemplaza render.yaml ni modifica el servicio actual.
+# Crear un servicio de staging separado y una base PostgreSQL separada antes de usarlo.
+services:
+  - type: web
+    name: codigoclaro-postgres-staging
+    runtime: node
+    plan: starter
+    buildCommand: npm install && node --check server-postgres.js && node --check scripts/migrate-postgres.js
+    startCommand: npm run start:postgres
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: codigoclaro-postgres-staging-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+databases:
+  - name: codigoclaro-postgres-staging-db
+    databaseName: codigoclaro_staging
+    user: codigoclaro_staging
+    plan: basic-256mb

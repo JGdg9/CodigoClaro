@@ -5,3 +5,7 @@ data/*.sqlite-shm
 data/*.sqlite-wal
 npm-debug.log*
 .DS_Store
+
+# Python caches
+__pycache__/
+*.py[cod]
