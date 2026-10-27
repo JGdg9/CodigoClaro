@@ -61,6 +61,8 @@ function cookieHeader(sid,maxAge=SESSION_MS/1000){return `cc.sid=${encodeURIComp
 async function currentUser(req){const raw=cookies(req)['cc.sid'];if(!raw)return null;const parts=raw.split('.');if(parts.length!==2)return null;const [sid,sig]=parts;if(!sid||!sig)return null;const a=Buffer.from(sig),b=Buffer.from(signed(sid));if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return null;const {rows}=await pool.query('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.sid=$1 AND s.expires_at>NOW()', [sid]);return rows[0]||null;}
 /** Exige una sesión válida y responde 401 cuando falta. */
 async function requireUser(req,res){const u=await currentUser(req);if(!u)fail(res,401,'Inicia sesión para continuar.');return u;}
+/** Serializa escrituras de progreso del mismo usuario con un bloqueo compartido. */
+async function lockProgressUser(client,userId){const {rowCount}=await client.query('SELECT id FROM users WHERE id=$1 FOR UPDATE',[userId]);if(!rowCount){const e=new Error('Inicia sesión para continuar.');e.status=401;throw e;}}
 /** Persiste una sesión de siete días y configura su cookie HttpOnly. */
 async function startSession(res,userId){const sid=crypto.randomBytes(32).toString('base64url');await pool.query('INSERT INTO sessions(sid,user_id,expires_at) VALUES($1,$2,NOW()+INTERVAL \'7 days\')',[sid,userId]);res.setHeader('Set-Cookie',cookieHeader(sid));}
 /** Sirve recursos públicos evitando traversal de rutas fuera de public/. */
@@ -127,6 +129,7 @@ async function handler(req,res){
     const keys=[...new Set(completed)],client=await pool.connect();
     try{
       await client.query('BEGIN');
+      await lockProgressUser(client,u.id);
       // El snapshot reemplaza marcas (vacío las desmarca); mantiene posiciones y el registro de XP validado.
       await client.query('UPDATE lesson_progress SET completed_at=NULL,updated_at=NOW() WHERE user_id=$1 AND completed_at IS NOT NULL AND NOT (lesson_key=ANY($2::text[]))',[u.id,keys]);
       if(keys.length)await client.query(`INSERT INTO lesson_progress(user_id,lesson_key,completed_at,updated_at)
@@ -137,7 +140,22 @@ async function handler(req,res){
     finally{client.release()}
     return json(res,200,{ok:true,progress:{completed:keys}});
   }
-  if(method==='PUT'&&route==='/api/progress/lesson'){const u=await requireUser(req,res);if(!u)return;const b=await body(req);if(!textOk(b.lessonKey,180)||!Number.isInteger(b.lastPosition??0)||(b.lastPosition??0)<0||(b.lastPosition??0)>2147483647||(b.completed!==undefined&&typeof b.completed!=='boolean'))return fail(res,400,'Datos de progreso no válidos.');await pool.query(`INSERT INTO lesson_progress(user_id,lesson_key,completed_at,last_position,updated_at) VALUES($1,$2,CASE WHEN $3 THEN NOW() ELSE NULL END,$4,NOW()) ON CONFLICT(user_id,lesson_key) DO UPDATE SET completed_at=CASE WHEN $3 THEN NOW() ELSE lesson_progress.completed_at END,last_position=$4,updated_at=NOW()`,[u.id,b.lessonKey,b.completed===true,b.lastPosition||0]);return json(res,200,{ok:true});}
+  if(method==='PUT'&&route==='/api/progress/lesson'){
+    const u=await requireUser(req,res);if(!u)return;
+    const b=await body(req);
+    if(!textOk(b.lessonKey,180)||!Number.isInteger(b.lastPosition??0)||(b.lastPosition??0)<0||(b.lastPosition??0)>2147483647||(b.completed!==undefined&&typeof b.completed!=='boolean'))return fail(res,400,'Datos de progreso no válidos.');
+    const client=await pool.connect();
+    try{
+      await client.query('BEGIN');
+      await lockProgressUser(client,u.id);
+      await client.query(`INSERT INTO lesson_progress(user_id,lesson_key,completed_at,last_position,updated_at)
+        VALUES($1,$2,CASE WHEN $3 THEN NOW() ELSE NULL END,$4,NOW())
+        ON CONFLICT(user_id,lesson_key) DO UPDATE SET completed_at=CASE WHEN $3 THEN NOW() ELSE lesson_progress.completed_at END,last_position=$4,updated_at=NOW()`,[u.id,b.lessonKey,b.completed===true,b.lastPosition||0]);
+      await client.query('COMMIT');
+    }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error}
+    finally{client.release()}
+    return json(res,200,{ok:true});
+  }
   if(route==='/api/tasks'&&method==='GET'){const u=await requireUser(req,res);if(!u)return;const {rows}=await pool.query('SELECT id,title,notes,due_at AS "dueAt",completed_at AS "completedAt",created_at AS "createdAt" FROM study_tasks WHERE user_id=$1 ORDER BY completed_at NULLS FIRST,created_at DESC',[u.id]);return json(res,200,{tasks:rows});}
   if(route==='/api/tasks'&&method==='POST'){const u=await requireUser(req,res);if(!u)return;const b=await body(req),dueAt=b.dueAt===undefined||b.dueAt===null||b.dueAt===''?null:b.dueAt;if(!textOk(b.title,180)||typeof (b.notes??'')!=='string'||String(b.notes??'').length>2000)return fail(res,400,'Título o notas no válidos.');if(dueAt!==null&&(typeof dueAt!=='string'||!Number.isFinite(Date.parse(dueAt))))return fail(res,400,'Fecha de vencimiento no válida.');const id=crypto.randomUUID(),{rows:[task]}=await pool.query('INSERT INTO study_tasks(id,user_id,title,notes,due_at) VALUES($1,$2,$3,$4,$5) RETURNING id,title,notes,due_at AS "dueAt",completed_at AS "completedAt",created_at AS "createdAt"',[id,u.id,b.title.trim(),b.notes||'',dueAt]);return json(res,201,{task});}
   const taskMatch=route.match(/^\/api\/tasks\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);if(taskMatch&&method==='PATCH'){const u=await requireUser(req,res);if(!u)return;const b=await body(req);if(typeof b.completed!=='boolean')return fail(res,400,'Indica completed como booleano.');const {rows:[task]}=await pool.query('UPDATE study_tasks SET completed_at=CASE WHEN $1 THEN NOW() ELSE NULL END,updated_at=NOW() WHERE id=$2 AND user_id=$3 RETURNING id,title,notes,due_at AS "dueAt",completed_at AS "completedAt"',[b.completed,taskMatch[1],u.id]);if(!task)return fail(res,404,'Tarea no encontrada.');return json(res,200,{task});}
