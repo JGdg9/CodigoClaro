@@ -3,7 +3,8 @@
 **Plataforma educativa independiente para aprender programación practicando.**
 
 CódigoClaro reúne temarios, ejercicios, tests y seguimiento del aprendizaje en una aplicación Node.js. El proyecto está en desarrollo.
-
+accede aqui a la aplicacion: https://codigoclaro.onrender.com
+ten en cuenta que si nadie la esta usando la primera vez tardara en cargar.
 ## Versión vigente
 
 La aplicación declara la versión **1.4.2**. Consulta las [novedades de esta versión](CodigoClaro_v3/docs/NOVEDADES_v1.4.2.md).
