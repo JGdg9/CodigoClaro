@@ -26,8 +26,9 @@ function panelApiResponse(status, error) {
 }
 
 
-function quizDiscardRunner(hasForm, confirmation) {
-  const form = hasForm ? {} : null;
+function quizDiscardRunner(hasForm, confirmation, submitted = false) {
+  const submitButton = { disabled: submitted };
+  const form = hasForm ? { querySelector: selector => selector === 'button[type="submit"]' ? submitButton : null } : null;
   const elements = { quizForm: form };
   const cleared = [];
   let confirmationCalls = 0;
@@ -38,16 +39,54 @@ function quizDiscardRunner(hasForm, confirmation) {
     window: { confirm: () => { confirmationCalls++; return confirmation; } },
     clearInterval: id => cleared.push(id)
   };
-  const start = panel.indexOf('function confirmDiscardQuizAttempt()');
+  const start = panel.indexOf('function hasUnsubmittedQuizAttempt()');
   const end = panel.indexOf('// quizView:', start);
   assert.ok(start >= 0 && end > start, 'se debe encontrar la confirmación de salida del test');
   const guard = vm.runInNewContext(
-    `${panel.slice(start, end)}\\nconfirmDiscardQuizAttempt;`,
+    `${panel.slice(start, end)}\nconfirmDiscardQuizAttempt;`,
     context
   );
   return { guard, context, form, elements, cleared, confirmationCalls: () => confirmationCalls };
 }
 
+test('cancelar la salida conserva el formulario y el temporizador del test', () => {
+  const attempt = quizDiscardRunner(true, false);
+
+  assert.equal(attempt.guard(), false);
+  assert.equal(attempt.elements.quizForm, attempt.form);
+  assert.equal(attempt.context.quizTimer, 42);
+  assert.deepEqual(attempt.cleared, []);
+  assert.equal(attempt.confirmationCalls(), 1);
+});
+
+test('confirmar la salida detiene el temporizador antes de descartar el test', () => {
+  const attempt = quizDiscardRunner(true, true);
+
+  assert.equal(attempt.guard(), true);
+  assert.equal(attempt.context.quizTimer, null);
+  assert.deepEqual(attempt.cleared, [42]);
+  assert.equal(attempt.confirmationCalls(), 1);
+});
+
+test('un test ya enviado no vuelve a pedir confirmación para salir', () => {
+  const attempt = quizDiscardRunner(true, false, true);
+
+  assert.equal(attempt.guard(), true);
+  assert.equal(attempt.confirmationCalls(), 0);
+  assert.deepEqual(attempt.cleared, []);
+});
+
+test('la app protege reconfiguración, navegación, cierre y salida del navegador', () => {
+  assert.match(panel, /onclick="quizReturnToConfig\\(\\)"/);
+  assert.match(panel, /async function render\\(page\\)\\{\\s*if\\(!confirmDiscardQuizAttempt\\(\\)\\)return;/);
+  assert.match(panel, /async function logout\\(\\)\\{if\\(!confirmDiscardQuizAttempt\\(\\)\\)return;/);
+  assert.match(panel, /window\\.addEventListener\\('beforeunload',e=>\\{if\\(hasUnsubmittedQuizAttempt\\(\\)\\)/);
+});
+
+test('Aula e IDE y Diagnóstico siguen accesibles desde el menú autenticado', () => {
+  assert.match(panel, /<a class="nav-item" href="\\/aula\\.html">Aula e IDE<\\/a>/);
+  assert.match(panel, /<a class="nav-item" href="\\/diagnostico\\.html">Diagnóstico y ayuda<\\/a>/);
+});
 test('cancelar la salida conserva el formulario y el temporizador del test', () => {
   const attempt = quizDiscardRunner(true, false);
 
