@@ -295,7 +295,7 @@ async function boot(){
     const me=await api('/api/me');
     user=me.user;
     api('/api/catalog').then(data=>{catalog=data;if(currentPage==='courses')render('courses')}).catch(()=>{catalog={topics:[],docs:[]};if(currentPage==='courses')render('courses');flash('El catálogo está temporalmente no disponible.','error')});
-    api('/api/health').then(health=>{registrationEnabled=health.registrationEnabled===true;authMode(authAction)}).catch(()=>{$('registrationClosed').textContent='No se pudo confirmar el estado del registro. Si ya tienes cuenta, podrás iniciar sesión cuando el servicio esté disponible.';registrationEnabled=false;authMode(authAction)});
+    api('/api/config').then(config=>{registrationEnabled=config.registrationOpen===true;authMode(authAction)}).catch(()=>{$('registrationClosed').textContent='No se pudo confirmar el estado del registro. Si ya tienes cuenta, podrás iniciar sesión cuando el servicio esté disponible.';registrationEnabled=false;authMode(authAction)});
     if(user){
       const p=await api('/api/progress');
       progress=p.progress;
