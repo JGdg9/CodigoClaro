@@ -1,55 +1,43 @@
-# Estructura del proyecto CódigoClaro
+# Estructura del repositorio CódigoClaro
 
-Esta guía describe la organización real de la entrega v1.4.2 y qué ubicaciones son sensibles para el despliegue.
+El repositorio contiene la aplicación dentro de `CodigoClaro_v3/`. Este mapa describe las ubicaciones en la rama actual; la raíz del repositorio conserva el README general y la configuración de GitHub.
 
 ## Árbol principal
 
 ```text
 .
-├── server.js                  # Servidor predeterminado (SQLite)
-├── server-postgres.js         # Backend PostgreSQL opt-in para staging
-├── package.json               # Dependencias y comandos npm
-├── render.yaml                # Blueprint del servicio actual; revisar rootDir según el repositorio
-├── render-postgres.yaml       # Blueprint alternativo, no activar en producción sin validar
-├── .env.example               # Nombres de variables; nunca secretos reales
-├── lib/                       # Módulos reutilizables del servidor
-├── migrations/                # Migraciones SQLite (JS) y PostgreSQL (SQL), versionadas
-├── scripts/                   # Herramientas de mantenimiento, generación y smoke tests
-├── tests/                     # Pruebas unitarias, regresión y contratos de API
-├── public/                    # Raíz web pública: páginas y recursos estáticos
-│   ├── temarios/              # PDF públicos; los enlaces antiguos se redirigen internamente
-│   └── ayuda/                 # Guías públicas y documentación de usuario
-└── docs/                      # Documentación, catálogo de Pages, temarios e historial
-    ├── guias/                 # Guías operativas y de desarrollo
-    ├── historial/versiones/   # Notas de versiones anteriores
-    ├── temarios/              # Copia para la demo estática de Pages
-    └── ESTRUCTURA_PROYECTO.md # Este documento
+├── .gitattributes
+├── .github/
+├── README.md
+└── CodigoClaro_v3/
+    ├── README.md
+    ├── package.json
+    ├── server.js
+    ├── server-postgres.js
+    ├── lib/
+    ├── migrations/
+    ├── scripts/
+    ├── tests/
+    ├── public/
+    │   ├── ayuda/
+    │   └── temarios/
+    └── docs/
+        ├── README.md
+        ├── ESTRUCTURA_PROYECTO.md
+        ├── NOVEDADES_v1.4.2.md
+        ├── catalogo_temas.json
+        ├── guia-temarios.html
+        ├── index.html
+        ├── guias/
+        └── temarios/
 ```
 
-## Por qué no se deben mover ciertos archivos a ciegas
+## Para encontrar cada documento
 
-- `public/` es la raíz que sirven los servidores. Los PDF viven en `public/temarios/`. El catálogo y la página de temarios apuntan a esa carpeta; el servidor mantiene compatibilidad interna con las URL antiguas que usaban el nombre del PDF en la raíz.
-- `server.js` es el comando de inicio predeterminado. `server-postgres.js` es alternativo y requiere `DATABASE_URL`; no se cambia el inicio de producción automáticamente.
-- `migrations/` contiene migraciones SQLite en JavaScript y PostgreSQL en SQL. SQLite las aplica al iniciar; PostgreSQL solo con `npm run migrate:postgres` y debe ejecutarse primero en staging, con una copia de seguridad antes de actualizar datos reales.
-- `docs/index.html` pertenece a la demo estática de GitHub Pages; no es la aplicación completa de Node.
-- `.env`, `data/` y `node_modules/` son locales/ignorados y no deben incluir secretos ni bases de datos personales en Git.
+- [README general](../../README.md): presentación del repositorio y accesos principales.
+- [Guía completa de la aplicación](../README.md): instalación local, uso, comprobaciones y límites.
+- [Índice de documentación](README.md): documentos vigentes dentro de `docs/`.
+- [Guías](guias/README.md): índice de las guías del proyecto.
+- [Novedades v1.4.2](NOVEDADES_v1.4.2.md): nota de la versión vigente.
 
-## Convenciones
-
-1. Código ejecutable en `server.js`, `server-postgres.js`, `lib/` y `scripts/`.
-2. Pruebas automáticas exclusivamente en `tests/`; cualquier nuevo endpoint debe tener casos de éxito, error, permisos y validación.
-3. Documentación de desarrollo en `docs/`; notas históricas en `docs/historial/versiones/`.
-4. Mantener nombres descriptivos y evitar duplicar la misma guía en varios sitios.
-5. No subir cambios a `main` hasta que las pruebas locales y el smoke test del entorno de staging terminen correctamente.
-
-## Comandos habituales
-
-```bash
-npm test
-npm run test:coverage
-python verificar_entrega.py
-python scripts/verificar_pages.py
-npm run test:render
-```
-
-`npm run test:render` requiere conectividad hacia Render y comprueba rutas públicas mediante peticiones de solo lectura.
+La carpeta `public/` contiene recursos de la aplicación y guías públicas. La carpeta `docs/` contiene la documentación del proyecto, el catálogo y la copia de temarios de la demo estática. Las rutas y los archivos de los temarios se mantienen intactos.
