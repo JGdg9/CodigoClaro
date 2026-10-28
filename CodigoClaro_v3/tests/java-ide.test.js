@@ -17,54 +17,86 @@ function extract(startMarker, endMarker) {
   return aula.slice(start, end).trim();
 }
 
+const judgeBase64 = vm.runInNewContext(
+  extract('function ideJudgeEncodeBase64(', '\nfunction ideCancelJudgeRun') + '\n({encode:ideJudgeEncodeBase64,decode:ideJudgeDecodeBase64});',
+  { TextEncoder, TextDecoder, Uint8Array, btoa, atob }
+);
+
 function runnerContext(consentChecked, { timeoutImmediately = false } = {}) {
   const calls = [];
   const messages = [];
   let runTimeoutCallback = null;
-  const consent = { checked: consentChecked, dataset: { endpoint: 'https://ce.judge0.com' } };
+  const privacySettings = { open: false };
+  const consent = {
+    checked: consentChecked,
+    dataset: { endpoint: 'https://ce.judge0.com' },
+    closest: selector => selector === 'details' ? privacySettings : null,
+    focus() { this.focused = true; }
+  };
+  const cancelClasses = new Set(['hide']);
+  const cancelButton = { classList: {
+    add: name => cancelClasses.add(name),
+    remove: name => cancelClasses.delete(name),
+    contains: name => cancelClasses.has(name)
+  } };
   const elements = {
     ideJavaRemoteConsent: consent,
+    ideCancelJavaRun: cancelButton,
     ideStdin: { value: 'Ada' },
     judgeToken: { value: 'session-token' }
+  };
+  const context = {
+    URL,
+    AbortController,
+    document: { getElementById: id => elements[id] || null },
+    ideLang: () => ({ id: 'java', label: 'Java' }),
+    ideGetCode: () => 'public class Main { public static void main(String[] args) { System.out.println("Hola"); } }',
+    ideShowOutput: (message, kind) => messages.push({ message, kind }),
+    ideStatus: message => messages.push({ status: message }),
+    ideJudgeConfig: () => ({ base: 'https://ce.judge0.com' }),
+    ccJudgeRunController: null,
+    ccJudgeCheckController: null,
+    ideSaveJudgeSettings: () => {},
+    ideVersionScore: () => 17,
+    ideJudgeEncodeBase64: judgeBase64.encode,
+    ideJudgeDecodeBase64: judgeBase64.decode,
+    ccJudgeLanguages: [{ id: 62, name: 'Java (OpenJDK 17)' }],
+    ccJudgeLanguagesEndpoint: 'https://ce.judge0.com',
+    ideJudgeFetch: async (endpoint, options = {}) => {
+      if (options.signal?.aborted) {
+        const error = new Error('aborted');
+        error.name = 'AbortError';
+        throw error;
+      }
+      calls.push({ endpoint, options });
+      if (endpoint === '/languages/') return [{ id: 17, name: 'Java (OpenJDK 21)' }];
+      if (options.method === 'POST') return { token: 'test-job' };
+      return {
+        status: { id: 3, description: 'Accepted' },
+        stdout: judgeBase64.encode('¡Hola, niña! ☕\n'),
+        stderr: judgeBase64.encode('aviso: café'),
+        compile_output: judgeBase64.encode('compilación: áéíóú'),
+        message: judgeBase64.encode('resultado: pingüino')
+      };
+    },
+    setTimeout: (callback, delay) => {
+      if (delay === 30000) runTimeoutCallback = callback;
+      if (delay === 900) {
+        if (timeoutImmediately) runTimeoutCallback?.();
+        callback();
+      }
+      return delay;
+    },
+    clearTimeout: () => {}
   };
   return {
     calls,
     messages,
-    context: {
-      URL,
-      AbortController,
-      document: { getElementById: id => elements[id] || null },
-      ideLang: () => ({ id: 'java', label: 'Java' }),
-      ideGetCode: () => 'public class Main { public static void main(String[] args) { System.out.println("Hola"); } }',
-      ideShowOutput: (message, kind) => messages.push({ message, kind }),
-      ideStatus: message => messages.push({ status: message }),
-      ideJudgeConfig: () => ({ base: 'https://ce.judge0.com' }),
-      ccJudgeRunController: null,
-      ideSaveJudgeSettings: () => {},
-      ideVersionScore: () => 17,
-      ccJudgeLanguages: [{ id: 62, name: 'Java (OpenJDK 17)' }],
-      ccJudgeLanguagesEndpoint: 'https://ce.judge0.com',
-      ideJudgeFetch: async (endpoint, options = {}) => {
-        if (options.signal?.aborted) {
-          const error = new Error('aborted');
-          error.name = 'AbortError';
-          throw error;
-        }
-        calls.push({ endpoint, options });
-        if (endpoint === '/languages/') return [{ id: 17, name: 'Java (OpenJDK 21)' }];
-        if (options.method === 'POST') return { token: 'test-job' };
-        return { status: { id: 3, description: 'Accepted' }, stdout: 'Hola\n' };
-      },
-      setTimeout: (callback, delay) => {
-        if (delay === 30000) runTimeoutCallback = callback;
-        if (delay === 900) {
-          if (timeoutImmediately) runTimeoutCallback?.();
-          callback();
-        }
-        return delay;
-      },
-      clearTimeout: () => {}
-    }
+    context,
+    cancelButton,
+    cancelClasses,
+    consent,
+    privacySettings
   };
 }
 
@@ -90,6 +122,8 @@ test('Java no envía código si falta consentimiento para el endpoint selecciona
 
   assert.equal(setup.calls.length, 0, 'no debe consultarse ni enviarse nada al servicio');
   assert.match(setup.messages[0].message, /consentimiento/i);
+  assert.equal(setup.privacySettings.open, true, 'debe abrir la sección que contiene el consentimiento');
+  assert.equal(setup.consent.focused, true, 'debe llevar el foco a la casilla de consentimiento');
 });
 
 test('con consentimiento Java compila y muestra la salida devuelta por el servicio simulado', async () => {
@@ -101,10 +135,28 @@ test('con consentimiento Java compila y muestra la salida devuelta por el servic
 
   const post = setup.calls.find(call => call.options.method === 'POST');
   assert.ok(post, 'debe crear un envío de código Java');
-  assert.equal(post.options.body && JSON.parse(post.options.body).source_code, setup.context.ideGetCode());
-  assert.equal(JSON.parse(post.options.body).stdin, 'Ada');
-  assert.match(setup.messages.filter(message => message.message).at(-1)?.message || '', /Hola/);
+  assert.match(post.endpoint, /base64_encoded=true/, 'la creación debe indicar que el contenido se envía en Base64');
+  const payload = JSON.parse(post.options.body);
+  assert.equal(judgeBase64.decode(payload.source_code), setup.context.ideGetCode());
+  assert.equal(judgeBase64.decode(payload.stdin), 'Ada');
+  const poll = setup.calls.find(call => call.options.method === 'GET');
+  assert.ok(poll);
+  assert.match(poll.endpoint, /base64_encoded=true/, 'la respuesta debe solicitarse codificada en Base64');
+  const output = setup.messages.filter(message => message.message).at(-1)?.message || '';
+  assert.match(output, /¡Hola, niña! ☕/);
+  assert.match(output, /aviso: café/);
+  assert.match(output, /compilación: áéíóú/);
+  assert.match(output, /resultado: pingüino/);
   assert.equal(setup.messages.find(message => message.kind)?.kind, 'ok');
+});
+
+test('Judge0 conserva texto español al codificar y decodificar UTF-8 en Base64', () => {
+  const samples = [
+    'public class Main { // acción, año, pingüino, € 😀 }',
+    'Entrada estándar: ¿qué tal? ¡café con leche!\n'
+  ];
+  for (const text of samples) assert.equal(judgeBase64.decode(judgeBase64.encode(text)), text);
+  assert.throws(() => judgeBase64.decode('no es base64'), /resultado Base64 o UTF-8 no válido/);
 });
 
 test('Java invalida la lista de runtimes si se cambia el endpoint', async () => {
@@ -137,6 +189,32 @@ test('Java cancela el sondeo y muestra un error si la ejecución remota supera s
   assert.equal(setup.calls.some(call => call.options.method === 'GET'), false, 'no debe continuar el sondeo después del aborto');
   assert.match(setup.messages.filter(message => message.message).at(-1)?.message || '', /superó el límite de 30 segundos/i);
   assert.equal(setup.messages.find(message => message.kind)?.kind, 'bad');
+});
+
+test('Java permite cancelar desde el IDE y avisa si el runner ya recibió el código', async () => {
+  const source = extract('async function ideRunJudge0(){', '\n// ideLoadSql');
+  const setup = runnerContext(true);
+  const cancelSource = extract('function ideCancelJudgeRun(){', '\n// ideCheckJudge:');
+  setup.context.ideCancelJudgeRun = vm.runInNewContext(cancelSource + '\nideCancelJudgeRun;', setup.context);
+  const originalSetTimeout = setup.context.setTimeout;
+  setup.context.setTimeout = (callback, delay) => {
+    if (delay === 900) {
+      assert.equal(setup.cancelButton.classList.contains('hide'), false, 'el botón debe estar visible mientras espera al runner');
+      setup.context.ideCancelJudgeRun();
+    }
+    return originalSetTimeout(callback, delay);
+  };
+  const run = vm.runInNewContext(source + '\nideRunJudge0;', setup.context);
+
+  await run();
+
+  const post = setup.calls.find(call => call.options.method === 'POST');
+  assert.ok(post, 'solo debe enviar la tarea tras el consentimiento');
+  assert.equal(post.options.signal.aborted, true);
+  assert.equal(setup.calls.some(call => call.options.method === 'GET'), false, 'no debe seguir consultando el resultado');
+  assert.equal(setup.consent.checked, false, 'cancelar debe revocar el consentimiento local');
+  assert.equal(setup.cancelButton.classList.contains('hide'), true, 'el botón debe ocultarse al terminar la cancelación');
+  assert.match(setup.messages.filter(message => message.message).at(-1)?.message || '', /runner ya recibió el código, puede terminar de procesarlo/i);
 });
 
 function ccApiRunner(fetch) {
@@ -197,26 +275,33 @@ test('el selector de lenguaje y el estado del endpoint tienen nombres y avisos a
   assert.match(aula, /id="judgeSettingsStatus" role="status" aria-live="polite" aria-atomic="true"/);
 });
 
-test('Java ofrece un botón funcional para comprobar la conexión', () => {
+test('Java ofrece botones para comprobar la conexión y cancelar la ejecución', () => {
   const source = extract('function ideInitUI(){', '\n// idePage:');
   const endpoint = { value: '' }, token = { value: 'token-local' };
   const saveButton = { className: 'btn', before(button) { this.inserted = button; } };
   const elements = { ideLang: { value: 'java' }, judgeEndpoint: endpoint, judgeToken: token };
+  const runButton = { after(button) { this.inserted = button; elements[button.id] = button; } };
+  let cancelled = 0;
   const document = {
     getElementById: id => elements[id] || null,
-    querySelector: selector => selector === 'button[onclick="ideSaveJudgeSettings()"]' ? saveButton : null,
+    querySelector: selector => selector === 'button[onclick="ideSaveJudgeSettings()"]' ? saveButton : selector === 'button[onclick="ideRun()"]' ? runButton : null,
     createElement: () => ({ addEventListener(type, handler) { this.event = type; this.handler = handler; } })
   };
   let checks = 0;
   const check = () => { checks++; };
   vm.runInNewContext(source + '\nideInitUI();', {
-    document, IDE_LANGS: [], ccStorageGet: () => '', ideLoadTemplate() {}, ideEnsureEditor() {}, ideSetRuntimeText() {}, ideCheckJudge: check
+    document, IDE_LANGS: [], ccStorageGet: () => '', ideLoadTemplate() {}, ideEnsureEditor() {}, ideSetRuntimeText() {}, ideCheckJudge: check, ideCancelJudgeRun: () => { cancelled++; }
   });
   assert.equal(endpoint.value, 'https://ce.judge0.com');
   assert.equal(saveButton.inserted.textContent, 'Comprobar conexión');
   assert.equal(saveButton.inserted.event, 'click');
   saveButton.inserted.handler();
   assert.equal(checks, 1);
+  assert.equal(runButton.inserted.id, 'ideCancelJavaRun');
+  assert.equal(runButton.inserted.textContent, 'Cancelar Java');
+  assert.equal(runButton.inserted.className, 'btn hide');
+  runButton.inserted.handler();
+  assert.equal(cancelled, 1);
 });
 
 test('Java cancela y no envía código si cambia endpoint o consentimiento durante la carga de runtimes', async () => {

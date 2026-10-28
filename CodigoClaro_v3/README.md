@@ -58,11 +58,11 @@ CódigoClaro tiene dos formas de publicación distintas:
 2. En Render, selecciona **New → Blueprint** y conecta el repositorio de GitHub.
 3. Render leerá `render.yaml`. Revisa el servicio, el plan y el disco persistente antes de confirmar. El disco persistente no suele estar incluido en el nivel gratuito.
 4. Configura `ADMIN_EMAIL` únicamente si vas a promover manualmente una cuenta. Registrarse con ese correo no concede permisos de administración; consulta [`ADMINISTRACION.md`](ADMINISTRACION.md).
-5. El Blueprint mantiene `PUBLIC_REGISTRATION_ENABLED=false` hasta completar y revisar los datos de privacidad. Conserva el registro cerrado mientras haya campos pendientes; después puedes habilitarlo en Render con el valor `true`.
+5. El Blueprint de este servicio existente habilita temporalmente `PUBLIC_REGISTRATION_ENABLED=true` para probar el piloto. Usa datos ficticios y una contraseña exclusiva para pruebas; no invites a participantes externos ni uses datos reales. En otros despliegues de producción, conserva el registro cerrado hasta completar y revisar la información de privacidad.
 6. Comprueba que `SESSION_SECRET` se haya generado automáticamente y que `DB_PATH` sea `/var/data/codigoclaro.sqlite`. No reutilices secretos de ejemplo ni publiques credenciales.
-7. Espera a que el despliegue termine y abre la URL `onrender.com` que Render asigne. Comprueba `/api/health`, el inicio de sesión y el guardado de progreso. El registro nuevo permanecerá cerrado hasta que actives la variable indicada.
+7. Espera a que el despliegue termine y abre la URL `onrender.com` que Render asigne. Comprueba `/api/health` (`registrationEnabled: true` en el piloto), crea una cuenta con datos de prueba y verifica el inicio de sesión y el guardado de progreso.
 
-**Importante sobre la estructura del repositorio:** la aplicación está en `CodigoClaro_v3/`; el `rootDir` del Blueprint debe apuntar a esa carpeta. El archivo actual configura un servicio `starter` y un disco persistente, que requieren un plan de pago. No sincronices ese Blueprint si tu límite es 0 € adicionales.
+**Importante sobre la estructura del repositorio:** la aplicación está en `CodigoClaro_v3/`; el `rootDir` del Blueprint debe apuntar a esa carpeta. El Blueprint actual describe el servicio existente `codigoclaro` y su disco persistente; ambos pueden tener un coste recurrente según el plan vigente. Este cambio solo modifica la variable de registro y no añade servicios, bases de datos ni discos, ni cambia el plan. No crees recursos nuevos para este piloto.
 
 **Importante sobre SQLite:** usa un disco persistente montado en `/var/data`; sin almacenamiento persistente, los datos pueden perderse al reiniciar o redeplegar el servicio. No configures el servidor con una base de datos dentro de una carpeta temporal.
 
@@ -123,7 +123,7 @@ Los documentos son síntesis didácticas en español con enlaces a documentació
 - CódigoClaro está en desarrollo y no debe exponerse a Internet sin una revisión de seguridad, privacidad, configuración HTTPS, permisos y copias de seguridad.
 - No hay recuperación automática de contraseña ni verificación por correo.
 - El registro público crea cuentas de estudiante, aunque el correo coincida con `ADMIN_EMAIL`. Promueve administradores con el procedimiento local de [`ADMINISTRACION.md`](ADMINISTRACION.md).
-- Algunos motores del IDE cargan herramientas desde CDN y necesitan Internet. Java y Kotlin ofrecen análisis estático; Node.js se simula. No se envía código a un compilador remoto en esta versión.
+- Algunos motores del IDE cargan herramientas desde CDN y necesitan Internet. Java compila en Judge0 mediante HTTPS solo después del consentimiento explícito de cada sesión; se envían el código y `stdin` al servicio externo, así que no incluyas secretos ni datos personales. El endpoint puede limitar solicitudes. Kotlin ofrece análisis estático y Node.js se simula.
 - La biblioteca educativa y los tests siguen creciendo; la cantidad y cobertura de preguntas puede variar por tecnología.
 - La documentación y las APIs de terceros evolucionan. Las referencias oficiales enlazadas son el punto de partida para comprobar compatibilidad.
 
