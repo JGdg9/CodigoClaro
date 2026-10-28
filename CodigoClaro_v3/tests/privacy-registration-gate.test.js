@@ -183,18 +183,27 @@ test('el piloto crea cuentas de estudiante y las sesiones existentes siguen func
   }
 });
 
-test('el Blueprint de Render habilita el registro solo para el servicio piloto', () => {
+test('el Blueprint de Render mantiene el registro cerrado durante la transición de configuración', () => {
   const serviceBlocks = file => fs.readFileSync(path.join(root, file), 'utf8')
     .split(/(?=^\s*-\s+type:\s*web\s*$)/m)
     .filter(block => /^\s*-\s+type:\s*web\s*$/m.test(block));
   const serviceName = block => block.match(/^\s+name:\s*([^\s#]+)/m)?.[1] || '';
-  const registrationEnabled = block => /^\s+-\s+key:\s*PUBLIC_REGISTRATION_ENABLED\s*\r?\n\s+value:\s*["']true["']\s*$/m.test(block);
+  const flagValue = (block, key) => {
+    const lines = block.split(/\r?\n/);
+    const index = lines.findIndex(line => line.trim() === '- key: ' + key);
+    if (index < 0) return null;
+    return lines[index + 1]?.match(/^\s+value:\s*["']([^"']+)["']\s*$/)?.[1]?.toLowerCase() || null;
+  };
+
   const pilotServices = serviceBlocks('render.yaml');
-  const enabledServiceNames = pilotServices.filter(registrationEnabled).map(serviceName);
-  assert.deepEqual(enabledServiceNames, ['codigoclaro'], 'el valor true debe pertenecer únicamente al servicio piloto codigoclaro');
+  const sqliteService = pilotServices.find(block => serviceName(block) === 'codigoclaro');
+  assert.ok(sqliteService, 'debe existir el servicio SQLite codigoclaro');
+  assert.equal(flagValue(sqliteService, 'PUBLIC_REGISTRATION_ENABLED'), 'false', 'el backend actual debe tener el registro cerrado');
+  assert.equal(flagValue(sqliteService, 'REGISTRATION_OPEN'), 'false', 'el backend de PR #13 debe heredar el registro cerrado');
 
   const postgresServices = serviceBlocks('render-postgres.yaml');
   const postgresService = postgresServices.find(block => serviceName(block) === 'codigoclaro-postgres-staging');
   assert.ok(postgresService, 'debe existir el servicio PostgreSQL de staging');
-  assert.equal(registrationEnabled(postgresService), false, 'el Blueprint PostgreSQL no debe habilitar el registro público');
+  assert.notEqual(flagValue(postgresService, 'PUBLIC_REGISTRATION_ENABLED'), 'true', 'PostgreSQL no debe habilitar el registro');
+  assert.notEqual(flagValue(postgresService, 'REGISTRATION_OPEN'), 'true', 'PostgreSQL no debe habilitar el registro');
 });

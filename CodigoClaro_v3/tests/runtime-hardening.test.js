@@ -44,13 +44,29 @@ test('las cabeceras de seguridad están presentes en páginas y API', async () =
     assert.ok(r.headers.get('permissions-policy'));
   }
 });
-test('páginas principales, recursos estáticos y guías heredadas responden correctamente', async () => {
-  for (const route of ['/', '/index.html', '/aula.html', '/temarios.html', '/diagnostico.html', '/privacidad.html', '/condiciones.html', '/catalogo_temas.json', '/temarios/Java_Tema_01.pdf', '/Java_Tema_01.pdf', '/ayuda/LEEME.txt', '/EMPEZAR_AQUI.txt', '/GUIA_PRUEBAS_RAPIDAS.md', '/LEEME.txt', '/LEEME_IDE.txt', '/NOTAS_DE_VERSION.txt', '/PRUEBAS_REALIZADAS.txt', '/README.txt']) {
+test('páginas principales, recursos estáticos y guías Markdown responden correctamente', async () => {
+  for (const route of ['/', '/index.html', '/aula.html', '/temarios.html', '/diagnostico.html', '/privacidad.html', '/condiciones.html', '/catalogo_temas.json', '/temarios/Java_Tema_01.pdf', '/Java_Tema_01.pdf', '/ayuda/EMPEZAR_AQUI.md', '/ayuda/LEEME.md', '/ayuda/LEEME_IDE.md', '/ayuda/NOTAS_DE_VERSION.md', '/ayuda/README.md']) {
     const r = await request(route); assert.equal(r.status, 200, `${route} debe existir`);
     const type = r.headers.get('content-type') || '';
     if (route.endsWith('.html') || route === '/') assert.match(type, /text\/html/i, route);
     if (route.endsWith('.json')) assert.match(type, /json/i, route);
+    if (route.endsWith('.md')) assert.match(type, /text\/markdown/i, route);
     if (route.endsWith('.pdf')) { assert.match(type, /pdf|octet-stream/i); assert.equal((await r.arrayBuffer()).byteLength > 500, true); }
+  }
+  for (const [legacy, current] of [
+    ['/EMPEZAR_AQUI.txt', '/ayuda/EMPEZAR_AQUI.md'], ['/ayuda/EMPEZAR_AQUI.txt', '/ayuda/EMPEZAR_AQUI.md'],
+    ['/LEEME.txt', '/ayuda/LEEME.md'], ['/ayuda/LEEME.txt', '/ayuda/LEEME.md'],
+    ['/LEEME_IDE.txt', '/ayuda/LEEME_IDE.md'], ['/ayuda/LEEME_IDE.txt', '/ayuda/LEEME_IDE.md'],
+    ['/NOTAS_DE_VERSION.txt', '/ayuda/NOTAS_DE_VERSION.md'], ['/ayuda/NOTAS_DE_VERSION.txt', '/ayuda/NOTAS_DE_VERSION.md'],
+    ['/README.txt', '/ayuda/README.md'], ['/ayuda/README.txt', '/ayuda/README.md'],
+  ]) {
+    const [legacyResponse, currentResponse] = await Promise.all([request(legacy), request(current)]);
+    assert.equal(legacyResponse.status, 200, `${legacy} debe seguir disponible`);
+    assert.match(legacyResponse.headers.get('content-type') || '', /text\/markdown/i, legacy);
+    assert.equal(await legacyResponse.text(), await currentResponse.text(), `${legacy} debe servir el Markdown vigente`);
+  }
+  for (const route of ['/PRUEBAS_REALIZADAS.txt', '/ayuda/PRUEBAS_REALIZADAS.txt', '/GUIA_PRUEBAS_RAPIDAS.md', '/ayuda/GUIA_PRUEBAS_RAPIDAS.md']) {
+    const r = await request(route); assert.equal(r.status, 404, `${route} se retiró del material público`);
   }
 });
 test('los archivos internos no se exponen como contenido estático', async () => {
