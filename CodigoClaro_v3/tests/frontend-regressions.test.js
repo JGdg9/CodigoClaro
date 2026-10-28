@@ -280,7 +280,7 @@ test('confirmar la salida descarta el test y detiene el temporizador',()=>{
   const state=quizNavigationGuardRunner({confirmResult:true});
   assert.equal(state.guard('courses'),true);
   assert.equal(state.context.activeQuiz,null);
-  assert.deepEqual(state.context.activeReviewTopics,[]);
+  assert.equal(state.context.activeReviewTopics.length,0);
   assert.equal(state.context.quizTimer,null);
   assert.equal(state.context.quizSeconds,0);
   assert.equal(state.context.quizStartedAt,0);
