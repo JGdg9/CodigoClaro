@@ -15,9 +15,9 @@ const temp = fs.mkdtempSync(path.join(os.tmpdir(),'cc-pg-integration-'));
 async function req(route,{method='GET',body,cookie=''}={}) {const headers={};if(body!==undefined)headers['content-type']='application/json';if(cookie)headers.cookie=cookie;if(base)headers.origin=base;const r=await fetch(base+route,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});const sc=r.headers.get('set-cookie');const out={status:r.status,headers:r.headers,data:null,cookie:sc?sc.split(';')[0]:cookie};try{out.data=await r.json()}catch{}return out;}
 const skipReason='Configura TEST_DATABASE_URL con una base cuyo nombre contenga test, RUN_POSTGRES_INTEGRATION=1 y pg instalado.';
 const maybeTest=(name,fn)=>enabled?test(name,fn):test(name,{skip:skipReason},fn);
-before(async()=>{if(!enabled)return;pg=require('pg');const pool=new pg.Pool({connectionString:testUrl,ssl:process.env.PGSSLMODE==='disable'?false:{rejectUnauthorized:true}});const migrationDir=path.join(__dirname,'..','migrations'),migrationFiles=fs.readdirSync(migrationDir).filter(name=>/^\d{3}_[a-z0-9_-]+\.sql$/i.test(name)).sort();for(const migrationFile of migrationFiles)await pool.query(fs.readFileSync(path.join(migrationDir,migrationFile),'utf8'));await pool.query('DELETE FROM users WHERE email LIKE $1',['integration-%@codigoclaro.test']);await pool.end();const port=await new Promise((resolve,reject)=>{const s=net.createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=s.address().port;s.close(()=>resolve(p));});});base=`http://127.0.0.1:${port}`;proc=spawn(process.execPath,['server-postgres.js'],{cwd:path.resolve(__dirname,'..'),env:{...process.env,DATABASE_URL:testUrl,PORT:String(port),NODE_ENV:'test',SESSION_SECRET:'integration-test-secret-not-for-production-000000000000',ADMIN_EMAIL:'integration-admin@codigoclaro.test',PGSSLMODE:process.env.PGSSLMODE||'disable'},stdio:['ignore','pipe','pipe']});let logs='';proc.stdout.on('data',x=>logs+=x);proc.stderr.on('data',x=>logs+=x);for(let i=0;i<100;i++){if(proc.exitCode!==null)throw new Error('Backend PostgreSQL no arrancó: '+logs);try{if((await fetch(base+'/api/health')).ok)return;}catch{}await new Promise(r=>setTimeout(r,100));}throw new Error('Timeout iniciando backend PostgreSQL: '+logs);});
+before(async()=>{if(!enabled)return;pg=require('pg');const pool=new pg.Pool({connectionString:testUrl,ssl:process.env.PGSSLMODE==='disable'?false:{rejectUnauthorized:true}});const migrationDir=path.join(__dirname,'..','migrations'),migrationFiles=fs.readdirSync(migrationDir).filter(name=>/^\d{3}_[a-z0-9_-]+\.sql$/i.test(name)).sort();for(const migrationFile of migrationFiles)await pool.query(fs.readFileSync(path.join(migrationDir,migrationFile),'utf8'));await pool.query('DELETE FROM users WHERE email LIKE $1',['integration-%@codigoclaro.test']);await pool.end();const port=await new Promise((resolve,reject)=>{const s=net.createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=s.address().port;s.close(()=>resolve(p));});});base=`http://127.0.0.1:${port}`;proc=spawn(process.execPath,['server-postgres.js'],{cwd:path.resolve(__dirname,'..'),env:{...process.env,DATABASE_URL:testUrl,PORT:String(port),NODE_ENV:'test',REGISTRATION_OPEN:'true',SESSION_SECRET:'integration-test-secret-not-for-production-000000000000',ADMIN_EMAIL:'integration-admin@codigoclaro.test',PGSSLMODE:process.env.PGSSLMODE||'disable'},stdio:['ignore','pipe','pipe']});let logs='';proc.stdout.on('data',x=>logs+=x);proc.stderr.on('data',x=>logs+=x);for(let i=0;i<100;i++){if(proc.exitCode!==null)throw new Error('Backend PostgreSQL no arrancó: '+logs);try{if((await fetch(base+'/api/health')).ok)return;}catch{}await new Promise(r=>setTimeout(r,100));}throw new Error('Timeout iniciando backend PostgreSQL: '+logs);});
 after(async()=>{if(proc&&proc.exitCode===null){proc.kill('SIGTERM');await new Promise(r=>{const t=setTimeout(r,1500);proc.once('exit',()=>{clearTimeout(t);r();});});}if(enabled&&pg){const pool=new pg.Pool({connectionString:testUrl,ssl:process.env.PGSSLMODE==='disable'?false:{rejectUnauthorized:true}});await pool.query('DELETE FROM users WHERE email LIKE $1',['integration-%@codigoclaro.test']);await pool.end();}fs.rmSync(temp,{recursive:true,force:true});});
-maybeTest('PostgreSQL health y recursos estáticos',async()=>{const h=await req('/api/health');assert.equal(h.status,200);assert.equal(h.data.database,'postgresql');assert.equal((await req('/')).status,200);assert.equal((await req('/server.js')).status,404);});
+maybeTest('PostgreSQL health, config y recursos estáticos',async()=>{const h=await req('/api/health');assert.equal(h.status,200);assert.equal(h.data.database,'postgresql');assert.deepEqual((await req('/api/config')).data,{registrationOpen:true});assert.equal((await req('/')).status,200);assert.equal((await req('/server.js')).status,404);});
 maybeTest('registro, login, renovación de sesión y autenticación válida', async () => {
   const email = `integration-${Date.now()}@codigoclaro.test`;
   let r = await req('/api/register', { method: 'POST', body: { email, password: 'TestPassword!2026', name: 'Integración', consent: true } });
@@ -60,7 +60,8 @@ maybeTest('registro, login, renovación de sesión y autenticación válida', as
     SESSION_SECRET: 'integration-test-secret-not-for-production-000000000000',
     PGSSLMODE: process.env.PGSSLMODE || 'disable'
   };
-  delete closedEnv.PUBLIC_REGISTRATION_ENABLED;
+  delete closedEnv.REGISTRATION_OPEN;
+  closedEnv.PUBLIC_REGISTRATION_ENABLED = 'true';
   const closedProc = spawn(process.execPath, ['server-postgres.js'], {
     cwd: path.resolve(__dirname, '..'),
     env: closedEnv,
@@ -80,6 +81,9 @@ maybeTest('registro, login, renovación de sesión y autenticación válida', as
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     assert.equal(health?.registrationEnabled, false, logs);
+    const configResponse = await fetch(closedBase + '/api/config');
+    assert.equal(configResponse.status, 200);
+    assert.deepEqual(await configResponse.json(), { registrationOpen: false });
     const existing = await fetch(`${closedBase}/api/me`, { headers: { cookie } });
     assert.equal(existing.status, 200);
     assert.equal((await existing.json()).user.email, email);

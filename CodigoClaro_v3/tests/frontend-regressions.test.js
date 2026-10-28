@@ -187,11 +187,11 @@ test('las limitaciones del piloto se explican en el registro y no cargan la port
   assert.match(panel, /setAttribute\('aria-describedby',reg\?'pilotDescription':'authSub'\)/);
   assert.match(panel, /Esta versión no verifica el correo ni permite restablecer la contraseña/);
   assert.match(panel, /id="registrationClosed" class="notice hidden" role="status"/);
-  assert.match(panel, /registrationEnabled=health\.registrationEnabled===true/);
+  assert.match(panel, /registrationEnabled=config\.registrationOpen===true/);
   assert.match(panel, /authSubmit'\)\.disabled=reg&&!registrationEnabled/);
   assert.match(panel, /const me=await api\('\/api\/me'\)/);
-  assert.match(panel, /api\('\/api\/health'\)\.then\(health=>/);
-  assert.doesNotMatch(panel, /Promise\.all\(\[api\('\/api\/me'\),api\('\/api\/catalog'\),api\('\/api\/health'\)\]\)/);
+  assert.match(panel, /api\('\/api\/config'\)\.then\(config=>/);
+  assert.doesNotMatch(panel, /Promise\.all\(\[api\('\/api\/me'\),api\('\/api\/catalog'\),api\('\/api\/config'\)\]\)/);
   assert.doesNotMatch(panel, /Si la olvidas, aún no podrás recuperarla desde la aplicación/);
 });
 

@@ -11,7 +11,7 @@ const { DatabaseSync } = require('node:sqlite');
 
 const root = path.resolve(__dirname, '..');
 
-async function startTestServer(dbPath, registrationEnabled, extraEnv = {}) {
+async function startTestServer(dbPath, registrationOpen, extraEnv = {}) {
   const port = await new Promise((resolve, reject) => {
     const server = net.createServer();
     server.once('error', reject);
@@ -26,11 +26,11 @@ async function startTestServer(dbPath, registrationEnabled, extraEnv = {}) {
     ...extraEnv,
     PORT: String(port),
     DB_PATH: dbPath,
-    NODE_ENV: 'production',
+    NODE_ENV: extraEnv.NODE_ENV || 'production',
     SESSION_SECRET: 'test-only-secret-long-enough-for-production-mode'
   };
-  if (registrationEnabled === undefined) delete env.PUBLIC_REGISTRATION_ENABLED;
-  else env.PUBLIC_REGISTRATION_ENABLED = String(registrationEnabled);
+  if (registrationOpen === undefined) delete env.REGISTRATION_OPEN;
+  else env.REGISTRATION_OPEN = String(registrationOpen);
   const proc = spawn(process.execPath, ['server.js'], { cwd: root, env, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   proc.stdout.on('data', chunk => { output += chunk.toString(); });
@@ -55,6 +55,14 @@ async function stopTestServer(proc) {
   });
 }
 
+async function readRegistrationConfig(base) {
+  const response = await fetch(base + '/api/config');
+  assert.equal(response.status, 200);
+  const config = await response.json();
+  assert.deepEqual(Object.keys(config), ['registrationOpen']);
+  assert.equal(typeof config.registrationOpen, 'boolean');
+  return config.registrationOpen;
+}
 test('el servidor no crea cuentas cuando el registro público está cerrado', async () => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-privacy-gate-'));
   const dbPath = path.join(temp, 'privacy.sqlite');
@@ -72,7 +80,7 @@ test('el servidor no crea cuentas cuando el registro público está cerrado', as
     PORT: String(port),
     DB_PATH: dbPath,
     NODE_ENV: 'production',
-    PUBLIC_REGISTRATION_ENABLED: 'false',
+    REGISTRATION_OPEN: 'false',
     SESSION_SECRET: 'test-only-secret-long-enough-for-production-mode'
   };
   const proc = spawn(process.execPath, ['server.js'], { cwd: root, env, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -144,6 +152,7 @@ test('el piloto crea cuentas de estudiante y las sesiones existentes siguen func
     running = await startTestServer(dbPath, true, { ADMIN_EMAIL: 'cuenta-existente@codigoclaro.test' });
     const openHealth = await (await fetch(`${running.base}/api/health`)).json();
     assert.equal(openHealth.registrationEnabled, true);
+    assert.equal(await readRegistrationConfig(running.base), true);
     const account = { email: 'cuenta-existente@codigoclaro.test', password: 'ClaveSegura_2026!', name: 'Cuenta existente', consent: true, role: 'admin', isAdmin: true };
     const created = await fetch(`${running.base}/api/register`, {
       method: 'POST',
@@ -183,18 +192,36 @@ test('el piloto crea cuentas de estudiante y las sesiones existentes siguen func
   }
 });
 
-test('el Blueprint de Render habilita el registro solo para el servicio piloto', () => {
-  const serviceBlocks = file => fs.readFileSync(path.join(root, file), 'utf8')
-    .split(/(?=^\s*-\s+type:\s*web\s*$)/m)
-    .filter(block => /^\s*-\s+type:\s*web\s*$/m.test(block));
-  const serviceName = block => block.match(/^\s+name:\s*([^\s#]+)/m)?.[1] || '';
-  const registrationEnabled = block => /^\s+-\s+key:\s*PUBLIC_REGISTRATION_ENABLED\s*\r?\n\s+value:\s*["']true["']\s*$/m.test(block);
-  const pilotServices = serviceBlocks('render.yaml');
-  const enabledServiceNames = pilotServices.filter(registrationEnabled).map(serviceName);
-  assert.deepEqual(enabledServiceNames, ['codigoclaro'], 'el valor true debe pertenecer únicamente al servicio piloto codigoclaro');
 
-  const postgresServices = serviceBlocks('render-postgres.yaml');
-  const postgresService = postgresServices.find(block => serviceName(block) === 'codigoclaro-postgres-staging');
-  assert.ok(postgresService, 'debe existir el servicio PostgreSQL de staging');
-  assert.equal(registrationEnabled(postgresService), false, 'el Blueprint PostgreSQL no debe habilitar el registro público');
+test('el registro queda cerrado por defecto en desarrollo e ignora la variable anterior', async () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-privacy-dev-default-'));
+  let running;
+  try {
+    running = await startTestServer(path.join(temp, 'privacy.sqlite'), undefined, {
+      NODE_ENV: 'development',
+      PUBLIC_REGISTRATION_ENABLED: 'true'
+    });
+    const health = await (await fetch(running.base + '/api/health')).json();
+    assert.equal(health.registrationEnabled, false);
+    const response = await fetch(running.base + '/api/register', {
+      method: 'POST',
+      headers: { origin: running.base, 'content-type': 'application/json' },
+      body: JSON.stringify({ email: 'dev-default-closed@codigoclaro.test', password: 'ClaveSegura_2026!', name: 'Prueba', consent: true })
+    });
+    assert.equal(response.status, 503);
+  } finally {
+    await stopTestServer(running?.proc);
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('ambos backends exponen solo el contrato de configuración y consultan REGISTRATION_OPEN', () => {
+  const sqlite = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
+  const postgres = fs.readFileSync(path.join(root, 'server-postgres.js'), 'utf8');
+  for (const server of [sqlite, postgres]) {
+    assert.match(server, /process\.env\.REGISTRATION_OPEN\s*===\s*'true'/);
+    assert.match(server, /route==='\/api\/config'\)return json\(res,200,\{registrationOpen:REGISTRATION_OPEN\}\)/);
+    assert.match(server, /registrationEnabled:REGISTRATION_OPEN/);
+    assert.doesNotMatch(server, /PUBLIC_REGISTRATION_ENABLED/);
+  }
 });

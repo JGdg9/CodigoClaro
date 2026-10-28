@@ -24,7 +24,7 @@ async function ready() {
 before(async () => {
   const port = await new Promise((resolve, reject) => { const s = net.createServer(); s.once('error', reject); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => resolve(p)); }); });
   base = `http://127.0.0.1:${port}`;
-  proc = spawn(process.execPath, ['server.js'], { cwd: path.resolve(__dirname, '..'), env: { ...process.env, PORT: String(port), DB_PATH: path.join(temp, 'runtime.sqlite'), SESSION_SECRET: 'test-runtime-secret-longer-than-thirty-two-characters', NODE_ENV: 'development' }, stdio: 'ignore' });
+  proc = spawn(process.execPath, ['server.js'], { cwd: path.resolve(__dirname, '..'), env: { ...process.env, PORT: String(port), DB_PATH: path.join(temp, 'runtime.sqlite'), SESSION_SECRET: 'test-runtime-secret-longer-than-thirty-two-characters', NODE_ENV: 'development', REGISTRATION_OPEN: 'true' }, stdio: 'ignore' });
   await ready();
 });
 after(async () => { if (proc && proc.exitCode === null) { proc.kill('SIGTERM'); await new Promise(resolve => proc.once('exit', resolve)); } fs.rmSync(temp, { recursive: true, force: true }); });
@@ -32,10 +32,12 @@ after(async () => { if (proc && proc.exitCode === null) { proc.kill('SIGTERM'); 
 test('el health reporta la versión del paquete y las capacidades básicas', async () => {
   const r = await request('/api/health'); const d = await r.json();
   assert.equal(r.status, 200); assert.equal(d.ok, true); assert.equal(d.version, require('../package.json').version); assert.ok(Array.isArray(d.features)); assert.equal(d.registrationEnabled, true);
+  const config = await request('/api/config');
+  assert.deepEqual(await config.json(), { registrationOpen: true });
   assert.match(fs.readFileSync(path.join(__dirname, '../server.js'), 'utf8'), /db\.prepare\('SELECT 1'\)\.get\(\)/);
 });
 test('las cabeceras de seguridad están presentes en páginas y API', async () => {
-  for (const route of ['/', '/api/health']) {
+  for (const route of ['/', '/api/health', '/api/config']) {
     const r = await request(route);
     assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(r.headers.get('x-frame-options'), 'SAMEORIGIN');

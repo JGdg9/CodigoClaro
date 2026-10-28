@@ -40,7 +40,7 @@ before(async () => {
   temp=fs.mkdtempSync(path.join(os.tmpdir(), 'cc-pilot-test-'));
   port = await new Promise((resolve,reject)=>{const srv=net.createServer();srv.once('error',reject);srv.listen(0,'127.0.0.1',()=>{const p=srv.address().port;srv.close(()=>resolve(p))})});
   base=`http://127.0.0.1:${port}`;
-  proc=spawn(process.execPath,['server.js'],{cwd:path.resolve(__dirname,'..'),env:{...process.env,PORT:String(port),DB_PATH:path.join(temp,'test.sqlite'),SESSION_SECRET:'test-only-secret-that-is-longer-than-thirty-two-characters',ADMIN_EMAIL:'admin@codigoclaro.test',NODE_ENV:'development'},stdio:['ignore','pipe','pipe']});
+  proc=spawn(process.execPath,['server.js'],{cwd:path.resolve(__dirname,'..'),env:{...process.env,PORT:String(port),DB_PATH:path.join(temp,'test.sqlite'),SESSION_SECRET:'test-only-secret-that-is-longer-than-thirty-two-characters',ADMIN_EMAIL:'admin@codigoclaro.test',NODE_ENV:'development',REGISTRATION_OPEN:'true'},stdio:['ignore','pipe','pipe']});
   let output='';proc.stdout.on('data',b=>output+=b.toString());proc.stderr.on('data',b=>output+=b.toString());
   try { await waitServer(); }
   catch(e){throw new Error(e.message+' Salida: '+output)}
