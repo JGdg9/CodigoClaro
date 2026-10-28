@@ -77,45 +77,15 @@ test('un test ya enviado no vuelve a pedir confirmación para salir', () => {
 });
 
 test('la app protege reconfiguración, navegación, cierre y salida del navegador', () => {
-  assert.match(panel, /onclick="quizReturnToConfig\\(\\)"/);
-  assert.match(panel, /async function render\\(page\\)\\{\\s*if\\(!confirmDiscardQuizAttempt\\(\\)\\)return;/);
-  assert.match(panel, /async function logout\\(\\)\\{if\\(!confirmDiscardQuizAttempt\\(\\)\\)return;/);
-  assert.match(panel, /window\\.addEventListener\\('beforeunload',e=>\\{if\\(hasUnsubmittedQuizAttempt\\(\\)\\)/);
+  assert.ok(panel.includes('onclick="quizReturnToConfig()"'));
+  assert.ok(panel.includes("async function render(page){\n  if(!confirmDiscardQuizAttempt())return;"));
+  assert.ok(panel.includes('async function logout(){if(!confirmDiscardQuizAttempt())return;'));
+  assert.ok(panel.includes("window.addEventListener('beforeunload',e=>{if(hasUnsubmittedQuizAttempt())"));
 });
 
 test('Aula e IDE y Diagnóstico siguen accesibles desde el menú autenticado', () => {
-  assert.match(panel, /<a class="nav-item" href="\\/aula\\.html">Aula e IDE<\\/a>/);
-  assert.match(panel, /<a class="nav-item" href="\\/diagnostico\\.html">Diagnóstico y ayuda<\\/a>/);
-});
-test('cancelar la salida conserva el formulario y el temporizador del test', () => {
-  const attempt = quizDiscardRunner(true, false);
-
-  assert.equal(attempt.guard(), false);
-  assert.equal(attempt.elements.quizForm, attempt.form);
-  assert.equal(attempt.context.quizTimer, 42);
-  assert.deepEqual(attempt.cleared, []);
-  assert.equal(attempt.confirmationCalls(), 1);
-});
-
-test('confirmar la salida detiene el temporizador antes de descartar el test', () => {
-  const attempt = quizDiscardRunner(true, true);
-
-  assert.equal(attempt.guard(), true);
-  assert.equal(attempt.context.quizTimer, null);
-  assert.deepEqual(attempt.cleared, [42]);
-  assert.equal(attempt.confirmationCalls(), 1);
-});
-
-test('la app protege reconfiguración, navegación, cierre y salida del navegador', () => {
-  assert.match(panel, /onclick="quizReturnToConfig\\(\\)"/);
-  assert.match(panel, /async function render\\(page\\)\\{\\s*if\\(!confirmDiscardQuizAttempt\\(\\)\\)return;/);
-  assert.match(panel, /async function logout\\(\\)\\{if\\(!confirmDiscardQuizAttempt\\(\\)\\)return;/);
-  assert.match(panel, /window\\.addEventListener\\('beforeunload'/);
-});
-
-test('Aula e IDE y Diagnóstico siguen accesibles desde el menú autenticado', () => {
-  assert.match(panel, /<a class="nav-item" href="\\/aula\\.html">Aula e IDE<\\/a>/);
-  assert.match(panel, /<a class="nav-item" href="\\/diagnostico\\.html">Diagnóstico y ayuda<\\/a>/);
+  assert.ok(panel.includes('<a class="nav-item" href="/aula.html">Aula e IDE</a>'));
+  assert.ok(panel.includes('<a class="nav-item" href="/diagnostico.html">Diagnóstico y ayuda</a>'));
 });
 
 test('panel declara activeReviewTopics antes de usarlo', () => {
