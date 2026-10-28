@@ -58,14 +58,14 @@ test('páginas principales, recursos estáticos y guías Markdown responden corr
     ['/LEEME.txt', '/ayuda/LEEME.md'], ['/ayuda/LEEME.txt', '/ayuda/LEEME.md'],
     ['/LEEME_IDE.txt', '/ayuda/LEEME_IDE.md'], ['/ayuda/LEEME_IDE.txt', '/ayuda/LEEME_IDE.md'],
     ['/NOTAS_DE_VERSION.txt', '/ayuda/NOTAS_DE_VERSION.md'], ['/ayuda/NOTAS_DE_VERSION.txt', '/ayuda/NOTAS_DE_VERSION.md'],
-    ['/README.txt', '/ayuda/README.md'], ['/ayuda/README.txt', '/ayuda/README.md'],
+    ['/README.txt', '/ayuda/README.md'], ['/ayuda/README.txt', '/ayuda/README.md'], ['/PRUEBAS_REALIZADAS.txt', '/ayuda/README.md'], ['/ayuda/PRUEBAS_REALIZADAS.txt', '/ayuda/README.md'],
   ]) {
     const [legacyResponse, currentResponse] = await Promise.all([request(legacy), request(current)]);
     assert.equal(legacyResponse.status, 200, `${legacy} debe seguir disponible`);
     assert.match(legacyResponse.headers.get('content-type') || '', /text\/markdown/i, legacy);
     assert.equal(await legacyResponse.text(), await currentResponse.text(), `${legacy} debe servir el Markdown vigente`);
   }
-  for (const route of ['/PRUEBAS_REALIZADAS.txt', '/ayuda/PRUEBAS_REALIZADAS.txt', '/GUIA_PRUEBAS_RAPIDAS.md', '/ayuda/GUIA_PRUEBAS_RAPIDAS.md']) {
+  for (const route of ['/GUIA_PRUEBAS_RAPIDAS.md', '/ayuda/GUIA_PRUEBAS_RAPIDAS.md']) {
     const r = await request(route); assert.equal(r.status, 404, `${route} se retiró del material público`);
   }
 });
