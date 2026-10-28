@@ -58,7 +58,7 @@ CódigoClaro tiene dos destinos de publicación:
 2. Revisa el diff del Blueprint antes de sincronizarlo. Declara el servicio web `codigoclaro`, el disco persistente `codigoclaro-data` y `rootDir: CodigoClaro_v3`; revisa los recursos y costes que muestra Render antes de crearlos o modificarlos.
 3. El servicio inicia con `npm start`, guarda SQLite en `/var/data/codigoclaro.sqlite` y usa `/api/health` como health check. Conserva el disco montado en `/var/data`.
 4. Render genera `SESSION_SECRET`; `ADMIN_EMAIL` se solicita en el panel si se necesita. No guardes valores de entorno ni secretos en Git.
-5. El Blueprint declara `REGISTRATION_OPEN=false` y despliega con `NODE_ENV=production`; el servidor de este branch usa `PUBLIC_REGISTRATION_ENABLED` y, al no configurarla, mantiene el registro cerrado por defecto (`/api/health` informa el valor efectivo). No abras el registro hasta completar la información de privacidad.
+5. El Blueprint fija `PUBLIC_REGISTRATION_ENABLED=false` para el servidor actual y declara también `REGISTRATION_OPEN=false` para la transición prevista en PR #13. El registro queda cerrado; `/api/health` informa el valor efectivo. No lo abras hasta completar la información de privacidad.
 6. Tras un despliegue autorizado, comprueba que `/api/health` responda `ok: true`. `npm run test:render` consulta el servicio público con solicitudes GET y un reintento por ruta por defecto; no crea cuentas ni modifica datos.
 
 ### Publicar la demo estática en GitHub Pages
