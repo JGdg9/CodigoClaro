@@ -2,34 +2,34 @@
 
 ## Alcance
 
-La biblioteca principal contiene 75 documentos: 15 temas por cada ruta de Java, JavaScript, Python, Kotlin y React. Cada PDF tiene diez páginas organizadas en objetivos, fundamentos, modelo mental, sintaxis, ejemplo, casos límite, depuración, pruebas, laboratorio, autoevaluación y fuentes.
+La biblioteca principal reúne 75 temas: 15 por cada ruta de Java, JavaScript, Python, Kotlin y React. Cada tema ocupa tres páginas físicas y conserva diez apartados numerados: objetivo, base conceptual, ejemplo, decisiones de diseño, límites, práctica, verificación, laboratorio, autoevaluación y fuentes. El texto fluye entre páginas sin reservar una página para cada apartado.
 
-## Cómo interpretar las fuentes
+## Fuentes y atribución
 
-Las referencias se eligen para llegar a documentación primaria o mantenida por el proyecto de cada tecnología. Son puntos de contraste para sintaxis, APIs y diferencias entre versiones; no constituyen una certificación externa del contenido. Si una explicación resumida difiere de la documentación de la versión utilizada, prevalece la fuente oficial.
+Cada PDF identifica las entidades que mantienen las fuentes citadas y enlaza documentación primaria relacionada con la tecnología. El material se presenta como una síntesis didáctica en español; no como una cita literal ni como sustituto del manual oficial. Si una explicación resumida difiere de la documentación de la versión instalada, prevalece la fuente primaria.
+
+- Java: Dev.java, Oracle Java Language Specification y, para pruebas, JUnit 5.
+- JavaScript: MDN Contributors y la especificación ECMAScript de Ecma International.
+- Python: Python Software Foundation, documentación de la biblioteca estándar y, cuando aplica, pytest.
+- Kotlin: documentación y biblioteca estándar mantenidas por JetBrains.
+- React: documentación del equipo de React; React Router y React Testing Library cuando corresponda.
+
+Las referencias de esta edición se revisaron el 28 de octubre de 2026. Los enlaces pueden actualizarse; consulta siempre la versión que use tu proyecto.
 
 ## Revisión de ejemplos
 
-Los ejemplos son didácticos y deben ejecutarse en un entorno compatible antes de incorporarlos a código de producción. Para revisar un ejemplo:
+Los ejemplos son didácticos y deben comprobarse en un entorno compatible antes de incorporarlos a código de producción. Para revisar uno:
 
-1. Anota la versión de lenguaje/runtime y el sistema operativo.
+1. Anota la versión del lenguaje, runtime, dependencias y sistema operativo.
 2. Copia el ejemplo a un archivo mínimo independiente.
-3. Compila o ejecuta y registra el resultado esperado y el observado.
-4. Añade al menos un caso límite.
-5. Abre una incidencia con el nombre del PDF, página, versión y mensaje de error; no adjuntes secretos.
-
-## Fuentes primarias
-
-- Java: [dev.java](https://dev.java/learn/) y [Oracle Java Documentation](https://docs.oracle.com/en/java/).
-- JavaScript: [MDN JavaScript Guide](https://developer.mozilla.org/es/docs/Web/JavaScript/Guide) y [Node.js API](https://nodejs.org/docs/latest/api/).
-- Python: [Tutorial oficial](https://docs.python.org/es/3/tutorial/) y [biblioteca estándar](https://docs.python.org/es/3/library/).
-- Kotlin: [Kotlin Documentation](https://kotlinlang.org/docs/home.html) y [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-guide.html).
-- React: [React Learn](https://react.dev/learn) y [React Reference](https://react.dev/reference/react).
+3. Compila o ejecuta y compara el resultado esperado con el observado.
+4. Añade al menos un caso límite y una prueba repetible.
+5. Si detectas una errata, informa del PDF, página, versión y mensaje; no adjuntes secretos.
 
 ## Principios de calidad
 
 - Explicar el porqué además de la sintaxis.
-- Diferenciar ejemplos ilustrativos de código verificado en ejecución.
-- Evitar copiar capítulos completos o reproducir contenido de terceros sin permiso.
-- Mantener los ejemplos pequeños, comprensibles y comprobables.
-- Corregir errores mediante cambios trazables en el repositorio.
+- Distinguir las reglas del lenguaje de las APIs de cada entorno.
+- Evitar reproducir capítulos completos de obras de terceros.
+- Mantener ejemplos pequeños, legibles y comprobables.
+- Enlazar fuentes primarias junto a los temas que respaldan.
