@@ -18,6 +18,8 @@ services:
         value: 22.16.0
       - key: NODE_ENV
         value: production
+      - key: PUBLIC_REGISTRATION_ENABLED
+        value: "false"
       - key: REGISTRATION_OPEN
         value: "false"
       - key: TRUST_CF_CONNECTING_IP
