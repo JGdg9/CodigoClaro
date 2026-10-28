@@ -24,6 +24,12 @@ El servidor SQLite usa módulos integrados en Node.js. El registro público crea
 
 La carpeta `docs/` contiene una demo estática de la biblioteca y sus PDF. No ejecuta el servidor Node.js ni ofrece cuentas, sesiones o progreso sincronizado.
 
+## Aplicación completa en Render
+
+Selecciona `CodigoClaro_v3/render.yaml` como **Blueprint Path**; usa `rootDir: CodigoClaro_v3`, SQLite persistente en `/var/data` y un secreto de sesión generado. Revisa el plan y el disco antes de sincronizar recursos.
+
+El Blueprint mantiene `PUBLIC_REGISTRATION_ENABLED=false` y `REGISTRATION_OPEN=false`. El servidor actual consume `REGISTRATION_OPEN`; conserva el registro cerrado hasta completar la revisión de privacidad. Tras un despliegue autorizado, `/api/health` y `npm run test:render` hacen comprobaciones de solo lectura. Las navegaciones HTML reciben páginas 404/500 genéricas; los errores de API siguen siendo JSON.
+
 ## Comprobaciones de desarrollo
 
 - `node --check server.js` comprueba la sintaxis del servidor.

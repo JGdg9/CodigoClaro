@@ -218,3 +218,13 @@ test('el registro queda cerrado por defecto en desarrollo e ignora la variable a
     fs.rmSync(temp, { recursive: true, force: true });
   }
 });
+
+test('el Blueprint de Render mantiene cerradas ambas banderas de registro', () => {
+  const blueprint = fs.readFileSync(path.join(root, 'render.yaml'), 'utf8');
+  const valueFor = name => {
+    const match = blueprint.match(new RegExp(`^[ \\t]*- key: ${name}\\r?\\n[ \\t]+value: ["']([^"']+)["']$`, 'm'));
+    return match?.[1]?.toLowerCase() || null;
+  };
+  assert.equal(valueFor('PUBLIC_REGISTRATION_ENABLED'), 'false');
+  assert.equal(valueFor('REGISTRATION_OPEN'), 'false');
+});
