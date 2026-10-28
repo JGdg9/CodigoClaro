@@ -45,7 +45,7 @@ test('las cabeceras de seguridad están presentes en páginas y API', async () =
   }
 });
 test('páginas principales, recursos estáticos y guías Markdown responden correctamente', async () => {
-  for (const route of ['/', '/index.html', '/aula.html', '/temarios.html', '/diagnostico.html', '/privacidad.html', '/condiciones.html', '/catalogo_temas.json', '/temarios/Java_Tema_01.pdf', '/Java_Tema_01.pdf', '/ayuda/EMPEZAR_AQUI.md', '/ayuda/LEEME.md', '/ayuda/LEEME_IDE.md', '/ayuda/NOTAS_DE_VERSION.md', '/ayuda/README.md']) {
+  for (const route of ['/', '/index.html', '/aula.html', '/temarios.html', '/diagnostico.html', '/privacidad.html', '/condiciones.html', '/catalogo_temas.json', '/temarios/Java_Tema_01.pdf', '/Java_Tema_01.pdf', '/ayuda/EMPEZAR_AQUI.md', '/ayuda/LEEME.md', '/ayuda/LEEME_IDE.md', '/ayuda/NOTAS_DE_VERSION.md', '/ayuda/README.md', '/ayuda/PRIMEROS_PASOS.md']) {
     const r = await request(route); assert.equal(r.status, 200, `${route} debe existir`);
     const type = r.headers.get('content-type') || '';
     if (route.endsWith('.html') || route === '/') assert.match(type, /text\/html/i, route);
