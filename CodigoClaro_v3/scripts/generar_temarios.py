@@ -8,9 +8,7 @@ la ejecución desde distintas carpetas de trabajo.
 """Genera los PDF didácticos desde el catálogo de temas. Las funciones separan la preparación del contenido, el formato y la escritura de los archivos."""
 """Genera los 75 temarios de CódigoClaro a partir del catálogo versionado.
 
-Los textos son material didáctico original. Los enlaces al final de cada PDF
-apuntan a documentación oficial de referencia; se recomienda revisar las
-versiones de los lenguajes antes de reutilizar ejemplos en producción.
+Las explicaciones son síntesis didácticas en español basadas en documentación primaria enlazada en cada PDF. Se atribuyen las fuentes a sus equipos responsables; consulta la versión actual antes de reutilizar ejemplos.
 """
 from pathlib import Path
 import json, re
@@ -30,11 +28,19 @@ PUB = ROOT / 'public'
 CATALOG = PUB / 'catalogo_temas.json'
 
 REFS = {
- 'Java': [('Documentación Java', 'https://docs.oracle.com/en/java/'), ('Tutoriales oficiales de Java', 'https://dev.java/learn/'), ('JUnit 5 User Guide', 'https://junit.org/junit5/docs/current/user-guide/')],
- 'JavaScript': [('MDN JavaScript Guide', 'https://developer.mozilla.org/es/docs/Web/JavaScript/Guide'), ('MDN Web APIs', 'https://developer.mozilla.org/es/docs/Web/API'), ('Node.js Documentation', 'https://nodejs.org/docs/latest/api/')],
- 'Python': [('Tutorial oficial de Python', 'https://docs.python.org/es/3/tutorial/'), ('Biblioteca estándar de Python', 'https://docs.python.org/es/3/library/'), ('pytest Documentation', 'https://docs.pytest.org/en/stable/')],
- 'Kotlin': [('Kotlin Documentation', 'https://kotlinlang.org/docs/home.html'), ('Kotlin Standard Library', 'https://kotlinlang.org/api/latest/jvm/stdlib/'), ('Kotlin Coroutines Guide', 'https://kotlinlang.org/docs/coroutines-guide.html')],
- 'React': [('React Documentation', 'https://react.dev/learn'), ('React Reference', 'https://react.dev/reference/react'), ('Vite Guide', 'https://vite.dev/guide/')],
+ 'Java': [('Dev.java: tutoriales para aprender Java', 'https://dev.java/learn/'), ('Oracle: Java SE 25 Language Specification', 'https://docs.oracle.com/javase/specs/jls/se25/html/index.html')],
+ 'JavaScript': [('MDN: JavaScript Guide, MDN Contributors', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide'), ('Ecma International: ECMAScript specification', 'https://tc39.es/ecma262/')],
+ 'Python': [('Python Software Foundation: Python Tutorial', 'https://docs.python.org/3/tutorial/'), ('Python Software Foundation: Standard Library', 'https://docs.python.org/3/library/')],
+ 'Kotlin': [('JetBrains: Kotlin Documentation', 'https://kotlinlang.org/docs/home.html'), ('JetBrains: Kotlin Standard Library', 'https://kotlinlang.org/api/latest/jvm/stdlib/')],
+ 'React': [('React Team: Learn React', 'https://react.dev/learn'), ('React Team: API Reference', 'https://react.dev/reference/react')],
+}
+
+SOURCE_OWNERS = {
+ 'Java': 'Oracle y OpenJDK',
+ 'JavaScript': 'MDN Contributors y Ecma International',
+ 'Python': 'Python Software Foundation',
+ 'Kotlin': 'JetBrains',
+ 'React': 'el equipo de React',
 }
 
 TOPIC = {
@@ -50,7 +56,7 @@ TOPIC = {
   'Constructores y this': ('El constructor inicializa una instancia y no tiene tipo de retorno. `this` refiere al objeto actual y puede resolver nombres; `this(...)` delega en otro constructor de la misma clase. Desde Java 25, ciertas instrucciones de preparación o validación pueden preceder a la invocación explícita, pero no pueden acceder a la instancia aún en construcción. En versiones anteriores, la invocación debe aparecer al inicio.', 'class Usuario {\n  private final String nombre;\n  Usuario(String nombre) { this.nombre = nombre; }\n}', 'Valida argumentos al crear el objeto. Evita duplicar lógica entre constructores; delega en un constructor principal cuando sea claro.'),
   'Herencia y polimorfismo': ('extends crea una relación de herencia de clases; una subclase especializa el comportamiento. La sobrescritura debe respetar el contrato de la clase base. El despacho dinámico elige la implementación según el objeto real.', 'class Animal { void hablar() { System.out.println("..."); } }\nclass Perro extends Animal { @Override void hablar() { System.out.println("Guau"); } }', 'Prefiere composición cuando no existe una relación genuina “es-un”. No reduzcas visibilidad al sobrescribir y respeta el principio de sustitución.'),
   'Interfaces y abstractas': ('Una interfaz define un contrato que distintas clases pueden implementar. Una clase abstracta puede combinar estado y comportamiento compartido. Las interfaces permiten implementar varios contratos, mientras que una clase solo extiende una clase.', 'interface Exportable {\n  String exportar();\n}\nclass Informe implements Exportable {\n  public String exportar() { return "{}"; }\n}', 'Programa contra abstracciones cuando facilite cambiar implementaciones. Mantén interfaces pequeñas y cohesivas.'),
-  'Excepciones': ('Las excepciones representan condiciones excepcionales. Las checked deben declararse o capturarse; las unchecked suelen representar errores de programación o precondiciones incumplidas. try-with-resources cierra recursos AutoCloseable.', 'try (var lector = java.nio.file.Files.newBufferedReader(ruta)) {\n  System.out.println(lector.readLine());\n} catch (java.io.IOException e) {\n  System.err.println("No se pudo leer el fichero");\n}', 'No captures Exception para ocultar fallos ni ignores una excepción vacía. Añade contexto útil y conserva la causa al envolverla.'),
+  'Excepciones': ('Java clasifica las excepciones por su jerarquía: las checked se deben capturar o declarar; las unchecked son RuntimeException y sus subclases, además de Error y sus subclases. La clasificación no depende de que el programador las considere un error de uso. try-with-resources cierra recursos AutoCloseable.', 'try (var lector = java.nio.file.Files.newBufferedReader(ruta)) {\n  System.out.println(lector.readLine());\n} catch (java.io.IOException e) {\n  System.err.println("No se pudo leer el fichero");\n}', 'No captures Exception para ocultar fallos ni ignores una excepción vacía. Añade contexto útil y conserva la causa al envolverla.'),
   'Colecciones': ('List mantiene orden y permite duplicados; Set modela elementos únicos; Map asocia claves y valores. La elección depende de las operaciones más frecuentes y de las garantías de orden necesarias.', 'List<String> nombres = new ArrayList<>();\nnombres.add("Lía");\nSet<String> unicos = new HashSet<>(nombres);\nMap<String, Integer> puntos = new HashMap<>();', 'Define tipos genéricos y no dependas del orden de HashMap/HashSet. Evita modificar una colección durante un for-each salvo mediante el mecanismo apropiado.'),
   'Genéricos y lambdas': ('Los genéricos aportan comprobación de tipos en compilación. Los comodines `? extends T` y `? super T` permiten expresar productores y consumidores. Las lambdas implementan interfaces funcionales.', 'List<String> nombres = List.of("ana", "Leo");\nnombres.stream()\n  .filter(n -> n.length() > 3)\n  .forEach(System.out::println);', 'No uses raw types si puedes parametrizar. Evita pipelines de streams difíciles de depurar y comprueba si una operación necesita ser perezosa o terminal.'),
   'Ficheros y pruebas': ('La API NIO.2 ofrece Path y Files para trabajar con rutas y ficheros. Una prueba automatizada debe comprobar un comportamiento observable y aislar casos normales, límites y errores esperados.', 'Path ruta = Path.of("datos.txt");\nFiles.writeString(ruta, "hola");\nString contenido = Files.readString(ruta);', 'Usa rutas temporales en pruebas y limpia los recursos. Una prueba debe fallar cuando la implementación incumple el requisito; evita comprobar detalles internos innecesarios.'),
@@ -97,7 +103,7 @@ DETAILS = {
  'Ficheros y JSON': ('pathlib.Path ofrece operaciones de rutas; open con `with` cierra el archivo automáticamente. `json.load(fp)` deserializa desde un archivo; `json.loads(s)` lo hace desde texto o bytes. Ambas convierten JSON a objetos Python, cuya estructura debe validarse.', 'import json\nfrom pathlib import Path\ndatos = {"tema": "DAM", "nivel": 2}\ntexto = json.dumps(datos, ensure_ascii=False)\nPath("datos.json").write_text(texto, encoding="utf-8")\nrecuperado = json.loads(texto)'),
  'POO y dataclasses': ('Las clases agrupan estado y comportamiento. `dataclass` genera métodos comunes a partir de los campos declarados; no sustituye la validación de dominio ni hace inmutables los objetos salvo configuración específica.', 'from dataclasses import dataclass\n\n@dataclass\nclass Alumno:\n    nombre: str\n    nota: float'),
  'Librerías y entornos': ('Un entorno virtual separa las dependencias del proyecto del Python global. El archivo de dependencias debe documentar lo necesario para reconstruir el entorno; instalar paquetes requiere confiar en el origen.', 'python -m venv .venv\npython -m pip install paquete\npython -m pip freeze'),
- 'Pruebas y depuración': ('Una prueba automatizada comprueba resultados esperados. unittest está en la biblioteca estándar; pytest es una herramienta externa. El depurador permite pausar ejecución y examinar variables en el punto del fallo.', 'def sumar(a, b):\n    return a + b\n\ndef test_sumar():\n    assert sumar(2, 3) == 5'),
+ 'Pruebas y depuración': ('unittest forma parte de la biblioteca estándar y organiza los casos en clases TestCase. pytest es un ejecutor externo que también admite funciones test_ y la sentencia assert. El ejemplo usa unittest.', 'import unittest\n\ndef sumar(a, b):\n    return a + b\n\nclass TestSuma(unittest.TestCase):\n    def test_sumar(self):\n        self.assertEqual(sumar(2, 3), 5)\n\nif __name__ == "__main__":\n    unittest.main()'),
  'APIs y seguridad': ('Las APIs HTTP intercambian solicitudes y respuestas. Deben tratar códigos de estado, tiempos de espera, validación de esquemas y secretos. Las respuestas remotas no son confiables por defecto.', 'import urllib.request\nwith urllib.request.urlopen("https://example.com", timeout=5) as respuesta:\n    print(respuesta.status)'),
  },
  'Kotlin': {
@@ -113,7 +119,7 @@ DETAILS = {
  'Lambdas y funciones de orden superior': ('Una función de orden superior recibe o devuelve funciones. `it` es el nombre implícito de un único parámetro de lambda. Las referencias a funciones pueden mejorar la claridad si la firma es evidente.', 'val nombres = listOf("Ada", "Lía")\nval largos = nombres.filter { it.length > 3 }'),
  'Excepciones': ('Kotlin no distingue excepciones checked y unchecked en el sistema de tipos. try puede ser una expresión. `use` cierra recursos Closeable/AutoCloseable al finalizar el bloque.', 'val numero = try { texto.toInt() } catch (e: NumberFormatException) { 0 }'),
  'Genéricos': ('Los parámetros de tipo permiten reutilizar código con seguridad estática. Kotlin admite declaración de varianza con `out` y `in`; la proyección de tipos limita qué operaciones se pueden realizar.', 'fun <T> primero(elementos: List<T>): T? = elementos.firstOrNull()'),
- 'Coroutines': ('Una función suspend puede pausar y reanudarse mediante operaciones suspendibles como `delay`, sin bloquear el hilo mientras espera. La palabra clave no cambia por sí sola de hilo ni vuelve no bloqueante una llamada bloqueante; el dispatcher controla dónde se ejecuta la coroutine. `delay`, `launch` y `async` pertenecen a `kotlinx.coroutines`, que debe añadirse como dependencia. `launch` devuelve un Job; `async`, un Deferred con resultado; ambos se inician dentro de un CoroutineScope.', 'import kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\n\nsuspend fun cargar(): String {\n    delay(100L)\n    return "listo"\n}\n\nfun main() = runBlocking {\n    // Solo como puente didáctico desde main: runBlocking bloquea este hilo.\n    println(cargar())\n}'),
+ 'Coroutines': ('Una función suspend puede pausar y reanudarse mediante operaciones suspendibles como delay, sin bloquear el hilo mientras espera. La palabra clave no cambia por sí sola de hilo ni vuelve no bloqueante una llamada bloqueante; el dispatcher controla dónde se ejecuta la coroutine. delay, launch y async pertenecen a kotlinx.coroutines, que debe añadirse como dependencia. launch devuelve un Job; async, un Deferred con resultado; ambos se inician dentro de un CoroutineScope.', 'import kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\nsuspend fun cargar() { delay(100L); println("listo") }\nfun main() = runBlocking { cargar() }'),
  'Ficheros y serialización': ('El acceso a archivos depende del target y de las bibliotecas. Este ejemplo usa `java.nio.file`, APIs de Kotlin/JVM; `Path.of` y `Files.writeString` requieren JDK 11 o posterior y no sirven en código común multiplataforma. Serializar transforma objetos a un formato intercambiable; el formato, versión y validación deben ser explícitos.', 'val ruta = java.nio.file.Path.of("datos.txt")\njava.nio.file.Files.writeString(ruta, "CódigoClaro")'),
  'Pruebas y arquitectura': ('Las pruebas de unidad aíslan reglas; las de integración verifican colaboración. Separar dominio, infraestructura y presentación reduce acoplamiento, pero conviene adaptar la arquitectura al tamaño real del proyecto.', 'import kotlin.test.Test\nimport kotlin.test.assertEquals\nclass SumaTest {\n    @Test fun suma() { assertEquals(5, 2 + 3) }\n}'),
  },
@@ -124,11 +130,11 @@ DETAILS = {
  'Eventos y formularios': ('Los handlers de eventos son funciones. Los inputs controlados reciben value y onChange desde estado; los no controlados pueden consultarse con referencias. La validación debe explicar qué campo necesita corrección.', 'const [nombre, setNombre] = useState("");\n<input value={nombre} onChange={e => setNombre(e.target.value)} />'),
  'Renderizado condicional': ('Las expresiones JavaScript permiten elegir qué mostrar. El operador && devuelve el operando de la izquierda si es falsy, por lo que `0 && ...` puede renderizar un cero visible.', '{cargando ? <p>Cargando…</p> : error ? <p role="alert">Error</p> : <Contenido />}'),
  'Listas y keys': ('map suele transformar una colección en elementos React. Las keys identifican elementos entre renders y deben ser estables y únicas entre hermanos; usar el índice puede ser incorrecto si la lista cambia de orden.', '{alumnos.map(alumno => <li key={alumno.id}>{alumno.nombre}</li>)}'),
- 'useEffect': ('useEffect sincroniza un componente con sistemas externos como suscripciones, temporizadores o APIs. No es necesario para calcular valores derivados del estado. La función de limpieza deshace suscripciones o recursos.', 'useEffect(() => {\n  const id = setInterval(actualizar, 1000);\n  return () => clearInterval(id);\n}, []);'),
+ 'useEffect': ('useEffect sincroniza un componente con sistemas externos como suscripciones, temporizadores o APIs. No es necesario para calcular valores derivados del estado. La función de limpieza deshace suscripciones o recursos; todos los valores reactivos usados por el efecto deben estar en sus dependencias.', 'useEffect(() => {\n  const id = setInterval(() => {\n    setSegundos(actuales => actuales + 1);\n  }, 1000);\n  return () => clearInterval(id);\n}, []);'),
  'Hooks personalizados': ('Un hook personalizado encapsula lógica reutilizable de estado o efectos. Su nombre comienza por use y debe respetar las reglas de hooks; no comparte automáticamente el mismo estado entre componentes.', 'function useContadorInicial(valor = 0) {\n  const [n, setN] = useState(valor);\n  return [n, () => setN(x => x + 1)];\n}'),
  'Context': ('Context permite compartir un valor con componentes descendientes sin prop drilling en cada nivel. No es una base de datos global universal; dividir contextos y memoizar valores puede evitar renders innecesarios.', 'const TemaContext = createContext("claro");\n// El proveedor coloca el valor disponible para descendientes.'),
  'React Router': ('Una biblioteca de enrutado permite relacionar rutas con componentes y parámetros. Los detalles de API dependen de la versión instalada; consulta la documentación de la versión del proyecto.', '<Routes>\n  <Route path="/" element={<Inicio />} />\n  <Route path="/temas/:id" element={<Tema />} />\n</Routes>'),
- 'Peticiones a APIs': ('Una petición debe modelar estados de carga, éxito y error. Si se obtienen datos manualmente con useEffect, hay que cancelar o ignorar respuestas obsoletas y comprobar códigos HTTP y forma de los datos. En proyectos con framework, prioriza su mecanismo integrado de datos o una caché: Effects manuales no resuelven por sí solos caché ni renderizado en servidor.', 'useEffect(() => {\n  const controller = new AbortController();\n  fetch(url, { signal: controller.signal });\n  return () => controller.abort();\n}, [url]);'),
+ 'Peticiones a APIs': ('Una petición debe modelar estados de carga, éxito y error. Si se obtienen datos manualmente con useEffect, hay que cancelar o ignorar respuestas obsoletas y comprobar códigos HTTP y forma de los datos. En proyectos con framework, prioriza su mecanismo integrado de datos o una caché: Effects manuales no resuelven por sí solos caché ni renderizado en servidor.', 'useEffect(() => {\n  const c = new AbortController();\n  fetch(url, { signal: c.signal })\n    .then(r => { if (!r.ok) throw Error("HTTP " + r.status); return r.json(); })\n    .then(setDato)\n    .catch(e => { if (e.name !== "AbortError") setError(e); });\n  return () => c.abort();\n}, [url]);'),
  'Validación de formularios': ('La validación de interfaz ayuda al usuario a corregir entradas, pero el servidor debe validar de nuevo. Los errores deben asociarse a campos, anunciarse de forma accesible y no borrar datos válidos innecesariamente.', '<label htmlFor="email">Correo</label>\n<input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} />'),
  'Rendimiento': ('Primero mide el problema. React.memo, useMemo y useCallback pueden reducir trabajo en casos concretos, pero añaden complejidad y no hacen falta en todo componente. Si React Compiler está configurado, puede memoizar componentes y valores automáticamente. Las keys estables ayudan a reconciliar listas.', 'const total = useMemo(() => calcularTotal(items), [items]);'),
  'Pruebas de componentes': ('Una prueba de componente debe comprobar el comportamiento observable desde la perspectiva del usuario. Las pruebas robustas consultan roles, etiquetas y texto accesible en vez de depender de detalles internos.', 'render(<Boton onClick={guardar}>Guardar</Boton>);\nawait user.click(screen.getByRole("button", { name: "Guardar" }));\nexpect(guardar).toHaveBeenCalled();'),
@@ -160,11 +166,13 @@ styles = getSampleStyleSheet()
 styles.add(ParagraphStyle(name='CoverTitleCC', fontName=BOLD, fontSize=24, leading=30, textColor=colors.HexColor('#243b80'), spaceAfter=16, alignment=TA_LEFT))
 styles.add(ParagraphStyle(name='SubCC', fontName=FONT, fontSize=11, leading=14, textColor=colors.HexColor('#475467'), spaceAfter=5))
 styles.add(ParagraphStyle(name='H1CC', fontName=BOLD, fontSize=16, leading=19, textColor=colors.HexColor('#243b80'), spaceBefore=4, spaceAfter=7, keepWithNext=True))
-styles.add(ParagraphStyle(name='H2CC', fontName=BOLD, fontSize=10, leading=12, textColor=colors.HexColor('#087f8c'), spaceBefore=4, spaceAfter=2, keepWithNext=True))
-styles.add(ParagraphStyle(name='BodyCC', fontName=FONT, fontSize=8.2, leading=10, textColor=colors.HexColor('#263244'), spaceAfter=3))
-styles.add(ParagraphStyle(name='SmallCC', fontName=FONT, fontSize=7, leading=8.5, textColor=colors.HexColor('#596579'), spaceAfter=2))
+styles.add(ParagraphStyle(name='H2CC', fontName=BOLD, fontSize=10.5, leading=13, textColor=colors.HexColor('#087f8c'), spaceBefore=6, spaceAfter=3, keepWithNext=True))
+styles.add(ParagraphStyle(name='BodyCC', fontName=FONT, fontSize=9, leading=12.2, textColor=colors.HexColor('#263244'), spaceAfter=5))
+styles.add(ParagraphStyle(name='SmallCC', fontName=FONT, fontSize=8, leading=10, textColor=colors.HexColor('#596579'), spaceAfter=3))
 styles.add(ParagraphStyle(name='CodeCC', fontName='Courier', fontSize=8, leading=10, leftIndent=8, rightIndent=8, backColor=colors.HexColor('#f3f5f9'), borderColor=colors.HexColor('#d8deea'), borderWidth=.5, borderPadding=6, spaceBefore=3, spaceAfter=5))
-styles.add(ParagraphStyle(name='BulletCC', parent=styles['BodyCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=1))
+styles.add(ParagraphStyle(name='BulletCC', parent=styles['BodyCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=2))
+styles.add(ParagraphStyle(name='BodyLastCC', fontName=FONT, fontSize=9.5, leading=13.6, textColor=colors.HexColor('#263244'), spaceAfter=6))
+styles.add(ParagraphStyle(name='BulletLastCC', parent=styles['BodyLastCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=3))
 
 
 def esc(s):
@@ -182,97 +190,209 @@ def footer(canvas, doc):
     canvas.saveState(); w,h=A4
     canvas.setStrokeColor(colors.HexColor('#d9dee8')); canvas.line(1.8*cm,1.35*cm,w-1.8*cm,1.35*cm)
     canvas.setFont(FONT,7); canvas.setFillColor(colors.HexColor('#667085'))
-    canvas.drawString(1.8*cm,0.95*cm,'CódigoClaro · Material didáctico original · Revisa las fuentes oficiales')
+    canvas.drawString(1.8*cm,0.95*cm,'CódigoClaro · Síntesis basada en fuentes oficiales')
     canvas.drawRightString(w-1.8*cm,0.95*cm,f'Página {doc.page}')
     canvas.restoreState()
 
 def make_pages(item):
-    """Construye los bloques de contenido que forman un temario completo."""
+    """Construye una guía breve, respaldada por fuentes y compuesta en flujo continuo."""
     track, num, title, desc = item['track'], item['num'], item['title'], item['description']
     concept, code = topic_specific(track, title, desc)
-    if track in DETAILS and title in DETAILS[track]:
-        code = DETAILS[track][title][1]
-    else:
-        code = COMMON.get(track, ('','// Ejemplo')).__getitem__(1) if track in COMMON else code
-    # Prefer exact topic examples for JavaScript mapping and fallback technology detail.
-    if track in ('Java','JavaScript') and title in TOPIC.get(track, {}):
+    warning = 'Comprueba el contrato del ejemplo con datos normales, límites y errores; consulta la documentación enlazada para confirmar la versión que usas.'
+    if track in ('Java', 'JavaScript') and title in TOPIC.get(track, {}):
         concept, code, warning = TOPIC[track][title]
-    else:
-        warning = 'Valida las entradas, contempla los casos límite y comprueba el comportamiento con una prueba reproducible.'
-    ref = REFS[track]
-    if track == 'JavaScript' and title == 'Promesas y async/await':
-        ref = [*ref, ('MDN: await', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await')]
-    if track == 'Kotlin' and title == 'Coroutines':
-        ref = [*ref, ('Kotlin Documentation: Coroutines basics', 'https://kotlinlang.org/docs/coroutines-basics.html')]
-    if track == 'Kotlin' and title == 'val, var y tipos':
-        ref = [*ref, ('Kotlin Documentation: Basic syntax — Variables', 'https://kotlinlang.org/docs/basic-syntax.html#variables')]
-    if track == 'Kotlin' and title == 'Bucles y rangos':
-        ref = [*ref, ('Kotlin Documentation: Ranges and progressions', 'https://kotlinlang.org/docs/ranges.html')]
-    if track == 'Kotlin' and title == 'Funciones':
-        ref = [*ref, ('Kotlin Documentation: Functions', 'https://kotlinlang.org/docs/functions.html')]
-    if track == 'Kotlin' and title == 'Clases y data class':
-        ref = [*ref, ('Kotlin Documentation: Data classes', 'https://kotlinlang.org/docs/data-classes.html')]
-    if track == 'Kotlin' and title == 'Herencia e interfaces':
-        ref = [*ref, ('Kotlin Documentation: Inheritance', 'https://kotlinlang.org/docs/inheritance.html'), ('Kotlin Documentation: Interfaces', 'https://kotlinlang.org/docs/interfaces.html')]
-    if track == 'Kotlin' and title == 'Ficheros y serialización':
-        ref = [*ref, ('Kotlin Multiplatform: Platform-specific APIs', 'https://kotlinlang.org/docs/multiplatform/multiplatform-connect-to-apis.html'), ('Oracle Java SE 25: Files', 'https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/nio/file/Files.html')]
-    if track == 'Kotlin' and title == 'Pruebas y arquitectura':
-        ref = [*ref, ('Kotlin API: kotlin.test', 'https://kotlinlang.org/api/latest/kotlin.test/')]
-    if track == 'Python' and title == 'Diccionarios y conjuntos':
-        ref = [*ref, ('Python Data Model: Dictionaries', 'https://docs.python.org/3/reference/datamodel.html#dictionaries')]
-    if track == 'Python' and title == 'Instalación y primer programa':
-        ref = [*ref, ('Python: venv', 'https://docs.python.org/es/3/library/venv.html')]
-    if track == 'Python' and title == 'Ficheros y JSON':
-        ref = [*ref, ('Python: json', 'https://docs.python.org/es/3/library/json.html')]
-    if track == 'Java' and title == 'Constructores y this':
-        ref = [*ref, ('Java 27: Flexible Constructor Bodies', 'https://docs.oracle.com/en/java/javase/27/language/flexible-constructor-bodies.html')]
-    if track == 'React' and title == 'React Router':
-        ref = [*ref, ('React Router: Routing', 'https://reactrouter.com/start/declarative/routing')]
-    if track == 'React' and title == 'Peticiones a APIs':
-        ref = [*ref, ('React: useEffect y obtención de datos', 'https://react.dev/reference/react/useEffect')]
-    if track == 'React' and title == 'Rendimiento':
-        ref = [*ref, ('React: React Compiler', 'https://react.dev/learn/react-compiler/introduction'), ('React: useMemo', 'https://react.dev/reference/react/useMemo')]
-    if track == 'React' and title == 'Pruebas de componentes':
-        ref = [*ref, ('React Testing Library: introducción', 'https://testing-library.com/docs/react-testing-library/intro/')]
-    pages = []
-    pages.append([
-      para(f'CÓDIGOCLARO · RUTA {track.upper()}', 'H2CC'),
-      para(f'Tema {num:02d} · {title}', 'CoverTitleCC'),
-      para(f'Material de estudio para DAM/DAW · Nivel progresivo · Edición 2026', 'SubCC'),
-      Spacer(1,8), para('Qué aprenderás', 'H1CC'),
-      para(f'Este documento desarrolla el tema «{title}» dentro de la ruta de {track}. La meta no es memorizar una receta, sino entender los conceptos, escribir una solución legible, justificar decisiones y comprobar que el comportamiento coincide con el requisito.'),
-      para('Objetivos de aprendizaje', 'H2CC'),
-      *[bullet(x) for x in [f'Explicar con tus palabras los conceptos centrales de {title.lower()}.', 'Reconocer cuándo utilizar la técnica y qué alternativas existen.', 'Leer y modificar el ejemplo guiado sin depender de copiarlo.', 'Diseñar pruebas con un caso normal, un caso límite y un caso inválido cuando proceda.', 'Localizar la documentación primaria adecuada para resolver dudas de versión.']],
-      para('Cómo estudiar este capítulo', 'H2CC'),
-      para('Primero lee el modelo mental; después predice el resultado del ejemplo antes de ejecutarlo. Cierra el documento y reconstruye la solución desde cero. Por último, resuelve los ejercicios y contrasta tu razonamiento con los criterios orientativos. Marca una duda concreta para investigar en la documentación oficial.'),
-      para('Mapa del capítulo', 'H2CC'),
-      para('1. Fundamentos · 2. Modelo mental · 3. Sintaxis · 4. Ejemplo comentado · 5. Diseño y límites · 6. Depuración · 7. Pruebas · 8. Prácticas · 9. Soluciones orientativas · 10. Repaso y fuentes.'),
-    ])
-    pages.append([para('1. Fundamentos', 'H1CC'), para(concept), para('Idea esencial', 'H2CC'), para(f'El objetivo de «{title}» no es aprender una palabra aislada, sino comprender la relación entre entrada, transformación, estado y salida. En programación conviene describir el contrato antes de implementar: qué recibe la operación, qué garantiza, qué puede fallar y qué efectos secundarios produce.'), para('Vocabulario que debes dominar', 'H2CC'), *[bullet(x) for x in [f'{title}: nombre del concepto que organiza el capítulo.', 'Contrato: condiciones de entrada y garantías de salida.', 'Invariante: condición que debe seguir siendo cierta durante la ejecución.', 'Caso límite: entrada situada en una frontera o condición poco habitual.', 'Regresión: fallo que reaparece tras un cambio que parecía no relacionado.']], para('Preguntas de comprobación', 'H2CC'), *[bullet(x) for x in [f'¿Qué problema resuelve {title.lower()}?', '¿Qué alternativa sencilla existe y qué coste tiene?', '¿Qué dato haría que el enfoque fallara?', '¿Cómo demostrarías que la solución es correcta?']]])
-    pages.append([para('2. Modelo mental y decisiones', 'H1CC'), para('Antes de escribir código, representa el proceso en tres pasos: entrada validada, transformación y resultado observable. Si existe estado mutable, identifica quién lo modifica y en qué momento. Si hay E/S o red, separa el cálculo de la operación externa para poder probar la lógica con datos controlados.'), para('Descomposición del problema', 'H2CC'), *[bullet(x) for x in [f'Entrada: qué valores necesita la solución de {title.lower()} y quién los proporciona.', 'Precondiciones: qué debe ser cierto antes de empezar.', 'Proceso: qué regla o algoritmo transforma los datos.', 'Salida: qué resultado devuelve o qué cambio observable realiza.', 'Errores: cómo se representa un dato inválido o un fallo externo.', 'Coste: si importa, estima el crecimiento de tiempo y memoria al aumentar los datos.']], para('Decisión de diseño', 'H2CC'), para(f'Para {title.lower()}, evita añadir abstracciones por adelantado. Empieza con la solución más pequeña que cumple el contrato, nombra los conceptos del dominio y separa responsabilidades cuando exista una razón comprobable: duplicación, complejidad, reutilización o aislamiento de efectos.'), para('Ejercicio de razonamiento', 'H2CC'), para(f'Describe un caso real de DAM/DAW donde usarías {title.lower()}. Escribe tres entradas, el resultado esperado de cada una y un ejemplo que deba rechazarse o tratarse de forma especial.')])
-    pages.append([para('3. Sintaxis y patrones de uso', 'H1CC'), para('La sintaxis concreta depende de la tecnología y, en algunos casos, de la versión del compilador o del entorno. El patrón que conviene retener es el siguiente: expresar la intención directamente, mantener el alcance de las variables pequeño y evitar que una sola operación esconda decisiones distintas.'), para('Ejemplo de referencia', 'H2CC'), Preformatted(code, styles['CodeCC']), para('Cómo leer el código', 'H2CC'), *[bullet(x) for x in ['Localiza la declaración o punto de entrada.', 'Identifica el valor que se procesa y qué tipo tiene.', 'Sigue la operación en orden; no asumas resultados sin evaluarlos.', 'Localiza el resultado observable: retorno, salida, estado o escritura.', 'Pregúntate qué ocurre si la entrada es vacía, nula o inesperada.']], para('Variación guiada', 'H2CC'), para(f'Modifica el ejemplo para cubrir un segundo caso de uso de «{title}». No cambies varias cosas a la vez: introduce un cambio, predice su efecto, ejecútalo y anota si la predicción era correcta.'), para('Nota de compatibilidad', 'H2CC'), para('Si un ejemplo no compila en tu entorno, registra el mensaje exacto y la versión del runtime. Comprueba primero las instrucciones oficiales; algunas APIs, opciones de sintaxis y herramientas de proyecto cambian entre versiones.')])
-    pages.append([para('4. Ejemplo guiado paso a paso', 'H1CC'), para(f'Construye una solución pequeña relacionada con {title.lower()}. El enunciado de práctica es: recibir datos de un caso sencillo, aplicar una regla clara y presentar el resultado de forma comprensible. Antes de programar, escribe un ejemplo de entrada y salida esperada.'), para('Plan', 'H2CC'), *[bullet(x) for x in ['Reformula el enunciado sin palabras ambiguas.', 'Elige nombres que expresen el significado, no solo el tipo.', 'Implementa la regla central con el mínimo estado necesario.', 'Añade una comprobación explícita de entrada si el contrato la requiere.', 'Ejecuta el caso normal y compara el resultado con tu predicción.']], para('Lectura crítica', 'H2CC'), para(f'El ejemplo de la página anterior ilustra un patrón frecuente en {track}, pero no es la única implementación correcta. Evalúa si la solución sigue siendo comprensible cuando el caso crece, si el error se comunica de manera útil y si las responsabilidades están separadas.'), para('Registro de aprendizaje', 'H2CC'), para('Anota en tu cuaderno: qué parte entendiste a la primera, qué supuesto resultó falso y qué pregunta consultarás en la documentación. Esta pequeña bitácora facilita repasar antes de un examen y detectar patrones en tus errores.'), para('Ampliación', 'H2CC'), para('Añade una segunda regla de negocio y mantén separada la lógica principal de la presentación. Si el ejemplo ya tiene demasiadas condiciones, divide la operación en funciones o componentes con nombres concretos.')])
-    pages.append([para('5. Casos límite, errores y buenas prácticas', 'H1CC'), para('Una solución que funciona con un ejemplo no demuestra que funcione con todos los casos relevantes. Los errores más comunes suelen venir de supuestos no escritos: datos vacíos, valores fuera de rango, diferencias de mayúsculas, operaciones que fallan, estado desactualizado o dependencias de la versión.'), para('Lista de comprobación', 'H2CC'), *[bullet(x) for x in [f'Caso mínimo: ¿qué pasa con la entrada más pequeña válida para {title.lower()}?', 'Caso vacío: ¿se acepta, se devuelve un resultado vacío o se informa de un error?', 'Caso límite: ¿qué ocurre justo en la frontera de una condición?', 'Caso inválido: ¿se valida antes de usar el dato?', 'Error externo: ¿qué ocurre si falla el archivo, la red o la dependencia?', 'Legibilidad: ¿otra persona entiende el propósito sin conocer tu intención?', 'Seguridad: ¿se evita ejecutar o interpretar contenido no confiable?']], para('Buenas prácticas', 'H2CC'), para('Prefiere un comportamiento explícito a una conversión o mutación sorprendente. Evita capturar errores sin actuar, duplicar reglas de negocio y exponer información sensible en mensajes. Documenta el porqué de una decisión no obvia, no cada línea de código.'), para('Criterio profesional', 'H2CC'), para(warning)])
-    pages.append([para('6. Depuración sistemática', 'H1CC'), para('Depurar no es cambiar líneas al azar: es reducir la distancia entre lo que esperabas y lo que observas. Reproduce el fallo con los pasos mínimos, guarda la entrada problemática y formula una hipótesis que pueda confirmarse o descartarse.'), para('Procedimiento recomendado', 'H2CC'), *[bullet(x) for x in ['Reproduce el fallo de forma consistente.', 'Lee el primer mensaje de error relevante y la traza completa.', 'Inspecciona los valores justo antes de la operación que falla.', 'Cambia una sola hipótesis por iteración.', 'Añade una prueba de regresión cuando hayas corregido el defecto.', 'Retira logs temporales que contengan datos sensibles y conserva los útiles.']], para('Tabla de diagnóstico', 'H2CC'), Table([[para('Síntoma','SmallCC'),para('Hipótesis','SmallCC'),para('Comprobación','SmallCC')],[para('Resultado inesperado','SmallCC'),para('La regla o entrada no era la esperada','SmallCC'),para('Inspeccionar valores y repetir el caso','SmallCC')],[para('Falla solo en algunos datos','SmallCC'),para('Caso límite o supuesto incorrecto','SmallCC'),para('Reducir entrada y crear prueba específica','SmallCC')],[para('Falla en otra máquina','SmallCC'),para('Versión, configuración o dependencia','SmallCC'),para('Registrar runtime y reproducir instalación','SmallCC')]], colWidths=[4*cm,5.2*cm,6*cm], style=TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eaf0ff')),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#d9dee8')),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)])), Spacer(1,7), para('Qué evitar', 'H2CC'), para('No declares resuelto un fallo porque desapareció una vez. Repite el escenario, prueba un caso vecino y verifica que la corrección no rompe un comportamiento anterior. Si no entiendes la causa raíz, la solución puede ser accidental.')])
-    pages.append([para('7. Pruebas y criterios de calidad', 'H1CC'), para('Una prueba útil establece una condición inicial, ejecuta una acción y comprueba un resultado observable. Las pruebas no tienen que cubrir cada línea para ser valiosas; deben cubrir riesgos y contratos importantes. Separa las pruebas rápidas de unidad de las pruebas que requieren base de datos, navegador o red.'), para('Matriz mínima de pruebas', 'H2CC'), Table([[para('Tipo','SmallCC'),para('Qué valida','SmallCC'),para('Ejemplo para este tema','SmallCC')],[para('Normal','SmallCC'),para('Camino habitual','SmallCC'),para('Entrada válida y resultado esperado','SmallCC')],[para('Límite','SmallCC'),para('Frontera de una regla','SmallCC'),para('Mínimo/máximo o colección vacía','SmallCC')],[para('Error','SmallCC'),para('Fallo controlado','SmallCC'),para('Dato inválido o dependencia fallida','SmallCC')],[para('Regresión','SmallCC'),para('Corrección anterior','SmallCC'),para('Repetir un caso que fallaba','SmallCC')]], colWidths=[2.6*cm,5*cm,7.6*cm], style=TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eaf0ff')),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#d9dee8')),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)])), Spacer(1,7), para('Revisión de calidad', 'H2CC'), *[bullet(x) for x in ['Los nombres expresan intención y no inducen a error.', 'Los errores tienen mensajes útiles y no filtran secretos.', 'Las pruebas se pueden ejecutar otra vez con el mismo resultado.', 'Las dependencias y versiones necesarias están documentadas.', 'El cambio se ha revisado con control de versiones.']]])
-    practice_description = desc.lower().rstrip().rstrip('.')
-    pages.append([para('8. Laboratorio práctico', 'H1CC'), para('Resuelve los ejercicios sin copiar el código anterior. Guarda cada solución en un archivo separado y añade comentarios solo cuando aclaren una decisión. Si trabajas en pareja, una persona implementa y la otra revisa entradas, salidas y casos límite; después intercambiad los papeles.'), para('Práctica A · Básica', 'H2CC'), para(f'Crea un ejemplo mínimo que demuestre {title.lower()}. Incluye una entrada válida, un resultado esperado y una explicación de tres o cuatro líneas sobre cómo funciona.'), para('Práctica B · Intermedia', 'H2CC'), para(f'Extiende el ejemplo con una segunda condición de negocio relacionada con {practice_description}. Separa la lógica repetible y crea al menos tres casos de prueba: normal, límite y dato inválido.'), para('Práctica C · Aplicación DAM/DAW', 'H2CC'), para('Integra la solución en una pequeña aplicación de consola o en un módulo de tu proyecto. Define una interfaz clara, valida las entradas en el límite adecuado y evita mezclar el acceso a datos con la lógica central.'), para('Práctica D · Revisión', 'H2CC'), para('Entrega el código a otra persona sin explicarlo oralmente. Pídele que identifique qué hace, qué puede fallar y cómo probarlo. Corrige cualquier parte que dependa de una explicación que solo tú conoces.'), para('Criterios de evaluación', 'H2CC'), *[bullet(x) for x in ['Cumple el enunciado y produce resultados verificables.', 'Maneja al menos un caso límite relevante.', 'Tiene nombres claros y estructura sencilla.', 'Incluye pruebas o pasos de reproducción.', 'Explica una decisión técnica y una limitación.']]])
-    pages.append([para('9. Soluciones orientativas y autoevaluación', 'H1CC'), para('No existe una única solución válida. La revisión debe comprobar el contrato, no si el código se parece exactamente al de otra persona. Para cada práctica, compara las entradas, el resultado y la estrategia de validación.'), para('Solución orientativa', 'H2CC'), para(f'Una solución aceptable para «{title}» identifica los datos relevantes, aplica la regla principal de forma explícita y produce una salida que se puede comprobar. Si el caso admite valores inválidos, los rechaza o los representa mediante un error claro. La lógica repetida se extrae solo cuando mejora la comprensión o evita inconsistencias.'), para('Rúbrica de revisión', 'H2CC'), Table([[para('Criterio','SmallCC'),para('0 · Por revisar','SmallCC'),para('1 · Adecuado','SmallCC'),para('2 · Sólido','SmallCC')],[para('Corrección','SmallCC'),para('No cumple el contrato','SmallCC'),para('Cumple el caso básico','SmallCC'),para('Incluye límites y errores','SmallCC')],[para('Claridad','SmallCC'),para('Difícil de seguir','SmallCC'),para('Legible en general','SmallCC'),para('Nombres y estructura expresivos','SmallCC')],[para('Pruebas','SmallCC'),para('Sin comprobaciones','SmallCC'),para('Un caso válido','SmallCC'),para('Normal, límite y error','SmallCC')],[para('Justificación','SmallCC'),para('Sin explicación','SmallCC'),para('Explica la idea','SmallCC'),para('Compara alternativas','SmallCC')]], colWidths=[3*cm,3.6*cm,3.7*cm,4.9*cm], style=TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#eaf0ff')),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#d9dee8')),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5),('TOPPADDING',(0,0),(-1,-1),5),('BOTTOMPADDING',(0,0),(-1,-1),5)])), Spacer(1,8), para('Preguntas para explicar en voz alta', 'H2CC'), *[bullet(x) for x in [f'¿Qué problema resuelve {title.lower()} y cuándo no lo utilizarías?', '¿Qué prueba añadirías primero si apareciera un fallo?', '¿Qué parte cambiarías si el requisito creciera?', '¿Qué información consultarías en la documentación oficial?']]])
-    glossary = (
-        f'{title}: concepto central del capítulo. Contrato: condiciones de entrada y garantías de salida. '
-        'Caso límite: frontera o supuesto poco común. Regresión: fallo que reaparece tras un cambio. '
-        'Documentación primaria: referencia mantenida por el equipo responsable de la tecnología.'
-    )
-    refs = [para('10. Repaso, glosario y fuentes', 'H1CC'), para('Resumen', 'H2CC'), para(f'Has estudiado {title.lower()} desde el concepto, el diseño, la implementación y las pruebas. Antes de continuar, intenta explicar el tema sin leer y reconstruye el ejemplo desde cero. Si no puedes explicar un paso, vuelve a la sección correspondiente y crea una prueba pequeña.'), para('Glosario', 'H2CC'), para(glossary), para('Fuentes oficiales de consulta', 'H2CC')]
-    source_links = ' · '.join(
-        f'<link href="{esc(url)}" color="#087f8c">{esc(label)}</link>'
-        for label, url in ref
-    )
-    refs.append(Paragraph(source_links, styles['SmallCC']))
-    pages.append(refs)
-    # Integra la portada y los fundamentos; el temario conserva diez secciones.
-    pages[1] = pages[0] + pages[1]
-    return pages[1:]
+    elif track in DETAILS.get(track, {}):
+        concept, code = DETAILS[track][title]
+
+    owner = SOURCE_OWNERS[track]
+    specific_refs = {
+        ('Java', 'Constructores y this'): [('Oracle Java SE 25: Flexible Constructor Bodies', 'https://docs.oracle.com/en/java/javase/25/language/flexible-constructor-bodies.html')],
+        ('Java', 'Excepciones'): [('Java Language Specification SE 25, capítulo 11', 'https://docs.oracle.com/javase/specs/jls/se25/html/jls-11.html')],
+        ('JavaScript', 'Promesas y async/await'): [('MDN: await', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await')],
+        ('JavaScript', 'JSON y APIs'): [('MDN: Using the Fetch API', 'https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch')],
+        ('Python', 'Pruebas y depuración'): [('Python 3: unittest', 'https://docs.python.org/3/library/unittest.html'), ('pytest: documentation', 'https://docs.pytest.org/en/stable/')] ,
+        ('Kotlin', 'Coroutines'): [('Kotlin: Coroutines basics', 'https://kotlinlang.org/docs/coroutines-basics.html')],
+        ('React', 'useEffect'): [('React: useEffect', 'https://react.dev/reference/react/useEffect')],
+        ('React', 'Peticiones a APIs'): [('React: useEffect', 'https://react.dev/reference/react/useEffect'), ('MDN: Using the Fetch API', 'https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch')],
+        ('React', 'React Router'): [('React Router: Routing', 'https://reactrouter.com/start/declarative/routing')],
+        ('React', 'Rendimiento'): [('React: React Compiler', 'https://react.dev/learn/react-compiler/introduction'), ('React: useMemo', 'https://react.dev/reference/react/useMemo')],
+        ('React', 'Pruebas de componentes'): [('React Testing Library: introducción', 'https://testing-library.com/docs/react-testing-library/intro/')],
+        ('Java', 'Ficheros y pruebas'): [('Java NIO: Files API', 'https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/nio/file/Files.html'), ('JUnit 5 User Guide', 'https://junit.org/junit5/docs/current/user-guide/')],
+        ('JavaScript', 'DOM y eventos'): [('MDN: Document Object Model', 'https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Introduction'), ('MDN: EventTarget.addEventListener', 'https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener')],
+        ('JavaScript', 'Node.js y backend'): [('Node.js: API documentation', 'https://nodejs.org/docs/latest/api/')],
+    }
+    refs = list(specific_refs.get((track, title), REFS[track]))
+    seen = set()
+    refs = [(label, url) for label, url in refs if not (url in seen or seen.add(url))]
+    source_links = [
+        Paragraph(
+            f'<link href="{esc(url)}" color="#087f8c">{esc(label)}</link>',
+            styles['SmallCC']
+        )
+        for label, url in refs
+    ]
+
+    page_one = [
+        para(f'CÓDIGOCLARO · RUTA {track.upper()}', 'H2CC'),
+        para(f'Tema {num:02d} · {title}', 'CoverTitleCC'),
+        para('Síntesis de estudio · Fuentes primarias enlazadas · DAM/DAW', 'SubCC'),
+        para('1. Objetivo', 'H1CC'),
+        para(desc),
+        para('Objetivos de aprendizaje', 'H2CC'),
+        *[bullet(x) for x in [
+            f'Explicar el propósito de {title.lower()} con un ejemplo propio.',
+            'Reconocer las condiciones que exige la solución y qué resultado debe producir.',
+            'Contrastar las decisiones de sintaxis con la documentación primaria enlazada.',
+            'Probar un caso normal y un caso límite antes de dar el ejercicio por terminado.',
+        ]],
+        para('Cómo estudiar este tema', 'H2CC'),
+        para('Lee primero la explicación y separa los hechos del lenguaje de las decisiones del ejemplo. Predice el resultado antes de ejecutar el código. Después cambia un solo dato, anota qué esperas que ocurra y comprueba si la evidencia confirma tu razonamiento.'),
+        para('2. Base conceptual', 'H1CC'),
+        para(concept),
+        para('Modelo mental', 'H2CC'),
+        para(f'Para razonar sobre {title.lower()}, sigue la relación entre el dato de entrada, la regla que describe la documentación, el estado que puede cambiar y el resultado observable. Explica qué parte del comportamiento garantiza el lenguaje y qué parte depende de las decisiones del programa.'),
+        para('Vocabulario de trabajo', 'H2CC'),
+        *[bullet(x) for x in [
+            'Contrato: entradas admitidas y resultado que debe garantizarse.',
+            'Estado: información que conserva el programa entre operaciones.',
+            'Caso límite: una frontera que puede cambiar el resultado esperado.',
+            'Regresión: un comportamiento correcto que deja de funcionar después de un cambio.',
+        ]],
+        para('Qué debes reconocer', 'H2CC'),
+        *[bullet(x) for x in [
+            f'Identifica qué parte de {title.lower()} resuelve el problema descrito en el objetivo.',
+            'Distingue la regla del lenguaje de las APIs que aporta el entorno de ejecución.',
+            'Antes de ejecutar el ejemplo, predice su resultado y explica qué dato lo determina.',
+        ]],
+        para('Preguntas antes de ejecutar', 'H2CC'),
+        *[bullet(x) for x in [
+            f'¿Qué línea representa directamente {title.lower()}?',
+            '¿Qué valor o condición determina el resultado?',
+            '¿Qué ocurriría con una entrada vacía, repetida o fuera del rango esperado?',
+        ]],
+        para('3. Ejemplo de referencia', 'H1CC'),
+        Preformatted(code, styles['CodeCC']),
+        para('Lectura del ejemplo', 'H2CC'),
+        *[bullet(x) for x in [
+            'Localiza la declaración o punto de entrada y nombra los datos que recibe.',
+            'Señala la operación que aplica la idea central del tema.',
+            'Anota el resultado esperado; después, ejecútalo y contrasta la predicción.',
+            'Cambia una sola entrada y explica qué comportamiento debe variar.',
+        ]],
+    ]
+
+    page_two = [
+        para('4. Decisiones de diseño', 'H1CC'),
+        para(f'Elige {title.lower()} cuando el contrato del problema coincida con su propósito. Escribe primero qué entra, qué resultado esperas y qué restricciones deben seguir siendo ciertas. La descripción de este tema sirve como alcance; no presupongas capacidades que no aparezcan en la fuente de la versión utilizada.'),
+        para('Descomposición del problema', 'H2CC'),
+        *[bullet(x) for x in [
+            'Entrada: identifica quién proporciona el dato y qué formato debe tener.',
+            'Precondición: escribe qué debe ser cierto antes de aplicar la regla.',
+            'Proceso: separa cada transformación y evita ocultar decisiones distintas.',
+            'Salida: define el valor, cambio de estado o respuesta que se puede observar.',
+            'Fallo: decide qué hacer si la entrada es inválida o una dependencia no responde.',
+            'Coste: comprueba si el tamaño de los datos puede afectar tiempo o memoria.',
+        ]],
+        para('Comprobaciones que importan', 'H2CC'),
+        *[bullet(x) for x in [
+            'Caso normal: usa una entrada válida y registra el resultado observable.',
+            'Límite: prueba el valor mínimo, máximo, vacío o repetido que tenga sentido para este tema.',
+            'Error: decide cómo se comunica un dato inválido o un fallo externo.',
+            'Compatibilidad: registra versión del lenguaje, runtime y biblioteca utilizada.',
+            'Mantenimiento: conserva una prueba reproducible para el comportamiento que acabas de estudiar.',
+        ]],
+        para('5. Precisión y límites', 'H1CC'),
+        para(warning),
+        para('Depuración y diagnóstico', 'H2CC'),
+        *[bullet(x) for x in [
+            'Reproduce el fallo con la entrada más pequeña que todavía lo provoca.',
+            'Lee el mensaje de error y localiza la primera línea relevante de la traza.',
+            'Inspecciona los valores justo antes de la operación que no se comporta como esperabas.',
+            'Formula una hipótesis y cambia una sola cosa en cada intento.',
+            'Convierte el caso que fallaba en una prueba de regresión.',
+            'Vuelve a ejecutar el caso normal y el límite para comprobar que no has roto otro comportamiento.',
+        ]],
+        para('6. Práctica guiada', 'H1CC'),
+        para(f'Construye una solución pequeña para practicar {title.lower()} en una aplicación de aula. Usa la descripción «{desc}» como requisito funcional y escribe antes una entrada y una salida esperadas.'),
+        *[bullet(x) for x in [
+            'Implementa primero el caso normal con el ejemplo de la página anterior.',
+            'Añade un caso límite y un caso que deba rechazarse o tratarse de otra forma.',
+            'Separa los datos de prueba de la operación para poder repetir el ejercicio.',
+            'Anota qué afirmación técnica has contrastado en la documentación oficial.',
+        ]],
+        para('7. Verificación', 'H2CC'),
+        Table(
+            [
+                [para('Prueba', 'SmallCC'), para('Qué debe quedar claro', 'SmallCC')],
+                [para('Normal', 'SmallCC'), para('La regla principal produce el resultado previsto.', 'SmallCC')],
+                [para('Límite', 'SmallCC'), para('El comportamiento en la frontera está definido.', 'SmallCC')],
+                [para('Error', 'SmallCC'), para('El fallo no se oculta ni daña el estado.', 'SmallCC')],
+            ],
+            colWidths=[3.2*cm, 12.2*cm],
+            style=TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#eaf0ff')),
+                ('GRID', (0,0), (-1,-1), .4, colors.HexColor('#d9dee8')),
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('LEFTPADDING', (0,0), (-1,-1), 6),
+                ('RIGHTPADDING', (0,0), (-1,-1), 6),
+                ('TOPPADDING', (0,0), (-1,-1), 6),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+            ])
+        ),
+    ]
+
+    page_three = [
+        para('8. Laboratorio', 'H1CC'),
+        para(f'Resuelve estas tareas sin copiar el ejemplo. En cada respuesta, explica qué aporta {title.lower()} y qué evidencia usarías para comprobar la solución.'),
+        para('Nivel inicial', 'H2CC'),
+        para(f'Reproduce el ejemplo con nombres y datos nuevos. Mantén el objetivo «{desc}» y escribe el resultado que esperas antes de ejecutarlo.'),
+        para('Nivel intermedio', 'H2CC'),
+        para('Amplía el caso con una segunda condición de negocio. Añade pruebas para el caso normal, un límite y un error; revisa que cada prueba comprueba un resultado observable.'),
+        para('Nivel de aplicación', 'H2CC'),
+        para(f'Integra {title.lower()} en una pequeña función, componente o consulta del proyecto. Justifica una decisión de diseño con la referencia oficial del tema.'),
+        para('Revisión por otra persona', 'H2CC'),
+        para('Entrega el ejercicio sin explicar de antemano cómo funciona. Pide a otra persona que identifique la entrada, prediga el resultado y proponga un caso límite. Si necesita una explicación oral para entender el código, mejora los nombres o la estructura.'),
+        para('9. Solución orientativa y autoevaluación', 'H1CC'),
+        para('Una respuesta sólida explica la regla aplicada, los datos de entrada, el resultado esperado y la condición que podría romper el caso. Debe distinguir la sintaxis documentada de las decisiones propias del ejercicio y citar la fuente que confirma el comportamiento.'),
+        para('Criterios de revisión', 'H2CC'),
+        Table(
+            [
+                [para('Criterio', 'SmallCC'), para('En proceso', 'SmallCC'), para('Consolidado', 'SmallCC')],
+                [para('Corrección', 'SmallCC'), para('Solo resuelve el caso básico.', 'SmallCC'), para('Incluye límites y errores relevantes.', 'SmallCC')],
+                [para('Claridad', 'SmallCC'), para('La intención no está clara.', 'SmallCC'), para('Nombres y estructura muestran el propósito.', 'SmallCC')],
+                [para('Evidencia', 'SmallCC'), para('No hay resultado reproducible.', 'SmallCC'), para('La prueba y la fuente justifican la respuesta.', 'SmallCC')],
+            ],
+            colWidths=[3.0*cm, 5.7*cm, 6.7*cm],
+            style=TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#eaf0ff')),
+                ('GRID', (0,0), (-1,-1), .4, colors.HexColor('#d9dee8')),
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('LEFTPADDING', (0,0), (-1,-1), 5),
+                ('RIGHTPADDING', (0,0), (-1,-1), 5),
+                ('TOPPADDING', (0,0), (-1,-1), 5),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+            ])
+        ),
+        *[bullet(x) for x in [
+            f'¿Puedes explicar {title.lower()} sin repetir el ejemplo?',
+            '¿Qué caso límite probaste y por qué era relevante?',
+            '¿Qué parte depende de la versión o de una biblioteca externa?',
+            '¿Qué referencia oficial consultarías ante un resultado distinto?',
+        ]],
+        para('Glosario de repaso', 'H2CC'),
+        para(f'{title}: tema y decisión técnica que se estudian en esta guía. Contrato: entradas admitidas y resultado prometido. Caso límite: frontera que puede cambiar la salida. Fuente primaria: documentación publicada o mantenida por el proyecto responsable del lenguaje o herramienta.'),
+        para('Entrega final', 'H2CC'),
+        para('Incluye un ejemplo mínimo, los datos de entrada, el resultado esperado y una prueba que se pueda volver a ejecutar. Anota la versión del lenguaje y pega la referencia exacta que confirma la regla aplicada. Si el resultado no coincide con tu predicción, registra el caso antes de cambiar el código.'),
+        para('10. Fuentes y atribución', 'H1CC'),
+        para(f'Esta guía es una síntesis didáctica en español basada en documentación mantenida por {owner}. No reproduce capítulos completos ni sustituye la referencia oficial; comprueba en los enlaces la versión de tu proyecto. Consulta:'),
+        *source_links,
+    ]
+    for index, flowable in enumerate(page_three):
+        if isinstance(flowable, Paragraph) and flowable.style.name == 'BodyCC':
+            page_three[index] = Paragraph(flowable.text, styles['BodyLastCC'])
+        elif isinstance(flowable, Paragraph) and flowable.style.name == 'BulletCC':
+            page_three[index] = Paragraph(flowable.text, styles['BulletLastCC'])
+    return [page_one, page_two, page_three]
 
 def build_pdf(item):
     """Genera el PDF de un tema en la carpeta pública organizada de temarios."""
@@ -282,7 +402,7 @@ def build_pdf(item):
     for content in pages:
         # Deja fluir las secciones para no reservar una página casi vacía por apartado.
         story.extend(content)
-    doc=SimpleDocTemplate(str(dest), pagesize=A4, rightMargin=1.8*cm, leftMargin=1.8*cm, topMargin=1.65*cm, bottomMargin=1.8*cm, title=f"{item['track']} · Tema {item['num']:02d}: {item['title']}", author='CódigoClaro', subject=f"Temario didáctico de {item['track']} para DAM y DAW")
+    doc=SimpleDocTemplate(str(dest), pagesize=A4, rightMargin=1.8*cm, leftMargin=1.8*cm, topMargin=1.65*cm, bottomMargin=1.8*cm, title=f"{item['track']} · Tema {item['num']:02d}: {item['title']}", author='CódigoClaro · síntesis con fuentes oficiales', subject=f"Temario didáctico de {item['track']} para DAM y DAW")
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
     return dest, doc.page
 
