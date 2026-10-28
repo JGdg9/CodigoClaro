@@ -12,9 +12,9 @@ CUESTIONARIOS E IDE
 
 VERIFICACIÓN Y ALCANCE
 - npm test: 116 pruebas contabilizadas; 111 pasaron, 0 fallaron y 5 de integración PostgreSQL se omitieron por no existir una base de pruebas configurada.
-- El workflow de GitHub Actions crea una PostgreSQL 16 efímera y activa esas cinco integraciones. Falta comprobar el primer resultado de CI con esta rama.
+- El workflow `.github/workflows/ci.yml` crea PostgreSQL 16 efímera y ejecuta esas integraciones en cada push y PR; consulta el resultado del commit correspondiente en GitHub Actions.
 - python verificar_entrega.py: superado; comprueba catálogo, paginación, PDFs, recursos, enlaces y sintaxis. scripts/verificar_pages.py: superado para los 75 temarios y sus PDF.
-- La demo estática de GitHub Pages y la aplicación completa de Render se despliegan por separado. Comprueba `/api/health` de Render tras cada cambio; no se creó una base PostgreSQL ni otro servicio para estas pruebas.
+- GitHub Pages y Render tienen flujos separados. `.github/workflows/render-health.yml` consulta `/api/health` según su horario o al ejecutarse manualmente; `npm run test:render` es una comprobación opcional de solicitudes GET al host público. No se creó una base PostgreSQL ni otro servicio para estas pruebas.
 - El servicio Render del piloto habilita temporalmente el registro para pruebas. Usa datos ficticios y una contraseña exclusiva de prueba; no introduzcas información real ni invites a participantes externos. Otros despliegues de producción mantienen el registro cerrado por defecto hasta completar la revisión de privacidad. El cierre no desactiva el inicio de sesión de cuentas existentes.
 - Ambos backends limitan los intentos de acceso con contadores en memoria acotados por proceso. CF-Connecting-IP solo se usa cuando TRUST_CF_CONNECTING_IP=true; los blueprints de Render lo habilitan porque Cloudflare sustituye esa cabecera en su proxy. Al alcanzar la capacidad se rechazan nuevas claves hasta que caduquen las activas; los contadores no se comparten entre procesos ni sobreviven a reinicios. PostgreSQL también rechaza el secreto de sesión de ejemplo conocido al arrancar en producción.
 - No se conectó a Neon ni a otra base PostgreSQL real. No se validaron los motores externos/CDN de Python, SQL o React en un navegador real.

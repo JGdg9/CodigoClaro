@@ -23,8 +23,9 @@ async function waitServer() {
   }
   throw new Error('Tiempo agotado esperando el servidor de pruebas.');
 }
-async function request(route, { method='GET', body, cookie='', expectedOrigin=true }={}) {
+async function request(route, { method='GET', body, cookie='', expectedOrigin=true, accept }={}) {
   const headers = {};
+  if (accept) headers.accept=accept;
   if (body !== undefined) headers['content-type']='application/json';
   if (cookie) headers.cookie=cookie;
   if (expectedOrigin) headers.origin=base;
@@ -46,6 +47,25 @@ before(async () => {
   catch(e){throw new Error(e.message+' Salida: '+output)}
 });
 after(async () => { if(proc && proc.exitCode===null) { proc.kill('SIGTERM'); await new Promise(r=>{const t=setTimeout(r,1500);proc.once('exit',()=>{clearTimeout(t);r()})}); } fs.rmSync(temp,{recursive:true,force:true}); });
+
+test('cabeceras de caché y página 404 para navegación pública', async () => {
+  const home = await request('/');
+  assert.equal(home.res.headers.get('cache-control'), 'no-cache');
+  const health = await request('/api/health');
+  assert.equal(health.res.headers.get('cache-control'), 'no-store');
+  const pdf = await request('/temarios/Java_Tema_01.pdf');
+  assert.equal(pdf.res.status, 200);
+  assert.equal(pdf.res.headers.get('cache-control'), 'public, max-age=300');
+  const missing = await request('/ruta-inexistente-de-prueba', { accept: 'text/html' });
+  assert.equal(missing.res.status, 404);
+  assert.match(missing.res.headers.get('content-type'), /text\/html/);
+  assert.equal(missing.res.headers.get('cache-control'), 'no-store');
+  assert.match(missing.text, /Esta página no está disponible/);
+  const missingApi = await request('/api/ruta-inexistente-de-prueba');
+  assert.equal(missingApi.res.status, 404);
+  assert.match(missingApi.res.headers.get('content-type'), /application\/json/);
+  assert.equal(missingApi.res.headers.get('cache-control'), 'no-store');
+});
 
 test('flujo de usuario piloto: registro, sesión, progreso, test, feedback y administración', async () => {
   const home=await request('/');assert.equal(home.res.status,200);assert.match(home.res.headers.get('content-type'),/text\/html/);
