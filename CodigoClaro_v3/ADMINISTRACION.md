@@ -10,7 +10,7 @@ Para designar una cuenta administradora:
 4. Desde la carpeta de la aplicación, con acceso a la misma base SQLite, ejecuta:
 
    ```powershell
-   node scripts/promote-admin.js tu-correo@example.com --confirm
+   node scripts/promote-admin.js "<valor de ADMIN_EMAIL>" --confirm
    ```
 
 El comando solo promueve la cuenta que coincide con `ADMIN_EMAIL`, exige `--confirm`, no crea una base de datos ni una cuenta, y registra el cambio en la actividad. Requiere acceso autorizado al ordenador o servicio que contiene la base de datos. No compartas `.env` ni introduzcas secretos en Git.
