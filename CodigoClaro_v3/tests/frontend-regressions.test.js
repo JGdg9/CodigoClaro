@@ -238,3 +238,73 @@ test('la transformación verdadero/falso conserva la respuesta correcta y la inc
   assert.equal(falseStatement.statement, '[1,2]');
   assert.equal(makeQuizItem(q, 'choice').kind, 'choice');
 });
+
+function quizNavigationGuardRunner({confirmResult=false,submitted=false}={}){
+  const form={dataset:submitted?{submitted:'true'}:{},answers:['2']};
+  const cleared=[];
+  const context={
+    currentPage:'quiz',
+    activeQuiz:[{id:'q1'}],
+    activeReviewTopics:['java'],
+    quizTimer:17,
+    quizSeconds:41,
+    quizStartedAt:123,
+    clearInterval:id=>cleared.push(id),
+    confirm:message=>{context.confirmMessage=message;context.confirmCalls=(context.confirmCalls||0)+1;return confirmResult},
+    $:id=>id==='quizForm'?form:null
+  };
+  const start=panel.indexOf('function canNavigateFromQuiz(');
+  const end=panel.indexOf('\nasync function render(',start);
+  assert.ok(start>=0&&end>start,'se debe localizar la protección de navegación del test');
+  const guard=vm.runInNewContext(panel.slice(start,end)+'\ncanNavigateFromQuiz;',context);
+  return {context,form,cleared,guard};
+}
+
+test('cancelar la salida o reconfiguración conserva respuestas y temporizador',()=>{
+  for(const [page,reconfigure] of [['courses',false],['quiz',true]]){
+    const state=quizNavigationGuardRunner({confirmResult:false});
+    const active=state.context.activeQuiz;
+    assert.equal(state.guard(page,reconfigure),false);
+    assert.equal(state.context.activeQuiz,active);
+    assert.deepEqual(state.form.answers,['2']);
+    assert.equal(state.context.quizTimer,17);
+    assert.equal(state.context.quizSeconds,41);
+    assert.deepEqual(state.cleared,[]);
+    assert.match(state.context.confirmMessage,/perderás tus respuestas/);
+    assert.match(state.context.confirmMessage,/detendrá el temporizador/);
+  }
+});
+
+test('confirmar la salida descarta el test y detiene el temporizador',()=>{
+  const state=quizNavigationGuardRunner({confirmResult:true});
+  assert.equal(state.guard('courses'),true);
+  assert.equal(state.context.activeQuiz,null);
+  assert.deepEqual(state.context.activeReviewTopics,[]);
+  assert.equal(state.context.quizTimer,null);
+  assert.equal(state.context.quizSeconds,0);
+  assert.equal(state.context.quizStartedAt,0);
+  assert.deepEqual(state.cleared,[17]);
+});
+
+test('volver a pulsar Tests no reinicia el test ni consulta confirmación',()=>{
+  const state=quizNavigationGuardRunner();
+  const active=state.context.activeQuiz;
+  assert.equal(state.guard('quiz'),false);
+  assert.equal(state.context.activeQuiz,active);
+  assert.equal(state.context.quizTimer,17);
+  assert.equal(state.context.confirmCalls||0,0);
+  assert.deepEqual(state.cleared,[]);
+});
+
+test('el resultado enviado queda estable al volver a pulsar Tests',()=>{
+  const state=quizNavigationGuardRunner({submitted:true});
+  assert.equal(state.guard('quiz'),false);
+  assert.equal(state.context.confirmCalls||0,0);
+  assert.equal(state.context.activeQuiz.length,1);
+});
+
+test('Más incluye Diagnóstico y ayuda junto a Aula e IDE',()=>{
+  assert.match(panel,/<a class="nav-item" href="\/diagnostico\.html">Diagnóstico y ayuda<\/a>/);
+  assert.match(panel,/<a class="nav-item" href="\/aula\.html">Aula e IDE<\/a>/);
+  assert.match(panel,/onclick="render\('quiz',\{reconfigure:true\}\)">Volver a configurar/);
+});
