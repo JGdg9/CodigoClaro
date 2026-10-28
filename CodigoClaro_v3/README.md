@@ -47,30 +47,24 @@ El servidor SQLite usa módulos integrados en Node.js. El backend PostgreSQL exp
 
 ## Publicación online: aplicación completa y demo estática
 
-CódigoClaro tiene dos formas de publicación distintas:
+CódigoClaro tiene dos destinos de publicación:
 
-- **Aplicación completa (recomendada si quieres que funcionen el registro, las sesiones y el progreso):** necesita un servicio que ejecute Node.js y una ruta de almacenamiento persistente para SQLite. Se incluye `render.yaml` como plantilla de despliegue en Render. El disco persistente de Render requiere un plan compatible de pago; consulta sus precios antes de desplegar.
-- **GitHub Pages (`docs/`):** demo estática de la biblioteca y los PDF. No ejecuta el servidor Node.js ni la base de datos, así que no ofrece las funciones de cuentas, sesiones, administración ni progreso persistente.
+- **Aplicación completa (Render):** servidor Node.js y SQLite con almacenamiento persistente. El Blueprint está en la ruta del repositorio `CodigoClaro_v3/render.yaml` y define `rootDir: CodigoClaro_v3`.
+- **Demo estática (GitHub Pages):** biblioteca y PDF en `CodigoClaro_v3/docs/`; no incluye servidor, cuentas ni sincronización de progreso.
 
 ### Desplegar la aplicación completa en Render
 
-1. Sube el proyecto a GitHub y asegúrate de que `render.yaml` esté en la raíz del repositorio.
-2. En Render, selecciona **New → Blueprint** y conecta el repositorio de GitHub.
-3. Render leerá `render.yaml`. Revisa el servicio, el plan y el disco persistente antes de confirmar. El disco persistente no suele estar incluido en el nivel gratuito.
-4. Configura `ADMIN_EMAIL` únicamente si vas a promover manualmente una cuenta. Registrarse con ese correo no concede permisos de administración; consulta [`ADMINISTRACION.md`](ADMINISTRACION.md).
-5. El Blueprint de este servicio existente habilita temporalmente `PUBLIC_REGISTRATION_ENABLED=true` para probar el piloto. Usa datos ficticios y una contraseña exclusiva para pruebas; no invites a participantes externos ni uses datos reales. En otros despliegues de producción, conserva el registro cerrado hasta completar y revisar la información de privacidad.
-6. Comprueba que `SESSION_SECRET` se haya generado automáticamente y que `DB_PATH` sea `/var/data/codigoclaro.sqlite`. No reutilices secretos de ejemplo ni publiques credenciales.
-7. Espera a que el despliegue termine y abre la URL `onrender.com` que Render asigne. Comprueba `/api/health` (`registrationEnabled: true` en el piloto), crea una cuenta con datos de prueba y verifica el inicio de sesión y el guardado de progreso.
-
-**Importante sobre la estructura del repositorio:** la aplicación está en `CodigoClaro_v3/`; el `rootDir` del Blueprint debe apuntar a esa carpeta. El Blueprint actual describe el servicio existente `codigoclaro` y su disco persistente; ambos pueden tener un coste recurrente según el plan vigente. Este cambio solo modifica la variable de registro y no añade servicios, bases de datos ni discos, ni cambia el plan. No crees recursos nuevos para este piloto.
-
-**Importante sobre SQLite:** usa un disco persistente montado en `/var/data`; sin almacenamiento persistente, los datos pueden perderse al reiniciar o redeplegar el servicio. No configures el servidor con una base de datos dentro de una carpeta temporal.
+1. Conecta el repositorio desde Render y selecciona `CodigoClaro_v3/render.yaml` como **Blueprint Path**. Render busca `render.yaml` en la raíz si no se indica una ruta personalizada.
+2. Revisa el diff del Blueprint antes de sincronizarlo. Declara el servicio web `codigoclaro`, el disco persistente `codigoclaro-data` y `rootDir: CodigoClaro_v3`; revisa los recursos y costes que muestra Render antes de crearlos o modificarlos.
+3. El servicio inicia con `npm start`, guarda SQLite en `/var/data/codigoclaro.sqlite` y usa `/api/health` como health check. Conserva el disco montado en `/var/data`.
+4. Render genera `SESSION_SECRET`; `ADMIN_EMAIL` se solicita en el panel si se necesita. No guardes valores de entorno ni secretos en Git.
+5. Este Blueprint establece `PUBLIC_REGISTRATION_ENABLED=true`. `/api/health` informa el valor efectivo; revisa la política de privacidad antes de invitar participantes o anunciar el registro.
+6. Tras un despliegue autorizado, comprueba que `/api/health` responda `ok: true`. `npm run test:render` consulta el servicio público con solicitudes GET y un reintento por ruta por defecto; no crea cuentas ni modifica datos.
 
 ### Publicar la demo estática en GitHub Pages
 
-1. En el repositorio abre **Settings → Pages** y selecciona **GitHub Actions** como fuente.
-2. El workflow `.github/workflows/pages.yml` publica `docs/` desde la raíz del proyecto. Si el proyecto permanece anidado en una carpeta, el workflow de Pages y el de verificación deben ajustarse a esa ruta o conviene mover el contenido del proyecto a la raíz.
-3. Comprueba que la ejecución termine en verde y usa la URL que GitHub muestre en **Settings → Pages**.
+1. En GitHub, abre **Settings → Pages** y selecciona **GitHub Actions** como fuente.
+2. El workflow `.github/workflows/pages.yml` ya verifica y publica `CodigoClaro_v3/docs/`; se activa con cambios en esa carpeta en `main` o `master`.
 
 ## Ejecutar y comprobar
 
