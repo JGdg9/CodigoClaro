@@ -44,4 +44,4 @@ La raíz contiene la aplicación dentro de `CodigoClaro_v3/` y los workflows del
 
 `public/` contiene los recursos servidos por la aplicación. `docs/` incluye la demo estática, el catálogo y las copias de los temarios.
 
-`lib/http-errors.js` sirve `public/404.html` en navegaciones a rutas inexistentes y `public/500.html` ante errores internos; las respuestas de API siguen siendo JSON. Las páginas HTML de error usan `Cache-Control: no-store`. Render usa este Blueprint con `REGISTRATION_OPEN=false` y almacenamiento persistente.
+`lib/http-errors.js` sirve `public/404.html` en navegaciones a rutas inexistentes y `public/500.html` ante errores internos; las respuestas de API siguen siendo JSON. Las páginas HTML de error usan `Cache-Control: no-store`. El servicio de Render está en piloto abierto; el Blueprint permite el registro público. Se deben usar datos ficticios: no verifica el correo ni ofrece recuperación de contraseña. El almacenamiento SQLite es persistente.

@@ -18,7 +18,7 @@ CódigoClaro ofrece materiales y herramientas didácticas para alumnado de DAM y
 3. En Windows, ejecuta `INICIAR_CODIGOCLARO.bat`. En otros sistemas, crea `.env` a partir de `.env.example`, define `SESSION_SECRET` con un valor aleatorio y ejecuta `npm start`.
 4. Abre `http://localhost:3000`.
 
-El servidor SQLite usa módulos integrados en Node.js. El registro público crea cuentas de estudiante. Esta versión no verifica el correo ni permite restablecer la contraseña. Consulta la [información de privacidad](public/privacidad.html), las [condiciones](public/condiciones.html) y la [guía para empezar](EMPEZAR_AQUI.md). Para conceder permisos de administración, consulta [ADMINISTRACION.md](ADMINISTRACION.md).
+El servidor SQLite usa módulos integrados en Node.js. El servicio de Render está en piloto abierto y permite crear cuentas de estudiante. Usa únicamente datos ficticios: no verifica el correo ni permite restablecer la contraseña. Consulta la [información de privacidad](public/privacidad.html), las [condiciones](public/condiciones.html) y la [guía para empezar](EMPEZAR_AQUI.md). Para conceder permisos de administración, consulta [ADMINISTRACION.md](ADMINISTRACION.md).
 
 ## Demo estática
 
@@ -28,7 +28,7 @@ La carpeta `docs/` contiene una demo estática de la biblioteca y sus PDF. No ej
 
 Selecciona `CodigoClaro_v3/render.yaml` como **Blueprint Path**; usa `rootDir: CodigoClaro_v3`, SQLite persistente en `/var/data` y un secreto de sesión generado. Revisa el plan y el disco antes de sincronizar recursos.
 
-El Blueprint mantiene `PUBLIC_REGISTRATION_ENABLED=false` y `REGISTRATION_OPEN=false`. El servidor actual consume `REGISTRATION_OPEN`; conserva el registro cerrado hasta completar la revisión de privacidad. Tras un despliegue autorizado, `/api/health` y `npm run test:render` hacen comprobaciones de solo lectura. Las navegaciones HTML reciben páginas 404/500 genéricas; los errores de API siguen siendo JSON.
+El Blueprint configura `PUBLIC_REGISTRATION_ENABLED=true` y `REGISTRATION_OPEN=true`. El servicio de Render está en piloto abierto; usa datos ficticios porque no verifica el correo ni ofrece recuperación de contraseña. `/api/health` y `npm run test:render` permiten hacer comprobaciones de solo lectura. Las navegaciones HTML reciben páginas 404/500 genéricas; los errores de API siguen siendo JSON.
 
 ## Comprobaciones de desarrollo
 
