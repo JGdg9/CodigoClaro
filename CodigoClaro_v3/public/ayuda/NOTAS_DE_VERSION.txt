@@ -13,5 +13,5 @@ CódigoClaro v1.1.5 — Variedad de tests e IDE integrado
 - Retos de código integrados con plantillas y soluciones de referencia; evaluación por patrones identificada como orientativa.
 - IDE ahora conecta los botones Ejecutar a JavaScript sandbox, Pyodide, SQLite/SQL.js, preview React y simuladores MongoDB/Firestore/backend.
 - Añadido selector para cargar retos guiados en el IDE.
-- Java/Kotlin/PL-SQL se presentan de forma honesta como análisis estático, sin afirmar compilación. Node.js usa simulación JS y no APIs reales de Node.
+- Java compila y ejecuta mediante Judge0 por HTTPS después del consentimiento explícito de la sesión. Kotlin y PL/SQL conservan análisis estático. Node.js usa simulación JS y no APIs reales de Node.
 - Verificación: npm test (17/17), sintaxis del servidor y del JavaScript inline. Motores CDN pendientes de prueba manual con conexión en navegador.

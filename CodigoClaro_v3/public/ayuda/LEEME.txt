@@ -20,7 +20,7 @@ EJECUCIÓN Y COSTES
 - No se integra ninguna API de pago ni se requieren servicios contratados para leer los PDF.
 - La biblioteca PDF no requiere servicios externos. Las cuentas y el progreso se guardan en SQLite local del servidor Node.js; no son una base de datos dentro del navegador.
 - JavaScript se ejecuta en el navegador; Pyodide, React/JSX y SQL.js pueden cargar bibliotecas desde CDN y necesitar Internet en el primer uso.
-- Java y Kotlin ofrecen editor y análisis estático; no compilan ni envían código a un servicio remoto en esta versión. Node.js se presenta como simulador didáctico, no como runtime real.
+- Java compila en Judge0 por HTTPS solo después del consentimiento explícito de la sesión; se envían el código y `stdin` a ese servicio externo, que puede limitar solicitudes. No incluyas secretos ni datos personales. Kotlin ofrece análisis estático. Node.js se presenta como simulador didáctico, no como runtime real.
 - Firestore/MongoDB se presentan como simuladores en el IDE; las conexiones reales requieren motores/configuración propios.
 
 PRUEBAS DE PAQUETE
