@@ -3,11 +3,30 @@
 from pathlib import Path
 from html.parser import HTMLParser
 from collections import Counter
-import json, re, shutil, subprocess, sys, tempfile
+import json, os, re, shutil, subprocess, sys, tempfile
 
 ROOT=Path(__file__).resolve().parent
 PUB=ROOT/'public'
 errors=[]; notes=[]
+repo_root=ROOT.parent
+def repository_txt_files():
+    try:
+        result=subprocess.run(['git','ls-files','--cached','--others','--exclude-standard','-z'],cwd=repo_root,capture_output=True,check=True)
+        candidates=[repo_root/Path(os.fsdecode(item)) for item in result.stdout.split(b'\0') if item]
+    except (OSError,subprocess.CalledProcessError):
+        excluded={'.git','node_modules','.venv','venv','__pycache__'}
+        candidates=[]
+        for current,dirs,names in os.walk(repo_root):
+            dirs[:]=[name for name in dirs if name not in excluded]
+            candidates.extend(Path(current)/name for name in names if name.lower().endswith('.txt'))
+    return sorted(path.relative_to(repo_root).as_posix() for path in candidates if path.is_file() and path.suffix.lower()=='.txt')
+actual_txt=repository_txt_files()
+expected_txt=['CodigoClaro_v3/requirements-docs.txt']
+if actual_txt!=expected_txt:
+    errors.append(f"Se esperaba un único archivo .txt ({expected_txt[0]}); se encontraron {len(actual_txt)}: {', '.join(actual_txt) or 'ninguno'}")
+else:
+    notes.append(f'Se encontró 1 archivo .txt: {actual_txt[0]}.')
+
 try:
     public_catalog=json.loads((PUB/'catalogo_temas.json').read_text(encoding='utf-8'))
     expected_pages={item['file']:item.get('pages') for item in public_catalog}
@@ -81,7 +100,9 @@ for name in ['index.html','aula.html','temarios.html','diagnostico.html','privac
         if not target.exists() and pathpart.lower().endswith('.pdf'):
             target=PUB/'temarios'/Path(pathpart).name
         if not target.exists() and Path(pathpart).suffix.lower() in ('.txt','.md'):
-            target=PUB/'ayuda'/Path(pathpart).name
+    help_name=Path(pathpart).name
+    if help_name.lower().endswith('.txt'): help_name=help_name[:-4]+'.md'
+    target=PUB/'ayuda'/help_name
         if not target.exists(): errors.append(f'Enlace local roto en {name}: {ref}')
     if node:
         scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',src,re.I|re.S)
