@@ -6,7 +6,7 @@
 
 ## Qué incluye
 
-- **75 temarios individuales de diez páginas**, organizados en cinco rutas: Java, JavaScript, Python, Kotlin y React.
+- **75 temarios individuales de tres páginas**, organizados en cinco rutas: Java, JavaScript, Python, Kotlin y React.
 - **Seis rutas complementarias de 15 temas**: TypeScript, SQL, NoSQL, backend/APIs, POO y gestión de bases de datos; se conservan nueve PDF anteriores.
 - Los temas individuales incluyen fundamentos, modelo mental, sintaxis, ejemplos, buenas prácticas, depuración, pruebas, ejercicios, rúbrica y referencias oficiales.
 - Portal con búsqueda y filtros por tecnología, biblioteca de contenidos y progreso.
@@ -58,8 +58,9 @@ CódigoClaro tiene dos formas de publicación distintas:
 2. En Render, selecciona **New → Blueprint** y conecta el repositorio de GitHub.
 3. Render leerá `render.yaml`. Revisa el servicio, el plan y el disco persistente antes de confirmar. El disco persistente no suele estar incluido en el nivel gratuito.
 4. Configura `ADMIN_EMAIL` únicamente si vas a promover manualmente una cuenta. Registrarse con ese correo no concede permisos de administración; consulta [`ADMINISTRACION.md`](ADMINISTRACION.md).
-5. Comprueba que `SESSION_SECRET` se haya generado automáticamente y que `DB_PATH` sea `/var/data/codigoclaro.sqlite`. No reutilices secretos de ejemplo ni publiques credenciales.
-6. Espera a que el despliegue termine y abre la URL `onrender.com` que Render asigne. Comprueba `/api/health` y prueba el registro, inicio de sesión y guardado de progreso.
+5. El Blueprint mantiene `PUBLIC_REGISTRATION_ENABLED=false` hasta completar y revisar los datos de privacidad. Conserva el registro cerrado mientras haya campos pendientes; después puedes habilitarlo en Render con el valor `true`.
+6. Comprueba que `SESSION_SECRET` se haya generado automáticamente y que `DB_PATH` sea `/var/data/codigoclaro.sqlite`. No reutilices secretos de ejemplo ni publiques credenciales.
+7. Espera a que el despliegue termine y abre la URL `onrender.com` que Render asigne. Comprueba `/api/health`, el inicio de sesión y el guardado de progreso. El registro nuevo permanecerá cerrado hasta que actives la variable indicada.
 
 **Importante sobre la estructura del repositorio:** la aplicación está en `CodigoClaro_v3/`; el `rootDir` del Blueprint debe apuntar a esa carpeta. El archivo actual configura un servicio `starter` y un disco persistente, que requieren un plan de pago. No sincronices ese Blueprint si tu límite es 0 € adicionales.
 
@@ -115,7 +116,7 @@ El generador lee `public/catalogo_temas.json` y vuelve a producir los 75 PDFs in
 
 ## Temarios y verificación editorial
 
-Los documentos son material didáctico original, no traducciones ni copias de capítulos de manuales. Cada uno contiene objetivos, conceptos, ejemplo de referencia, ejercicios, pruebas y enlaces a fuentes primarias. Consulta [`GUIA_TEMARIOS.md`](GUIA_TEMARIOS.md) para conocer el alcance y cómo informar de errores.
+Los documentos son síntesis didácticas en español con enlaces a documentación primaria y atribución a los equipos que la mantienen. No reproducen capítulos completos ni sustituyen esas fuentes. Cada PDF incluye objetivos, conceptos, ejemplos, ejercicios, pruebas y referencias relacionadas con el tema. Consulta GUIA_TEMARIOS.md para conocer el alcance y cómo informar de errores.
 
 ## Límites conocidos
 

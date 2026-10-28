@@ -18,6 +18,10 @@ services:
         value: 22.16.0
       - key: NODE_ENV
         value: production
+      - key: PUBLIC_REGISTRATION_ENABLED
+        value: "false"
+      - key: TRUST_CF_CONNECTING_IP
+        value: "true"
       - key: DB_PATH
         value: /var/data/codigoclaro.sqlite
       - key: SESSION_SECRET

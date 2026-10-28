@@ -31,6 +31,16 @@ function toLocalQuestion(question, category) {
   return [category, question.q, question.o, question.a, question.e];
 }
 
+function normalizePrompt(prompt) {
+  return prompt.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es').replace(/\s+/g, ' ').trim();
+}
+
+function addPromptCategory(promptCategories, prompt, category) {
+  const key = normalizePrompt(prompt);
+  if (!promptCategories.has(key)) promptCategories.set(key, new Set());
+  promptCategories.get(key).add(category);
+}
+
 function buildLocalQuestions() {
   const all = [...quizzes, ...localExtra];
   const expanded = [];
@@ -54,17 +64,34 @@ function buildLocalQuestions() {
   const baseMatch = aula.match(/const Q=(\[[\s\S]*?\]);\s*Q\.push/);
   if (!baseMatch) throw new Error('No se pudo leer el banco inicial Q del aula');
   const baseQuestions = vm.runInNewContext(baseMatch[1]);
-  const combined = [...baseQuestions, ...expanded];
+  // Keep one copy of a prompt across the Aula bank. The legacy HTML/CSS
+  // filters share this combined category, so preserve one copy in each filter
+  // until the question set can be split without breaking its 20-question floor.
+  const promptCategories = new Map();
+  for (const [category, prompt] of baseQuestions) addPromptCategory(promptCategories, prompt, category);
+  const deduplicatedExpansion = [];
+  for (const question of expanded) {
+    const [category, prompt] = question;
+    const key = normalizePrompt(prompt);
+    const seenCategories = promptCategories.get(key) || new Set();
+    const duplicateHtmlCssPair = (category === 'html' && seenCategories.has('css') && !seenCategories.has('html')) ||
+      (category === 'css' && seenCategories.has('html') && !seenCategories.has('css'));
+    if (seenCategories.has(category) || (seenCategories.size && !duplicateHtmlCssPair)) continue;
+    deduplicatedExpansion.push(question);
+    addPromptCategory(promptCategories, prompt, category);
+  }
+
+  const combined = [...baseQuestions, ...deduplicatedExpansion];
 
   const requiredCategories = Object.values(categoriesByTopic).flat();
   for (const category of requiredCategories) {
     const questions = combined.filter(question => question[0] === category);
-    const distinct = new Set(questions.map(question => question[1].trim()));
+    const distinct = new Set(questions.map(question => normalizePrompt(question[1])));
     if (distinct.size < 20) {
       throw new Error(`${category} necesita 20 preguntas distintas; tiene ${distinct.size}`);
     }
   }
-  return expanded;
+  return deduplicatedExpansion;
 }
 
 function renderLocalQuestions(questions = buildLocalQuestions()) {

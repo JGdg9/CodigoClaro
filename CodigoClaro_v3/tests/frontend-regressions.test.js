@@ -2,11 +2,28 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.join(__dirname, '..');
 const panel = fs.readFileSync(path.join(root, 'public/index.html'), 'utf8');
 const aula = fs.readFileSync(path.join(root, 'public/aula.html'), 'utf8');
+
+function panelApiRunner(fetch) {
+  const start = panel.indexOf('async function api(');
+  const end = panel.indexOf('// flash:', start);
+  if (start < 0 || end <= start) throw new Error('No se encontró el helper de API de la portada.');
+  return vm.runInNewContext(`${panel.slice(start, end)}\napi;`, { fetch });
+}
+
+function panelApiResponse(status, error) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: () => 'application/json' },
+    json: async () => ({ error })
+  };
+}
 
 test('panel declara activeReviewTopics antes de usarlo', () => {
   assert.match(panel, /activeQuiz=null,activeReviewTopics=\[\],lastWrongQuiz=\[\]/);
@@ -25,9 +42,77 @@ test('ejercicios renderizan saltos de línea reales y el feedback no imprime \\n
   assert.match(aula, /join\('\\n'\)/);
 });
 
-test('fetch de API muestra errores de red y HTTP con la ruta', () => {
-  assert.match(panel, /No se pudo conectar con \$\{url\}/);
-  assert.match(aula, /No se pudo conectar con '\+url/);
+test('los errores de red del API no exponen rutas locales ni detalles internos', () => {
+  const panelStart = panel.indexOf('async function api(');
+  const panelEnd = panel.indexOf('// flash:', panelStart);
+  assert.ok(panelStart >= 0 && panelEnd > panelStart);
+  const panelApi = panel.slice(panelStart, panelEnd);
+  assert.match(panelApi, /No hemos podido conectar con CódigoClaro/);
+  assert.doesNotMatch(panelApi, /localhost:3000|\$\{url\}|e\.message/);
+
+  const aulaStart = aula.indexOf('async function ccApi(');
+  const aulaEnd = aula.indexOf('// ccStatus:', aulaStart);
+  assert.ok(aulaStart >= 0 && aulaEnd > aulaStart);
+  const aulaApi = aula.slice(aulaStart, aulaEnd);
+  assert.match(aulaApi, /No se pudo conectar con CódigoClaro/);
+  assert.doesNotMatch(aulaApi, /localhost:3000|\+url|e\.message/);
+});
+
+test('api del panel conserva validaciones seguras y oculta errores internos', async () => {
+  const safeApi = panelApiRunner(async () => panelApiResponse(400, 'Credenciales incorrectas.'));
+  await assert.rejects(safeApi('/api/login'), error => error.message === 'Credenciales incorrectas.');
+
+  const unsafeApi = panelApiRunner(async () => panelApiResponse(400, 'Fallo en http://localhost:3000/api/login: TypeError'));
+  await assert.rejects(unsafeApi('/api/login'), error => {
+    assert.equal(error.message, 'No se pudo completar la solicitud. Inténtalo de nuevo.');
+    assert.doesNotMatch(error.message, /localhost|3000|\/api\/login|TypeError/);
+    return true;
+  });
+
+  const serverApi = panelApiRunner(async () => panelApiResponse(500, 'Error interno del servidor'));
+  await assert.rejects(serverApi('/api/login'), error => {
+    assert.equal(error.message, 'CódigoClaro no ha podido completar esta solicitud. Inténtalo de nuevo más tarde.');
+    assert.doesNotMatch(error.message, /interno/);
+    return true;
+  });
+});
+
+test('la política de privacidad describe el borrador local y la transferencia de Java', () => {
+  const privacy = fs.readFileSync(path.join(root, 'public/privacidad.html'), 'utf8');
+  assert.match(privacy, /borrador local del IDE/);
+  assert.match(privacy, /solo después de marcar el consentimiento[\s\S]*código fuente y el contenido de stdin/);
+  assert.match(privacy, /Comprobar conexión[\s\S]*token opcional[\s\S]*no incluye tu código/);
+  assert.match(privacy, /token, también se envía en la petición de ejecución/);
+  assert.doesNotMatch(privacy, /el IDE no envía el código a un compilador remoto/);
+});
+
+test('la portada anuncia errores de autenticación y respeta áreas táctiles y movimiento reducido', () => {
+  assert.match(panel, /id="authError"[^>]*role="alert"/);
+  assert.match(panel, /\.nav-more > summary \{[^}]*min-height: 44px/);
+  assert.match(panel, /\.nav-more-menu button\.nav-item \{[^}]*min-height: 44px/);
+  assert.match(panel, /\.nav-more > summary::after \{ transition: none !important; transform: none !important; \}/);
+  assert.match(panel, /main\.firstElementChild\.focus\(\{preventScroll:true\}\)/);
+});
+
+test('las limitaciones del piloto se explican en el registro y no cargan la portada', () => {
+  assert.match(panel, /<aside id="pilotNote" class="section pilot-note hidden" role="note"/);
+  assert.match(panel, /function showAuth\(mode='login'\)\{[^}]*insertBefore\(pilotNote,\$\('authSection'\)\.firstElementChild\)/);
+  assert.match(panel, /function authMode\(mode\)\{[^}]*pilotNote[^}]*toggle\('hidden',!reg\)/);
+  assert.match(panel, /setAttribute\('aria-describedby',reg\?'pilotDescription':'authSub'\)/);
+  assert.match(panel, /Esta versión no verifica el correo ni permite restablecer la contraseña/);
+  assert.match(panel, /id="registrationClosed" class="notice hidden" role="status"/);
+  assert.match(panel, /registrationEnabled=health\.registrationEnabled===true/);
+  assert.match(panel, /authSubmit'\)\.disabled=reg&&!registrationEnabled/);
+  assert.match(panel, /const me=await api\('\/api\/me'\)/);
+  assert.match(panel, /api\('\/api\/health'\)\.then\(health=>/);
+  assert.doesNotMatch(panel, /Promise\.all\(\[api\('\/api\/me'\),api\('\/api\/catalog'\),api\('\/api\/health'\)\]\)/);
+  assert.doesNotMatch(panel, /Si la olvidas, aún no podrás recuperarla desde la aplicación/);
+});
+
+test('la navegación editorial usa texto con contraste suficiente', () => {
+  const navRules = [...panel.matchAll(/\.nav button\{([^}]*)\}/g)].map(match => match[1]);
+  assert.ok(navRules.some(rule => rule.includes('color:#585858')), 'el texto de navegación debe usar el tono legible del tema');
+  assert.doesNotMatch(panel, /\.nav button\{[^}]*color:#888888/);
 });
 
 test('el XP del panel solo procede de tests del servidor y el aula explica su sincronización local', () => {

@@ -205,7 +205,7 @@ const IDE_LANGS=[
  {id:'plsql',label:'PL/SQL · Oracle',group:'SQL avanzado',ext:'sql',code:'DECLARE\n  v_total NUMBER := 0;\nBEGIN\n  SELECT COUNT(*) INTO v_total FROM empleados;\n  DBMS_OUTPUT.PUT_LINE(\'Empleados: \' || v_total);\nEND;\n/',tips:['PL/SQL se ejecuta en Oracle Database; no en SQLite.','SELECT ... INTO asigna una fila a variables.','Practica cursores, procedimientos, paquetes y triggers en Oracle SQL Developer.']}
 ];
 let ideEditor=null;
-let ccSqlDb=null, ccSqlPromise=null, ccJudgeLanguages=null, ccJudgeLanguagesEndpoint=null, ccRunnerWorker=null, ccPythonBusy=false;
+let ccSqlDb=null, ccSqlPromise=null, ccJudgeLanguages=null, ccJudgeLanguagesEndpoint=null, ccJudgeRunController=null, ccJudgeCheckController=null, ccRunnerWorker=null, ccPythonBusy=false;
 const CC_PYODIDE='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/';
 const CC_SQLJS='https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.13.0/';
 const CC_CODEMIRROR='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/';
@@ -229,10 +229,10 @@ function ccLoadCss(url,id){return new Promise((resolve,reject)=>{if(document.get
 // ideEnsureEditor: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 async function ideEnsureEditor(){const t=document.getElementById('ideCode');if(!t)return;ideEditor=null;t.classList.add('editor');ideUpdateCount();ideStatus('Editor local · funciona sin Internet');}
 // ideInitUI: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ideInitUI(){const sel=document.getElementById('ideLang');if(!sel)return;try{const last=ccStorageGet('cc_ide_last_lang');if(last&&IDE_LANGS.some(x=>x.id===last))sel.value=last}catch(e){}ideLoadTemplate(false);ideEnsureEditor();ideSetRuntimeText();if(document.getElementById('judgeEndpoint'))document.getElementById('judgeEndpoint').value=ccStorageGet('cc_judge_endpoint')||'https://ce.judge0.com';if(document.getElementById('judgeToken'))document.getElementById('judgeToken').value=''}
+function ideInitUI(){const sel=document.getElementById('ideLang');if(!sel)return;try{const last=ccStorageGet('cc_ide_last_lang');if(last&&IDE_LANGS.some(x=>x.id===last))sel.value=last}catch(e){}ideLoadTemplate(false);ideEnsureEditor();ideSetRuntimeText();if(document.getElementById('judgeEndpoint'))document.getElementById('judgeEndpoint').value=ccStorageGet('cc_judge_endpoint')||'https://ce.judge0.com';if(document.getElementById('judgeToken'))document.getElementById('judgeToken').value='';const saveButton=document.querySelector('button[onclick="ideSaveJudgeSettings()"]');if(saveButton&&!document.getElementById('ideJudgeCheckButton')){const checkButton=document.createElement('button');checkButton.id='ideJudgeCheckButton';checkButton.className=saveButton.className;checkButton.type='button';checkButton.textContent='Comprobar conexión';checkButton.addEventListener('click',ideCheckJudge);saveButton.before(checkButton)}}
 
 // idePage: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function idePage(){return `<section class="section"><div class="eyebrow">Laboratorio de programación</div><h2>IDE interno de CódigoClaro</h2><p class="muted">Editor con autoguardado, retos guiados, análisis y motores para los lenguajes compatibles. Usa <strong>Ctrl/Cmd + Enter</strong> para ejecutar y <strong>Ctrl/Cmd + S</strong> para descargar.</p><div class="panel"><div class="idebar"><select id="ideLang" onchange="ideSwitchLanguage()">${IDE_LANGS.map(l=>`<option value="${l.id}">${l.group} · ${l.label}</option>`).join('')}</select><select id="ideChallengeSelect" aria-label="Reto guiado"><option value="">Elegir reto guiado…</option>${E.map((e,i)=>`<option value="${i}">${e[1]}</option>`).join('')}</select><button class="btn" onclick="ideLoadChallenge()">Cargar reto</button><button class="btn" onclick="ideLoadTemplate(true)">Restaurar ejemplo</button><button class="btn" onclick="ideOpenFile()">Abrir archivo</button><button class="btn" onclick="ideSaveFile()">Descargar código</button><input id="ideFile" type="file" class="hide" onchange="ideReadFile(event)"></div><div class="idebar"><span class="runtime-badge" id="runtimeBadge">Motor: cargando…</span><span class="status" id="ideStatus">Preparando editor</span><span class="status" id="ideLines">Líneas: 1</span></div></div><div class="idegrid"><div class="panel"><label for="ideCode"><strong>Editor</strong></label><textarea id="ideCode" class="editor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" oninput="ideUpdateCount();ideSaveDraft()" aria-label="Editor de código"></textarea><div id="stdinPanel" class="hide"><label for="ideStdin"><strong>Entrada estándar (stdin)</strong></label><textarea id="ideStdin" class="field" rows="3" placeholder="Texto que leería input() o Scanner…"></textarea></div><div class="ide-actions"><button class="btn primary" onclick="ideRun()">▶ Ejecutar</button><button class="btn" onclick="ideAnalyze()">Analizar / revisar</button><button class="btn" onclick="ideClearOutput()">Limpiar salida</button><button class="btn" onclick="ideTestSample()">Probar ejemplo</button></div><div class="callout" id="runDescription">Elige una tecnología para ver el motor de ejecución disponible.</div><details class="panel"><summary><strong>Motores y privacidad</strong></summary><p class="muted tiny">JavaScript y los simuladores se ejecutan en un iframe aislado. Python, SQL/SQLite y React cargan motores desde CDN y necesitan Internet la primera vez. Java se envía al endpoint HTTPS configurado solo después de marcar el consentimiento; Kotlin y PL/SQL conservan el análisis estático.</p><div class="settings-grid"><label>Endpoint de Java<input id="judgeEndpoint" class="field" type="url" value="https://ce.judge0.com" autocomplete="off"></label><label>Token opcional<input id="judgeToken" class="field" type="password" autocomplete="new-password" placeholder="Solo para instancias que lo requieran"></label><label>Persistencia del código<input class="field" value="Almacenamiento local del navegador" readonly></label><label>Compiladores remotos<input class="field" value="Java, con permiso por sesión" readonly></label></div><div class="tiny muted">El endpoint comunitario puede limitar o rechazar peticiones. El token solo permanece en el campo durante esta sesión.</div><div class="toolbar"><button class="btn" type="button" onclick="ideSaveJudgeSettings()">Guardar endpoint</button><label class="tiny"><input id="ideJavaRemoteConsent" type="checkbox" onchange="this.dataset.endpoint=this.checked?ideJudgeConfig().base:''"> Acepto enviar el código Java y el contenido de stdin al endpoint de compilación mostrado para compilarlo y ejecutarlo. Esta autorización dura solo mientras esta página esté abierta.</label></div><div class="tiny muted" id="judgeSettingsStatus">El código no se envía hasta marcar el consentimiento y pulsar Ejecutar.</div></details></div><div class="panel"><h3>Analizador y errores</h3><p class="muted tiny">El análisis estático orienta; solo el motor de ejecución puede confirmar resultados de los lenguajes que soporta.</p><div id="ideAnalysis" class="ideout feedback">Selecciona una tecnología y pulsa Analizar / revisar.</div><h3>Salida / compilación</h3><div id="ideOutput" class="ideout feedback" role="status">La salida aparecerá aquí.</div><h3>Consejos del lenguaje</h3><div id="ideTips" class="feedback"></div><div id="reactPreviewBox" class="hide"><h3>Vista previa React</h3><p class="tiny muted">Componente JSX ejecutado en un iframe aislado. Requiere conexión para cargar React y Babel desde CDN; no permite instalar paquetes npm arbitrarios.</p><iframe id="reactPreview" class="preview-frame" sandbox="allow-scripts" title="Vista previa React"></iframe></div></div></div><section class="section"><h2>Laboratorio de bases de datos</h2><div class="panel"><p>Las opciones Oracle, MySQL y PostgreSQL permiten editar y probar SQL básico en un motor <strong>SQLite real dentro del navegador</strong>. No son conexiones a las bases de datos originales: ciertas funciones, tipos y procedimientos difieren. La base de ejemplo se guarda localmente.</p><div class="toolbar"><button class="btn" onclick="ideResetSqlDb()">Restaurar base de ejemplo</button><button class="btn" onclick="ideDownloadSqlDb()">Descargar SQLite (.sqlite)</button></div><div class="tiny muted">Tablas de ejemplo: alumnos, cursos, departamentos y empleados. Para acceso real a Oracle/MySQL/PostgreSQL se necesitará una instancia y una capa de servidor segura.</div></div><div class="grid"><article class="card"><h3>Python</h3><p>Pyodide ejecuta Python en WebAssembly dentro de un worker. Necesita Internet para cargar el intérprete y tiene límite de tiempo.</p></article><article class="card"><h3>Java / Kotlin</h3><p>Java se compila y ejecuta en un endpoint remoto solo con consentimiento por sesión. Kotlin conserva el editor y el análisis estático.</p></article><article class="card"><h3>React</h3><p>Vista previa JSX en iframe aislado, cargando React y Babel desde CDN. No instala paquetes npm.</p></article><article class="card"><h3>MongoDB / Firestore</h3><p>Simuladores didácticos locales para practicar filtros/CRUD sin exponer credenciales. No conectan con servicios cloud.</p></article><article class="card"><h3>JavaScript</h3><p>Ejecución en un iframe separado, con consola capturada y limpieza automática.</p></article><article class="card"><h3>SQL</h3><p>Motor SQLite real en WebAssembly, con persistencia local. Requiere cargar SQL.js desde CDN y no sustituye a Oracle/MySQL/PostgreSQL.</p></article></div></section></section>`}
+function idePage(){return `<section class="section"><div class="eyebrow">Laboratorio de programación</div><h2>IDE interno de CódigoClaro</h2><p class="muted">Editor con autoguardado, retos guiados, análisis y motores para los lenguajes compatibles. Usa <strong>Ctrl/Cmd + Enter</strong> para ejecutar y <strong>Ctrl/Cmd + S</strong> para descargar.</p><div class="panel"><div class="idebar"><select id="ideLang" aria-label="Lenguaje de programación" onchange="ideSwitchLanguage()">${IDE_LANGS.map(l=>`<option value="${l.id}">${l.group} · ${l.label}</option>`).join('')}</select><select id="ideChallengeSelect" aria-label="Reto guiado"><option value="">Elegir reto guiado…</option>${E.map((e,i)=>`<option value="${i}">${e[1]}</option>`).join('')}</select><button class="btn" onclick="ideLoadChallenge()">Cargar reto</button><button class="btn" onclick="ideLoadTemplate(true)">Restaurar ejemplo</button><button class="btn" onclick="ideOpenFile()">Abrir archivo</button><button class="btn" onclick="ideSaveFile()">Descargar código</button><input id="ideFile" type="file" class="hide" onchange="ideReadFile(event)"></div><div class="idebar"><span class="runtime-badge" id="runtimeBadge">Motor: cargando…</span><span class="status" id="ideStatus">Preparando editor</span><span class="status" id="ideLines">Líneas: 1</span></div></div><div class="idegrid"><div class="panel"><label for="ideCode"><strong>Editor</strong></label><textarea id="ideCode" class="editor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" oninput="ideUpdateCount();ideSaveDraft()" aria-label="Editor de código"></textarea><div id="stdinPanel" class="hide"><label for="ideStdin"><strong>Entrada estándar (stdin)</strong></label><textarea id="ideStdin" class="field" rows="3" placeholder="Texto que leería input() o Scanner…"></textarea></div><div class="ide-actions"><button class="btn primary" onclick="ideRun()">▶ Ejecutar</button><button class="btn" onclick="ideAnalyze()">Analizar / revisar</button><button class="btn" onclick="ideClearOutput()">Limpiar salida</button><button class="btn" onclick="ideTestSample()">Probar ejemplo</button></div><div class="callout" id="runDescription">Elige una tecnología para ver el motor de ejecución disponible.</div><details class="panel"><summary><strong>Motores y privacidad</strong></summary><p class="muted tiny">JavaScript y los simuladores se ejecutan en un iframe aislado. Python, SQL/SQLite y React cargan motores desde CDN y necesitan Internet la primera vez. Java se envía al endpoint HTTPS configurado solo después de marcar el consentimiento; Kotlin y PL/SQL conservan el análisis estático.</p><div class="settings-grid"><label>Endpoint de Java<input id="judgeEndpoint" class="field" type="url" value="https://ce.judge0.com" autocomplete="off" oninput="ideCancelJudgeRun()"></label><label>Token opcional<input id="judgeToken" class="field" type="password" autocomplete="new-password" placeholder="Solo para instancias que lo requieran" oninput="ideCancelJudgeRun()"></label><label>Persistencia del código<input class="field" value="Almacenamiento local del navegador" readonly></label><label>Compiladores remotos<input class="field" value="Java, con permiso por sesión" readonly></label></div><div class="tiny muted">El endpoint comunitario puede limitar o rechazar peticiones. Al pulsar Comprobar conexión se envía una petición de prueba y, si has escrito un token, también ese token; no se envían código ni entrada. El token no se guarda en la aplicación.</div><div class="toolbar"><button class="btn" type="button" onclick="ideSaveJudgeSettings()">Guardar endpoint</button><label class="tiny"><input id="ideJavaRemoteConsent" type="checkbox" onchange="this.dataset.endpoint=this.checked?ideJudgeConfig().base:'';if(!this.checked)ideCancelJudgeRun()"> Al pulsar Ejecutar, acepto enviar el código Java y el contenido de stdin al endpoint HTTPS mostrado. Si he escrito un token, también se enviará para autenticar la petición. Esta autorización dura solo mientras esta página esté abierta.</label></div><div class="tiny muted" id="judgeSettingsStatus" role="status" aria-live="polite" aria-atomic="true">El código no se envía hasta marcar el consentimiento y pulsar Ejecutar.</div></details></div><div class="panel"><h3>Analizador y errores</h3><p class="muted tiny">El análisis estático orienta; solo el motor de ejecución puede confirmar resultados de los lenguajes que soporta.</p><div id="ideAnalysis" class="ideout feedback">Selecciona una tecnología y pulsa Analizar / revisar.</div><h3>Salida / compilación</h3><div id="ideOutput" class="ideout feedback" role="status">La salida aparecerá aquí.</div><h3>Consejos del lenguaje</h3><div id="ideTips" class="feedback"></div><div id="reactPreviewBox" class="hide"><h3>Vista previa React</h3><p class="tiny muted">Componente JSX ejecutado en un iframe aislado. Requiere conexión para cargar React y Babel desde CDN; no permite instalar paquetes npm arbitrarios.</p><iframe id="reactPreview" class="preview-frame" sandbox="allow-scripts" title="Vista previa React"></iframe></div></div></div><section class="section"><h2>Laboratorio de bases de datos</h2><div class="panel"><p>Las opciones Oracle, MySQL y PostgreSQL permiten editar y probar SQL básico en un motor <strong>SQLite real dentro del navegador</strong>. No son conexiones a las bases de datos originales: ciertas funciones, tipos y procedimientos difieren. La base de ejemplo se guarda localmente.</p><div class="toolbar"><button class="btn" onclick="ideResetSqlDb()">Restaurar base de ejemplo</button><button class="btn" onclick="ideDownloadSqlDb()">Descargar SQLite (.sqlite)</button></div><div class="tiny muted">Tablas de ejemplo: alumnos, cursos, departamentos y empleados. Para acceso real a Oracle/MySQL/PostgreSQL se necesitará una instancia y una capa de servidor segura.</div></div><div class="grid"><article class="card"><h3>Python</h3><p>Pyodide ejecuta Python en WebAssembly dentro de un worker. Necesita Internet para cargar el intérprete y tiene límite de tiempo.</p></article><article class="card"><h3>Java / Kotlin</h3><p>Java se compila y ejecuta en un endpoint remoto solo con consentimiento por sesión. Kotlin conserva el editor y el análisis estático.</p></article><article class="card"><h3>React</h3><p>Vista previa JSX en iframe aislado, cargando React y Babel desde CDN. No instala paquetes npm.</p></article><article class="card"><h3>MongoDB / Firestore</h3><p>Simuladores didácticos locales para practicar filtros/CRUD sin exponer credenciales. No conectan con servicios cloud.</p></article><article class="card"><h3>JavaScript</h3><p>Ejecución en un iframe separado, con consola capturada y limpieza automática.</p></article><article class="card"><h3>SQL</h3><p>Motor SQLite real en WebAssembly, con persistencia local. Requiere cargar SQL.js desde CDN y no sustituye a Oracle/MySQL/PostgreSQL.</p></article></div></section></section>`}
 // ideLang: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideLang(){return IDE_LANGS.find(l=>l.id===document.getElementById('ideLang')?.value)||IDE_LANGS[0]}
 // ideSwitchLanguage: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
@@ -273,15 +273,76 @@ function ideRunSandbox(kind){const code=ideGetCode(),out=document.getElementById
 // ideRunPython: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideRunPython(){if(ccPythonBusy)return ideShowOutput('Python ya se está ejecutando. Espera a que termine.','bad');const code=ideGetCode();ccPythonBusy=true;ideShowOutput('Cargando intérprete Python (primera vez puede tardar)…');const workerCode=`let py=null;self.onmessage=async(e)=>{let output='',errors='';try{if(!py){importScripts('${CC_PYODIDE}pyodide.js');py=await loadPyodide({indexURL:'${CC_PYODIDE}'});}py.setStdout({batched:m=>{output+=m+'\\n'}});py.setStderr({batched:m=>{errors+=m+'\\n'}});let stdin=String(e.data.stdin||'');if(stdin&&!stdin.endsWith('\\n'))stdin+='\\n';let ix=0;py.setStdin({stdin:()=>ix<stdin.length?stdin.charCodeAt(ix++):-1});const result=py.runPython(e.data.code);if(result!==undefined&&result!==null)output+=String(result)+'\\n';self.postMessage({ok:true,output,errors,ready:true});}catch(err){self.postMessage({ok:false,output,errors:errors+'\\n'+(err&&err.message||String(err)),ready:true});}};`;let url;try{url=URL.createObjectURL(new Blob([workerCode],{type:'text/javascript'}));ccRunnerWorker=new Worker(url);ccRunnerWorker.onmessage=e=>{const d=e.data||{};ccPythonBusy=false;ideShowOutput(((d.output||'')+(d.errors||'')).trim()|| (d.ok?'Ejecución terminada sin salida de consola.':'Error de Python'),d.ok?'ok':'bad');ideStatus(d.ok?'Python ejecutado':'Error en Python');ccRunnerWorker.terminate();ccRunnerWorker=null;URL.revokeObjectURL(url)};ccRunnerWorker.onerror=e=>{ccPythonBusy=false;ideShowOutput('No se pudo iniciar el worker de Python. Abre la app desde un servidor local (por ejemplo, Live Server) o comprueba la conexión y el bloqueo de scripts externos. Detalle: '+(e.message||'error del worker'),'bad');if(ccRunnerWorker)ccRunnerWorker.terminate();ccRunnerWorker=null;URL.revokeObjectURL(url)};ccRunnerWorker.postMessage({code,stdin:document.getElementById('ideStdin')?.value||''});setTimeout(()=>{if(ccRunnerWorker){ccRunnerWorker.terminate();ccRunnerWorker=null;ccPythonBusy=false;URL.revokeObjectURL(url);ideShowOutput('Tiempo límite de 15 segundos superado. El worker se ha detenido.','bad')}},15000)}catch(e){ccPythonBusy=false;ideShowOutput('No se pudo iniciar Python en WebAssembly: '+e.message,'bad')}}
 // ideJudgeConfig: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ideJudgeConfig(){const endpointInput=document.getElementById('judgeEndpoint'),tokenInput=document.getElementById('judgeToken');const base=(endpointInput?endpointInput.value:(ccStorageGet('cc_judge_endpoint')||'https://ce.judge0.com')).trim().replace(/\/+$/,'');const token=(tokenInput?tokenInput.value:'').trim();return {base:base||'https://ce.judge0.com',token}}
+function ideJudgeConfig(){
+ const endpointInput=document.getElementById('judgeEndpoint'),tokenInput=document.getElementById('judgeToken');
+ const storedEndpoint=ccStorageGet('cc_judge_endpoint')||'https://ce.judge0.com';
+ const rawBase=endpointInput?endpointInput.value:storedEndpoint;
+ const base=(rawBase||'').trim().replace(/\/+$/,'');
+ const token=(tokenInput?tokenInput.value:'').trim();
+ return {base,token}
+}
 
 // ideSaveJudgeSettings: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ideSaveJudgeSettings(){const {base}=ideJudgeConfig();try{ccStorageSet('cc_judge_endpoint',base);const status=document.getElementById('judgeSettingsStatus');if(status)status.textContent='Endpoint guardado en este navegador. El token no se guarda.';ideStatus('Endpoint de Java guardado')}catch(e){const status=document.getElementById('judgeSettingsStatus');if(status)status.textContent='No se pudo guardar el endpoint en este navegador.'}}
+function ideSaveJudgeSettings(){
+ const {base}=ideJudgeConfig(),status=document.getElementById('judgeSettingsStatus');
+ if(!base){if(status)status.textContent='Escribe un endpoint HTTPS antes de guardarlo.';ideStatus('Falta el endpoint de Java');return}
+ try{
+  const endpoint=new URL(base);
+  if(endpoint.protocol!=='https:'||endpoint.username||endpoint.password)throw new Error('Endpoint no válido');
+  ccStorageSet('cc_judge_endpoint',base);
+  if(status)status.textContent='Endpoint guardado en este navegador. El token no se guarda.';
+  ideStatus('Endpoint de Java guardado')
+ }catch(e){if(status)status.textContent='No se pudo guardar: usa una URL HTTPS válida sin usuario ni contraseña.'}
+}
 
 // ideJudgeFetch: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function ideJudgeFetch(path,opts={}){const {base,token}=ideJudgeConfig();const headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});if(token)headers['X-Auth-Token']=token;const resp=await fetch(base+path,Object.assign({},opts,{headers}));const txt=await resp.text();let data;try{data=txt?JSON.parse(txt):{}}catch(e){data={raw:txt}}if(!resp.ok)throw new Error(`HTTP ${resp.status}: ${data.message||data.error||txt.slice(0,250)||resp.statusText}`);return data}
+async function ideJudgeFetch(path,opts={},config=ideJudgeConfig()){
+ const {base,token}=config;
+ if(!base)throw new Error('Escribe un endpoint HTTPS antes de conectar o ejecutar Java.');
+ let endpoint;
+ try{endpoint=new URL(base)}catch{throw new Error('Escribe una URL HTTPS válida para el endpoint de Java.')}
+ if(endpoint.protocol!=='https:'||endpoint.username||endpoint.password)throw new Error('El endpoint remoto debe usar HTTPS y no incluir usuario ni contraseña.');
+ const headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});
+ if(token)headers['X-Auth-Token']=token;
+ const resp=await fetch(base+path,Object.assign({},opts,{headers}));
+ if(!resp.ok){
+  if(resp.status===401||resp.status===403)throw new Error('El endpoint rechazó la autenticación. Revisa el token opcional.');
+  if(resp.status===429)throw new Error('El endpoint ha alcanzado su límite de solicitudes. Inténtalo más tarde.');
+  throw new Error('El endpoint no pudo completar la petición (HTTP '+resp.status+').')
+ }
+ const txt=await resp.text();
+ let data;
+ try{data=txt?JSON.parse(txt):{}}catch(e){data={raw:txt}}
+ return data
+}
+function ideCancelJudgeRun(){
+ const consent=document.getElementById('ideJavaRemoteConsent');
+ if(consent){consent.checked=false;consent.dataset.endpoint=''}
+ if(ccJudgeRunController&&!ccJudgeRunController.signal.aborted)ccJudgeRunController.abort();
+ if(ccJudgeCheckController&&!ccJudgeCheckController.signal.aborted)ccJudgeCheckController.abort()
+}
 // ideCheckJudge: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function ideCheckJudge(){const status=document.getElementById('judgeSettingsStatus');status.textContent='Comprobando conexión…';try{const langs=await ideJudgeFetch('/languages/');const names=Array.isArray(langs)?langs.map(x=>x.name):[];status.textContent=`Conectado. ${names.length} lenguajes anunciados. Java: ${names.some(n=>/^Java\s*\(/i.test(n))?'disponible':'no detectado'}; Kotlin: ${names.some(n=>/^Kotlin\s*\(/i.test(n))?'disponible':'no detectado'}.`;ccJudgeLanguages=langs}catch(e){status.textContent='No se pudo conectar: '+e.message+'. Prueba otra instancia compatible o un servicio con API key.'}}
+async function ideCheckJudge(){
+ const status=document.getElementById('judgeSettingsStatus'),config=ideJudgeConfig();
+ if(!config.base){status.textContent='Escribe una URL HTTPS antes de comprobar la conexión.';return}
+ if(ccJudgeCheckController&&!ccJudgeCheckController.signal.aborted)ccJudgeCheckController.abort();
+ const controller=new AbortController();ccJudgeCheckController=controller;status.textContent='Comprobando conexión…';
+ let timedOut=false;
+ const timeoutId=setTimeout(()=>{timedOut=true;controller.abort()},10000);
+ try{
+  const langs=await ideJudgeFetch('/languages/',{signal:controller.signal},config);
+  if(ccJudgeCheckController!==controller)return;
+  if(timedOut){status.textContent='La comprobación superó el límite de 10 segundos.';return}
+  const current=ideJudgeConfig();
+  if(controller.signal.aborted||current.base!==config.base||current.token!==config.token){status.textContent='Comprobación cancelada porque cambió el endpoint o el token.';return}
+  const names=Array.isArray(langs)?langs.map(x=>x.name):[];
+  status.textContent=`Conectado. ${names.length} lenguajes anunciados. Java: ${names.some(n=>n.toLowerCase().startsWith('java ('))?'disponible':'no detectado'}; Kotlin: ${names.some(n=>n.toLowerCase().startsWith('kotlin ('))?'disponible':'no detectado'}.`;
+  ccJudgeLanguages=langs;ccJudgeLanguagesEndpoint=config.base
+ }catch(e){
+  if(ccJudgeCheckController!==controller)return;
+  status.textContent=timedOut?'La comprobación superó el límite de 10 segundos.':controller.signal.aborted?'Comprobación cancelada porque cambió el endpoint o el token.':'No se pudo conectar: '+e.message+'. Prueba otra instancia compatible o un servicio con API key.'
+ }finally{clearTimeout(timeoutId);if(ccJudgeCheckController===controller)ccJudgeCheckController=null}
+}
 // ideVersionScore: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideVersionScore(name){const nums=(name.match(/\d+(?:\.\d+)*/g)||[]).join('.').split('.').map(Number);return nums.reduce((n,x,i)=>n+(x||0)/Math.pow(100,i),0)}
 // ideRunJudge0: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
@@ -289,27 +350,44 @@ async function ideRunJudge0(){
  const l=ideLang(),code=ideGetCode();
  if(l.id!=='java'){ideShowOutput('La ejecución remota de este IDE está habilitada solo para Java.','bad');return}
  if(!code.trim())return ideShowOutput('El editor está vacío.','bad');
- const consent=document.getElementById('ideJavaRemoteConsent'),{base}=ideJudgeConfig();
- if(!consent||!consent.checked||consent.dataset.endpoint!==base){ideShowOutput('Para ejecutar Java en remoto, abre «Motores y privacidad», configura el endpoint y marca la casilla de consentimiento para ese endpoint. Tu código no se envía hasta que marques esa casilla y pulses Ejecutar.','bad');ideStatus('Consentimiento requerido para Java remoto');return}
+ const consent=document.getElementById('ideJavaRemoteConsent'),config=ideJudgeConfig(),{base}=config;
+ if(!base){ideShowOutput('Escribe un endpoint HTTPS válido antes de ejecutar Java.','bad');ideStatus('Falta el endpoint de Java');return}
+  if(!consent||!consent.checked||consent.dataset.endpoint!==base||ideJudgeConfig().base!==base||ideJudgeConfig().token!==config.token){ideShowOutput('Para ejecutar Java en remoto, abre «Motores y privacidad», configura el endpoint y marca la casilla de consentimiento para ese endpoint. Tu código no se envía hasta que marques esa casilla y pulses Ejecutar.','bad');ideStatus('Consentimiento requerido para Java remoto');return}
+ if(ccJudgeRunController&&!ccJudgeRunController.signal.aborted){ideShowOutput('Ya hay una ejecución Java en curso. Espera a que termine.','bad');return}
  ideShowOutput('Solicitando compilación y ejecución de Java…');ideStatus('Enviando código al endpoint aceptado');
- let runTimeout;
+ let runTimeout,timedOut=false;
+ const runController=new AbortController(),signal=runController.signal;
+ ccJudgeRunController=runController;
+ const ensureConsent=()=>{
+  const currentConfig=ideJudgeConfig();
+   if(!consent.checked||consent.dataset.endpoint!==base||currentConfig.base!==base||currentConfig.token!==config.token){
+   runController.abort();
+   throw new Error('La ejecución se canceló porque cambió el endpoint, el token o se retiró el consentimiento.')
+  }
+ };
  try{
   const parsedEndpoint=new URL(base);
   if(parsedEndpoint.protocol!=='https:'||parsedEndpoint.username||parsedEndpoint.password)throw new Error('El endpoint remoto debe usar HTTPS y no incluir usuario ni contraseña.');
+  runTimeout=setTimeout(()=>{timedOut=true;runController.abort()},30000);
   if(ccJudgeLanguagesEndpoint!==base){ccJudgeLanguages=null;ccJudgeLanguagesEndpoint=base}
   ideSaveJudgeSettings();
-  const runController=new AbortController();
-  runTimeout=setTimeout(()=>runController.abort(),30000);
-  const signal=runController.signal;
-  if(!ccJudgeLanguages)ccJudgeLanguages=await ideJudgeFetch('/languages/',{signal});
+  if(!ccJudgeLanguages)ccJudgeLanguages=await ideJudgeFetch('/languages/',{signal},config);
+  ensureConsent();
   const opts=ccJudgeLanguages.filter(x=>(x.name||'').toLowerCase().startsWith('java ('));
   if(!opts.length)throw new Error('La instancia no ofrece un runtime Java. Prueba otra instancia compatible.');
   opts.sort((a,b)=>ideVersionScore(b.name)-ideVersionScore(a.name));
   const lang=opts[0],stdin=document.getElementById('ideStdin')?.value||'';
-  const submission=await ideJudgeFetch('/submissions/?base64_encoded=false&wait=false',{method:'POST',body:JSON.stringify({source_code:code,language_id:lang.id,stdin,cpu_time_limit:3,wall_time_limit:6,memory_limit:128000}),signal});
+  ensureConsent();
+  const submission=await ideJudgeFetch('/submissions/?base64_encoded=false&wait=false',{method:'POST',body:JSON.stringify({source_code:code,language_id:lang.id,stdin,cpu_time_limit:3,wall_time_limit:6,memory_limit:128000}),signal},config);
   if(!submission.token)throw new Error('El servicio no devolvió un identificador de ejecución.');
   let result=null;
-  for(let i=0;i<22;i++){await new Promise(r=>setTimeout(r,900));result=await ideJudgeFetch('/submissions/'+encodeURIComponent(submission.token)+'?base64_encoded=false',{method:'GET',headers:{},signal});if(result.status&&result.status.id>2)break}
+  for(let i=0;i<22;i++){
+   await new Promise(r=>setTimeout(r,900));
+   ensureConsent();
+   result=await ideJudgeFetch('/submissions/'+encodeURIComponent(submission.token)+'?base64_encoded=false',{method:'GET',headers:{},signal},config);
+   ensureConsent();
+   if(result.status&&result.status.id>2)break
+  }
   if(!result||!result.status||result.status.id<=2)throw new Error('La tarea sigue en cola. Prueba más tarde.');
   const parts=['Motor: '+lang.name,'Estado: '+(result.status.description||'finalizado')];
   if(result.compile_output)parts.push('SALIDA DE COMPILACIÓN:\n'+result.compile_output);
@@ -322,11 +400,13 @@ async function ideRunJudge0(){
   ideShowOutput(parts.join('\n\n'),result.status.id===3?'ok':'bad');
   ideStatus(result.status.description||'Ejecución Java finalizada')
  }catch(e){
-  const errorMessage=e?.name==='AbortError'?'La ejecución de Java superó el límite de 30 segundos.':(e?.message||String(e));
+  const cancelled=!timedOut&&signal.aborted;
+  const errorMessage=timedOut?'La ejecución de Java superó el límite de 30 segundos.':cancelled?'La ejecución se canceló porque cambió el endpoint, el token o se retiró el consentimiento.':(e?.message||String(e));
   ideShowOutput('No se pudo ejecutar Java en el endpoint remoto.\n'+errorMessage+'\n\nComprueba el endpoint HTTPS, la conexión y los límites o permisos de la instancia. Si la solicitud de ejecución llegó al servidor, el código se procesó allí; no se ejecutó localmente.','bad');
-  ideStatus(e?.name==='AbortError'?'Tiempo límite del compilador remoto':'Compilador remoto no disponible')
+  ideStatus(timedOut?'Tiempo límite del compilador remoto':cancelled?'Ejecución Java cancelada':'Compilador remoto no disponible')
  }finally{
-  if(runTimeout!==undefined)clearTimeout(runTimeout)
+  if(runTimeout!==undefined)clearTimeout(runTimeout);
+  if(ccJudgeRunController===runController)ccJudgeRunController=null
  }
 }
 // ideLoadSql: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
@@ -403,7 +483,28 @@ page('home');
 
 let ccCloudUser=null,ccCloudReady=false,ccCloudAuthVersion=0,ccCloudAuthBusy=false,ccCloudLogoutPending=false,ccCloudTimer=null,ccCloudBusy=false,ccCloudSavePromise=null,ccCloudSaveOwner=null,ccCloudSaveVersion=null,ccCloudSyncVersion=0,ccCloudLogoutError='';
 // ccApi: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function ccApi(url,opts={}){let r;try{r=await fetch(url,{credentials:'same-origin',...opts,headers:{...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}})}catch(e){throw Error('No se pudo conectar con '+url+'. Comprueba que el servidor siga activo en localhost:3000. '+(e.message||e))}let d={};try{const type=r.headers.get('content-type')||'';d=type.includes('application/json')?await r.json():{error:(await r.text()).slice(0,250)}}catch{}if(!r.ok)throw Error(d.error||'Error HTTP '+r.status+' en '+url);return d}
+async function ccApi(url,opts={}) {
+  let response;
+  try {
+    response=await fetch(url,{credentials:'same-origin',...opts,headers:{...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}});
+  } catch {
+    throw Error('No se pudo conectar con CódigoClaro. Comprueba tu conexión e inténtalo de nuevo.');
+  }
+  let data={};
+  try {
+    const contentType=response.headers.get('content-type')||'';
+    if(contentType.includes('application/json')) data=await response.json();
+    else if(response.ok) data={error:(await response.text()).slice(0,250)};
+  } catch {}
+  if(!response.ok) {
+    if(response.status>=500) throw Error('CódigoClaro no pudo completar la solicitud. Inténtalo de nuevo más tarde.');
+    const message=typeof data.error==='string'?data.error.trim():'';
+    const hasInternalDetails=/(?:[a-z][a-z0-9+.-]*:\/\/|\/(?:api|auth|internal|server)(?:\/|\b)|\b(?:localhost|127\.0\.0\.1|::1)(?::\d+)?\b|\b(?:stack trace|traceback|internal server|\bintern(?:al|o|os|as)\b|ECONNREFUSED|ENOENT|SQLITE_[A-Z_]*|TypeError|ReferenceError)\b|\bat\s+\S+\s*\(|(?:^|[\s("'=:])(?:[a-z0-9-]+\.)+[a-z]{2,63}(?::\d+)?\b|[A-Za-z]:[\\/][^\s]+)/i.test(message);
+    if(response.status>=400&&response.status<500&&message&&message.length<=240&&!hasInternalDetails) throw Error(message);
+    throw Error('No se pudo completar la solicitud. Revisa los datos e inténtalo de nuevo.');
+  }
+  return data;
+}
 // ccStatus: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ccStatus(t){const el=document.getElementById('ccAccountStatus');if(el)el.textContent=t}
 // ccRenderUser: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.

@@ -24,7 +24,8 @@ function runnerContext(consentChecked, { timeoutImmediately = false } = {}) {
   const consent = { checked: consentChecked, dataset: { endpoint: 'https://ce.judge0.com' } };
   const elements = {
     ideJavaRemoteConsent: consent,
-    ideStdin: { value: 'Ada' }
+    ideStdin: { value: 'Ada' },
+    judgeToken: { value: 'session-token' }
   };
   return {
     calls,
@@ -38,6 +39,7 @@ function runnerContext(consentChecked, { timeoutImmediately = false } = {}) {
       ideShowOutput: (message, kind) => messages.push({ message, kind }),
       ideStatus: message => messages.push({ status: message }),
       ideJudgeConfig: () => ({ base: 'https://ce.judge0.com' }),
+      ccJudgeRunController: null,
       ideSaveJudgeSettings: () => {},
       ideVersionScore: () => 17,
       ccJudgeLanguages: [{ id: 62, name: 'Java (OpenJDK 17)' }],
@@ -135,4 +137,262 @@ test('Java cancela el sondeo y muestra un error si la ejecución remota supera s
   assert.equal(setup.calls.some(call => call.options.method === 'GET'), false, 'no debe continuar el sondeo después del aborto');
   assert.match(setup.messages.filter(message => message.message).at(-1)?.message || '', /superó el límite de 30 segundos/i);
   assert.equal(setup.messages.find(message => message.kind)?.kind, 'bad');
+});
+
+function ccApiRunner(fetch) {
+  const source = extract('async function ccApi(', '\n// ccStatus:');
+  return vm.runInNewContext(source + '\nccApi;', { fetch });
+}
+
+function ccApiResponse(status, error, contentType = 'application/json') {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: () => contentType },
+    json: async () => ({ error }),
+    text: async () => error
+  };
+}
+
+test('ccApi oculta el host y los detalles internos si falla la conexión', async () => {
+  const api = ccApiRunner(async () => { throw new Error('ECONNREFUSED localhost:3000 /api/progress'); });
+
+  await assert.rejects(api('/api/progress'), error => {
+    assert.equal(error.message, 'No se pudo conectar con CódigoClaro. Comprueba tu conexión e inténtalo de nuevo.');
+    assert.doesNotMatch(error.message, /localhost|3000|\/api\/progress|ECONNREFUSED/);
+    return true;
+  });
+});
+
+test('ccApi sustituye errores HTTP 5xx por un mensaje genérico', async () => {
+  const api = ccApiRunner(async () => ccApiResponse(500, 'Error interno en http://localhost:3000/api/progress'));
+
+  await assert.rejects(api('/api/progress'), error => {
+    assert.equal(error.message, 'CódigoClaro no pudo completar la solicitud. Inténtalo de nuevo más tarde.');
+    assert.doesNotMatch(error.message, /localhost|3000|\/api\/progress|interno/);
+    return true;
+  });
+});
+
+test('ccApi conserva validaciones 4xx seguras y oculta detalles internos', async () => {
+  const safeApi = ccApiRunner(async () => ccApiResponse(400, 'La contraseña debe tener al menos 10 caracteres.'));
+  await assert.rejects(safeApi('/api/register'), error => error.message === 'La contraseña debe tener al menos 10 caracteres.');
+
+  const unsafeApi = ccApiRunner(async () => ccApiResponse(400, 'Fallo en http://localhost:3000/api/register: TypeError'));
+  await assert.rejects(unsafeApi('/api/register'), error => {
+    assert.equal(error.message, 'No se pudo completar la solicitud. Revisa los datos e inténtalo de nuevo.');
+    assert.doesNotMatch(error.message, /localhost|3000|\/api\/register|TypeError/);
+    return true;
+  });
+
+  const internalApi = ccApiRunner(async () => ccApiResponse(400, 'Error interno: fallo inesperado.'));
+  await assert.rejects(internalApi('/api/register'), error => {
+    assert.equal(error.message, 'No se pudo completar la solicitud. Revisa los datos e inténtalo de nuevo.');
+    return true;
+  });
+});
+
+test('el selector de lenguaje y el estado del endpoint tienen nombres y avisos accesibles', () => {
+  assert.match(aula, /<select id="ideLang" aria-label="Lenguaje de programación"/);
+  assert.match(aula, /id="judgeSettingsStatus" role="status" aria-live="polite" aria-atomic="true"/);
+});
+
+test('Java ofrece un botón funcional para comprobar la conexión', () => {
+  const source = extract('function ideInitUI(){', '\n// idePage:');
+  const endpoint = { value: '' }, token = { value: 'token-local' };
+  const saveButton = { className: 'btn', before(button) { this.inserted = button; } };
+  const elements = { ideLang: { value: 'java' }, judgeEndpoint: endpoint, judgeToken: token };
+  const document = {
+    getElementById: id => elements[id] || null,
+    querySelector: selector => selector === 'button[onclick="ideSaveJudgeSettings()"]' ? saveButton : null,
+    createElement: () => ({ addEventListener(type, handler) { this.event = type; this.handler = handler; } })
+  };
+  let checks = 0;
+  const check = () => { checks++; };
+  vm.runInNewContext(source + '\nideInitUI();', {
+    document, IDE_LANGS: [], ccStorageGet: () => '', ideLoadTemplate() {}, ideEnsureEditor() {}, ideSetRuntimeText() {}, ideCheckJudge: check
+  });
+  assert.equal(endpoint.value, 'https://ce.judge0.com');
+  assert.equal(saveButton.inserted.textContent, 'Comprobar conexión');
+  assert.equal(saveButton.inserted.event, 'click');
+  saveButton.inserted.handler();
+  assert.equal(checks, 1);
+});
+
+test('Java cancela y no envía código si cambia endpoint o consentimiento durante la carga de runtimes', async () => {
+  const source = extract('async function ideRunJudge0(){', '\n// ideLoadSql');
+
+  async function runAfterMutation(mutate) {
+    const setup = runnerContext(true);
+    setup.context.ccJudgeLanguages = null;
+    let currentBase = 'https://ce.judge0.com';
+    let currentToken = 'session-token';
+    setup.context.ideJudgeConfig = () => ({ base: currentBase, token: currentToken });
+    setup.context.ideCancelJudgeRun = () => {
+      const consent = setup.context.document.getElementById('ideJavaRemoteConsent');
+      if (consent) { consent.checked = false; consent.dataset.endpoint = ''; }
+      setup.context.ccJudgeRunController?.abort();
+    };
+    let resolveLanguages;
+    let languageSignal;
+    setup.context.ideJudgeFetch = (endpoint, options = {}) => {
+      setup.calls.push({ endpoint, options });
+      if (endpoint === '/languages/') {
+        languageSignal = options.signal;
+        return new Promise(resolve => { resolveLanguages = resolve; });
+      }
+      if (options.method === 'POST') return Promise.resolve({ token: 'test-job' });
+      return Promise.resolve({ status: { id: 3, description: 'Accepted' }, stdout: 'Hola\n' });
+    };
+    const run = vm.runInNewContext(source + '\nideRunJudge0;', setup.context);
+    const pending = run();
+    assert.equal(typeof resolveLanguages, 'function', 'debe estar esperando la lista de runtimes');
+    mutate({ setup, setBase: value => { currentBase = value; }, setToken: value => { currentToken = value; } });
+    resolveLanguages([{ id: 17, name: 'Java (OpenJDK 21)' }]);
+    await pending;
+    assert.equal(languageSignal.aborted, true, 'la petición pendiente debe cancelarse');
+    assert.equal(setup.calls.some(call => call.options.method === 'POST'), false, 'no debe enviarse el código');
+  }
+
+  await runAfterMutation(({ setup, setBase }) => {
+    setBase('https://otro-endpoint.example');
+    setup.context.ideCancelJudgeRun();
+  });
+  await runAfterMutation(({ setup }) => {
+    const consent = setup.context.document.getElementById('ideJavaRemoteConsent');
+    consent.checked = false;
+    consent.dataset.endpoint = '';
+    setup.context.ideCancelJudgeRun();
+  });
+
+  await runAfterMutation(({ setup, setToken }) => {
+    setToken('');
+    setup.context.document.getElementById('judgeToken').value = '';
+    setup.context.ideCancelJudgeRun();
+  });
+  assert.match(aula, /id="judgeEndpoint"[^>]*oninput="ideCancelJudgeRun\(\)"/);
+  assert.match(aula, /id="ideJavaRemoteConsent"[^>]*onchange="[^"]*ideCancelJudgeRun\(\)"/);
+  assert.match(aula, /id="judgeToken"[^>]*oninput="ideCancelJudgeRun\(\)"/);
+});
+
+function judgeFetchRunner(fetch) {
+  const source = extract('async function ideJudgeFetch(', '\nfunction ideCancelJudgeRun');
+  return vm.runInNewContext(source + '\nideJudgeFetch;', { fetch, URL });
+}
+
+test('un endpoint vacío no recupera silenciosamente el endpoint predeterminado', () => {
+  const elements = { judgeEndpoint: { value: '   ' }, judgeToken: { value: 'token-local' } };
+  const source = extract('function ideJudgeConfig(){', '\n// ideSaveJudgeSettings:');
+  const getConfig = vm.runInNewContext(source + '\nideJudgeConfig;', {
+    document: { getElementById: id => elements[id] || null },
+    ccStorageGet: () => 'https://ce.judge0.com'
+  });
+
+  assert.equal(getConfig().base, '');
+  assert.equal(getConfig().token, 'token-local');
+  delete elements.judgeEndpoint;
+  assert.equal(getConfig().base, 'https://ce.judge0.com', 'el valor guardado solo se usa si no existe el campo');
+});
+
+test('Comprobar conexión no hace solicitudes si falta el endpoint', async () => {
+  const status = { textContent: '' };
+  let requests = 0;
+  const source = extract('async function ideCheckJudge(){', '\n// ideVersionScore:');
+  const check = vm.runInNewContext(source + '\nideCheckJudge;', {
+    document: { getElementById: () => status },
+    ideJudgeConfig: () => ({ base: '', token: '' }),
+    ideJudgeFetch: () => { requests += 1; },
+    ccJudgeCheckController: null,
+    AbortController
+  });
+
+  await check();
+  assert.equal(requests, 0);
+  assert.match(status.textContent, /Escribe una URL HTTPS/);
+});
+
+test('Comprobar conexión ignora la respuesta de una comprobación anterior', async () => {
+  const status = { textContent: '' };
+  const requests = [];
+  const source = extract('async function ideCheckJudge(){', '\n// ideVersionScore:');
+  const check = vm.runInNewContext(source + '\nideCheckJudge;', {
+    document: { getElementById: () => status },
+    ideJudgeConfig: () => ({ base: 'https://ce.judge0.com', token: '' }),
+    ideJudgeFetch: (_path, options) => new Promise((resolve, reject) => {
+      requests.push({ resolve, signal: options.signal });
+      options.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+    }),
+    ccJudgeCheckController: null,
+    AbortController,
+    setTimeout: () => 1,
+    clearTimeout() {}
+  });
+
+  const previous = check();
+  const latest = check();
+  assert.equal(requests.length, 2);
+  assert.equal(requests[0].signal.aborted, true);
+  requests[1].resolve([{ name: 'Java (21)' }]);
+  await Promise.all([previous, latest]);
+  assert.match(status.textContent, /Conectado/);
+});
+
+test('Comprobar conexión termina con un mensaje cuando vence el tiempo límite', async () => {
+  const status = { textContent: '' };
+  let timeout;
+  const source = extract('async function ideCheckJudge(){', '\n// ideVersionScore:');
+  const check = vm.runInNewContext(source + '\nideCheckJudge;', {
+    document: { getElementById: () => status },
+    ideJudgeConfig: () => ({ base: 'https://ce.judge0.com', token: '' }),
+    ideJudgeFetch: (_path, options) => new Promise((_resolve, reject) => {
+      options.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+    }),
+    ccJudgeCheckController: null,
+    AbortController,
+    setTimeout: callback => { timeout = callback; return 1; },
+    clearTimeout() {}
+  });
+
+  const pending = check();
+  timeout();
+  await pending;
+  assert.match(status.textContent, /superó el límite de 10 segundos/);
+});
+
+test('cambiar endpoint o token cancela solicitudes y revoca el consentimiento', () => {
+  const consent = { checked: true, dataset: { endpoint: 'https://ce.judge0.com' } };
+  const runController = new AbortController();
+  const checkController = new AbortController();
+  const source = extract('function ideCancelJudgeRun(){', '\n// ideCheckJudge:');
+  const cancel = vm.runInNewContext(source + '\nideCancelJudgeRun;', {
+    document: { getElementById: id => id === 'ideJavaRemoteConsent' ? consent : null },
+    ccJudgeRunController: runController,
+    ccJudgeCheckController: checkController
+  });
+
+  cancel();
+  assert.equal(consent.checked, false);
+  assert.equal(consent.dataset.endpoint, '');
+  assert.equal(runController.signal.aborted, true);
+  assert.equal(checkController.signal.aborted, true);
+});
+
+test('el IDE Java no muestra cuerpos de error devueltos por el endpoint', async () => {
+  let responseBodyRead = false;
+  const fetch = async () => ({
+    ok: false,
+    status: 500,
+    text: async () => {
+      responseBodyRead = true;
+      return 'stack trace at /srv/private.js with token=secret';
+    }
+  });
+  const judgeFetch = judgeFetchRunner(fetch);
+
+  await assert.rejects(judgeFetch('/languages/', {}, { base: 'https://ce.judge0.com', token: 'session-token' }), error => {
+    assert.equal(error.message, 'El endpoint no pudo completar la petición (HTTP 500).');
+    assert.doesNotMatch(error.message, /stack trace|private|secret|session-token/);
+    return true;
+  });
+  assert.equal(responseBodyRead, false, 'no debe leer ni conservar el cuerpo de error');
 });
