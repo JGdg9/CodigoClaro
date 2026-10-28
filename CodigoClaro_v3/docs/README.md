@@ -1,15 +1,15 @@
 # Documentación de CódigoClaro
 
-La aplicación y su guía completa están en [`CodigoClaro_v3/README.md`](../README.md). Esta carpeta reúne la documentación vigente de la versión declarada en [`package.json`](../package.json).
+La aplicación y sus instrucciones están en [`CodigoClaro_v3/README.md`](../README.md).
 
 ## Documentos vigentes
 
-- [Novedades de CódigoClaro v1.4.2](NOVEDADES_v1.4.2.md): cambios documentados para la versión actual.
-- [Informe de cambios y funcionalidades](INFORME_CAMBIOS_Y_FUNCIONALIDADES.pdf): informe del producto fechado el 28 de octubre de 2026.
-- [Estructura del repositorio](ESTRUCTURA_PROYECTO.md): mapa de carpetas y documentos.
-- [Guías del proyecto](guias/README.md): índice de las guías disponibles.
-- [Catálogo de temarios](catalogo_temas.json): metadatos del catálogo.
-- [Demo de documentación](index.html): vista estática de la biblioteca.
-- [Temarios](temarios/): copia de los PDF de la demo estática.
+- [Primeros pasos](../EMPEZAR_AQUI.md): inicio de la aplicación local.
+- [Novedades de v1.4.2](NOVEDADES_v1.4.2.md): cambios de la versión vigente.
+- [Estructura del repositorio](ESTRUCTURA_PROYECTO.md): mapa de carpetas y recursos.
+- [Guías del proyecto](guias/README.md): criterios editoriales y notas técnicas.
+- [Catálogo de temarios](catalogo_temas.json).
+- [Demo estática](index.html): biblioteca y materiales disponibles.
+- [Ayuda para usuarios](../public/ayuda/README.md): guías de la aplicación.
 
-Las notas de versiones anteriores se han retirado del árbol vigente. Sus commits y autorías permanecen en el historial de GitHub, que no se ha reescrito.
+Las carpetas `docs/temarios/` y `public/temarios/` contienen copias de los PDF de la demo y de la aplicación.

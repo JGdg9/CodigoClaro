@@ -170,6 +170,9 @@ test('la política de privacidad describe el borrador local y la transferencia d
   assert.match(privacy, /solo después de marcar el consentimiento[\s\S]*código fuente y el contenido de stdin/);
   assert.match(privacy, /Comprobar conexión[\s\S]*token opcional[\s\S]*no incluye tu código/);
   assert.match(privacy, /token, también se envía en la petición de ejecución/);
+  assert.match(privacy, /CódigoClaro gestiona los datos/);
+  assert.doesNotMatch(privacy, /\[(?:sustituir|añadir|completar)[^\]]*\]/i);
+  assert.doesNotMatch(privacy, /@/);
   assert.doesNotMatch(privacy, /el IDE no envía el código a un compilador remoto/);
 });
 
