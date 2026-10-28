@@ -24,7 +24,7 @@ async function ready() {
 before(async () => {
   const port = await new Promise((resolve, reject) => { const s = net.createServer(); s.once('error', reject); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => resolve(p)); }); });
   base = `http://127.0.0.1:${port}`;
-  proc = spawn(process.execPath, ['server.js'], { cwd: path.resolve(__dirname, '..'), env: { ...process.env, PORT: String(port), DB_PATH: path.join(temp, 'runtime.sqlite'), SESSION_SECRET: 'test-runtime-secret-longer-than-thirty-two-characters', NODE_ENV: 'development' }, stdio: 'ignore' });
+  proc = spawn(process.execPath, ['server.js'], { cwd: path.resolve(__dirname, '..'), env: { ...process.env, PORT: String(port), DB_PATH: path.join(temp, 'runtime.sqlite'), SESSION_SECRET: 'test-runtime-secret-longer-than-thirty-two-characters', NODE_ENV: 'development', REGISTRATION_OPEN: 'true' }, stdio: 'ignore' });
   await ready();
 });
 after(async () => { if (proc && proc.exitCode === null) { proc.kill('SIGTERM'); await new Promise(resolve => proc.once('exit', resolve)); } fs.rmSync(temp, { recursive: true, force: true }); });
