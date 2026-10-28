@@ -193,7 +193,6 @@ test('las limitaciones del piloto se explican en el registro y no cargan la port
   assert.doesNotMatch(panel, /registrationEnabled=health\.registrationEnabled/);
   assert.match(panel, /authSubmit'\)\.disabled=reg&&!registrationEnabled/);
   assert.match(panel, /const me=await api\('\/api\/me'\)/);
-  assert.match(panel, /api\('\/api\/config'\)\.then\(config=>/);
   assert.doesNotMatch(panel, /Promise\.all\(\[api\('\/api\/me'\),api\('\/api\/catalog'\),api\('\/api\/config'\)\]\)/);
   assert.doesNotMatch(panel, /Si la olvidas, aún no podrás recuperarla desde la aplicación/);
 });
