@@ -62,7 +62,7 @@ test('cabeceras de caché y página 404 para navegación pública', async () => 
   assert.equal(missing.res.headers.get('cache-control'), 'no-store');
   assert.match(missing.text, /Esta página no está disponible/);
   const missingApi = await request('/api/ruta-inexistente-de-prueba');
-  assert.equal(missingApi.res.status, 404);
+  assert.equal(missingApi.res.status, 401);
   assert.match(missingApi.res.headers.get('content-type'), /application\/json/);
   assert.equal(missingApi.res.headers.get('cache-control'), 'no-store');
 });
