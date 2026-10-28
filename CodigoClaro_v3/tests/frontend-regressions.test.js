@@ -239,8 +239,8 @@ test('la transformación verdadero/falso conserva la respuesta correcta y la inc
   assert.equal(makeQuizItem(q, 'choice').kind, 'choice');
 });
 
-function quizNavigationGuardRunner({confirmResult=false,submitted=false}={}){
-  const form={dataset:submitted?{submitted:'true'}:{},answers:['2']};
+function quizNavigationGuardRunner({confirmResult=false,submitted=false,submitting=false}={}){
+  const form={dataset:{...(submitted?{submitted:'true'}:{}),...(submitting?{submitting:'true'}:{})},answers:['2']};
   const cleared=[];
   const context={
     currentPage:'quiz',
@@ -251,6 +251,7 @@ function quizNavigationGuardRunner({confirmResult=false,submitted=false}={}){
     quizStartedAt:123,
     clearInterval:id=>cleared.push(id),
     confirm:message=>{context.confirmMessage=message;context.confirmCalls=(context.confirmCalls||0)+1;return confirmResult},
+    flash:(message,kind)=>{context.flashMessage=message;context.flashKind=kind},
     $:id=>id==='quizForm'?form:null
   };
   const start=panel.indexOf('function canNavigateFromQuiz(');
@@ -284,6 +285,16 @@ test('confirmar la salida descarta el test y detiene el temporizador',()=>{
   assert.equal(state.context.quizSeconds,0);
   assert.equal(state.context.quizStartedAt,0);
   assert.deepEqual(state.cleared,[17]);
+});
+
+test('mientras se guarda, el test no se puede abandonar',()=>{
+  const state=quizNavigationGuardRunner({submitting:true});
+  assert.equal(state.guard('courses'),false);
+  assert.equal(state.context.activeQuiz.length,1);
+  assert.equal(state.context.quizTimer,17);
+  assert.deepEqual(state.cleared,[]);
+  assert.equal(state.context.confirmCalls||0,0);
+  assert.equal(state.context.flashKind,'warn');
 });
 
 test('volver a pulsar Tests no reinicia el test ni consulta confirmación',()=>{
