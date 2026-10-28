@@ -31,7 +31,8 @@ after(async () => { if (proc && proc.exitCode === null) { proc.kill('SIGTERM'); 
 
 test('el health reporta la versión del paquete y las capacidades básicas', async () => {
   const r = await request('/api/health'); const d = await r.json();
-  assert.equal(r.status, 200); assert.equal(d.ok, true); assert.equal(d.version, require('../package.json').version); assert.ok(Array.isArray(d.features));
+  assert.equal(r.status, 200); assert.equal(d.ok, true); assert.equal(d.version, require('../package.json').version); assert.ok(Array.isArray(d.features)); assert.equal(d.registrationEnabled, true);
+  assert.match(fs.readFileSync(path.join(__dirname, '../server.js'), 'utf8'), /db\.prepare\('SELECT 1'\)\.get\(\)/);
 });
 test('las cabeceras de seguridad están presentes en páginas y API', async () => {
   for (const route of ['/', '/api/health']) {
