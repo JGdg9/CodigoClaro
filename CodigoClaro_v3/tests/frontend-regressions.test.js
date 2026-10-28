@@ -101,9 +101,10 @@ test('la app protege reconfiguración, navegación, cierre y salida del navegado
   assert.ok(panel.slice(submitStart, submitEnd).includes('finally{quizSubmissionPending=false}'));
 });
 
-test('Aula e IDE y Diagnóstico siguen accesibles desde el menú autenticado', () => {
+test('Aula, Diagnóstico y espacio de estudio siguen accesibles desde el menú autenticado', () => {
   assert.ok(panel.includes('<a class="nav-item" href="/aula.html">Aula e IDE</a>'));
   assert.ok(panel.includes('<a class="nav-item" href="/diagnostico.html">Diagnóstico y ayuda</a>'));
+  assert.ok(panel.includes('<a class="nav-item" href="/estudio.html">Espacio de estudio</a>'));
 });
 
 test('panel declara activeReviewTopics antes de usarlo', () => {
