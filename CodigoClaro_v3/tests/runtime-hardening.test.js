@@ -44,8 +44,8 @@ test('las cabeceras de seguridad están presentes en páginas y API', async () =
     assert.ok(r.headers.get('permissions-policy'));
   }
 });
-test('páginas principales, recursos estáticos y guías heredadas responden correctamente', async () => {
-  for (const route of ['/', '/index.html', '/aula.html', '/temarios.html', '/diagnostico.html', '/privacidad.html', '/condiciones.html', '/catalogo_temas.json', '/temarios/Java_Tema_01.pdf', '/Java_Tema_01.pdf', '/ayuda/LEEME.txt', '/EMPEZAR_AQUI.txt', '/GUIA_PRUEBAS_RAPIDAS.md', '/LEEME.txt', '/LEEME_IDE.txt', '/NOTAS_DE_VERSION.txt', '/PRUEBAS_REALIZADAS.txt', '/README.txt']) {
+test('páginas principales, recursos estáticos y guías vigentes responden correctamente', async () => {
+  for (const route of ['/', '/index.html', '/aula.html', '/temarios.html', '/diagnostico.html', '/privacidad.html', '/condiciones.html', '/catalogo_temas.json', '/temarios/Java_Tema_01.pdf', '/Java_Tema_01.pdf', '/ayuda/EMPEZAR_AQUI.md', '/ayuda/GUIA_PRUEBAS_RAPIDAS.md', '/GUIA_PRUEBAS_RAPIDAS.md']) {
     const r = await request(route); assert.equal(r.status, 200, `${route} debe existir`);
     const type = r.headers.get('content-type') || '';
     if (route.endsWith('.html') || route === '/') assert.match(type, /text\/html/i, route);
