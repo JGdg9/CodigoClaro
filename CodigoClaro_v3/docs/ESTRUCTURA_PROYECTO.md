@@ -14,11 +14,14 @@ La raíz contiene la aplicación dentro de `CodigoClaro_v3/` y los workflows del
     ├── package.json
     ├── server.js
     ├── server-postgres.js
-    ├── lib/
+    ├── render.yaml
+    ├── lib/                    # Incluye el helper de errores HTTP
     ├── migrations/
     ├── scripts/
     ├── tests/
     ├── public/
+    │   ├── 404.html
+    │   ├── 500.html
     │   ├── ayuda/
     │   └── temarios/
     └── docs/
@@ -40,3 +43,5 @@ La raíz contiene la aplicación dentro de `CodigoClaro_v3/` y los workflows del
 - [Ayuda para usuarios](../public/ayuda/README.md).
 
 `public/` contiene los recursos servidos por la aplicación. `docs/` incluye la demo estática, el catálogo y las copias de los temarios.
+
+`lib/http-errors.js` sirve `public/404.html` en navegaciones a rutas inexistentes y `public/500.html` ante errores internos; las respuestas de API siguen siendo JSON. Las páginas HTML de error usan `Cache-Control: no-store`. Render usa este Blueprint con `REGISTRATION_OPEN=false` y almacenamiento persistente.

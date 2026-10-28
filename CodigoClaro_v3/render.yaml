@@ -19,7 +19,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: PUBLIC_REGISTRATION_ENABLED
-        value: "true"
+        value: "false"
+      - key: REGISTRATION_OPEN
+        value: "false"
       - key: TRUST_CF_CONNECTING_IP
         value: "true"
       - key: DB_PATH
