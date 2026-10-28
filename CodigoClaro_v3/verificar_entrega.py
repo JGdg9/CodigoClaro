@@ -100,9 +100,9 @@ for name in ['index.html','aula.html','temarios.html','diagnostico.html','privac
         if not target.exists() and pathpart.lower().endswith('.pdf'):
             target=PUB/'temarios'/Path(pathpart).name
         if not target.exists() and Path(pathpart).suffix.lower() in ('.txt','.md'):
-    help_name=Path(pathpart).name
-    if help_name.lower().endswith('.txt'): help_name=help_name[:-4]+'.md'
-    target=PUB/'ayuda'/help_name
+            help_name=Path(pathpart).name
+            if help_name.lower().endswith('.txt'): help_name=help_name[:-4]+'.md'
+            target=PUB/'ayuda'/help_name
         if not target.exists(): errors.append(f'Enlace local roto en {name}: {ref}')
     if node:
         scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',src,re.I|re.S)
