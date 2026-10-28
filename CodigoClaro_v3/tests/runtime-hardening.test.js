@@ -24,7 +24,7 @@ async function ready() {
 before(async () => {
   const port = await new Promise((resolve, reject) => { const s = net.createServer(); s.once('error', reject); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => resolve(p)); }); });
   base = `http://127.0.0.1:${port}`;
-  proc = spawn(process.execPath, ['server.js'], { cwd: path.resolve(__dirname, '..'), env: { ...process.env, PORT: String(port), DB_PATH: path.join(temp, 'runtime.sqlite'), SESSION_SECRET: 'test-runtime-secret-longer-than-thirty-two-characters', NODE_ENV: 'development' }, stdio: 'ignore' });
+  proc = spawn(process.execPath, ['server.js'], { cwd: path.resolve(__dirname, '..'), env: { ...process.env, PORT: String(port), DB_PATH: path.join(temp, 'runtime.sqlite'), SESSION_SECRET: 'test-runtime-secret-longer-than-thirty-two-characters', NODE_ENV: 'development', REGISTRATION_OPEN: 'true' }, stdio: 'ignore' });
   await ready();
 });
 after(async () => { if (proc && proc.exitCode === null) { proc.kill('SIGTERM'); await new Promise(resolve => proc.once('exit', resolve)); } fs.rmSync(temp, { recursive: true, force: true }); });
@@ -45,7 +45,7 @@ test('las cabeceras de seguridad están presentes en páginas y API', async () =
   }
 });
 test('páginas principales, recursos estáticos y guías Markdown responden correctamente', async () => {
-  for (const route of ['/', '/index.html', '/aula.html', '/temarios.html', '/diagnostico.html', '/privacidad.html', '/condiciones.html', '/catalogo_temas.json', '/temarios/Java_Tema_01.pdf', '/Java_Tema_01.pdf', '/ayuda/EMPEZAR_AQUI.md', '/ayuda/LEEME.md', '/ayuda/LEEME_IDE.md', '/ayuda/NOTAS_DE_VERSION.md', '/ayuda/README.md', '/GUIA_PRUEBAS_RAPIDAS.md', '/ayuda/GUIA_PRUEBAS_RAPIDAS.md']) {
+  for (const route of ['/', '/index.html', '/aula.html', '/temarios.html', '/diagnostico.html', '/privacidad.html', '/condiciones.html', '/catalogo_temas.json', '/temarios/Java_Tema_01.pdf', '/Java_Tema_01.pdf', '/ayuda/EMPEZAR_AQUI.md', '/ayuda/LEEME.md', '/ayuda/LEEME_IDE.md', '/ayuda/NOTAS_DE_VERSION.md', '/ayuda/README.md', '/ayuda/PRIMEROS_PASOS.md']) {
     const r = await request(route); assert.equal(r.status, 200, `${route} debe existir`);
     const type = r.headers.get('content-type') || '';
     if (route.endsWith('.html') || route === '/') assert.match(type, /text\/html/i, route);
@@ -65,10 +65,16 @@ test('páginas principales, recursos estáticos y guías Markdown responden corr
     assert.match(legacyResponse.headers.get('content-type') || '', /text\/markdown/i, legacy);
     assert.equal(await legacyResponse.text(), await currentResponse.text(), `${legacy} debe servir el Markdown vigente`);
   }
-  for (const route of ['/PRUEBAS_REALIZADAS.txt', '/ayuda/PRUEBAS_REALIZADAS.txt']) {
+  for (const route of ['/PRUEBAS_REALIZADAS.txt', '/ayuda/PRUEBAS_REALIZADAS.txt', '/GUIA_PRUEBAS_RAPIDAS.md', '/ayuda/GUIA_PRUEBAS_RAPIDAS.md']) {
     const r = await request(route); assert.equal(r.status, 404, `${route} se retiró del material público`);
   }
 });
+test('la privacidad indica que requiere revisión humana antes de publicarse', async () => {
+  const response = await request('/privacidad.html');
+  assert.equal(response.status, 200);
+  assert.match(await response.text(), /Pendiente de revisión humana y legal/);
+});
+
 test('los archivos internos no se exponen como contenido estático', async () => {
   for (const route of ['/server.js', '/package.json', '/lib/quizzes.js', '/tests/api.test.js', '/.env']) {
     const r = await request(route); assert.ok([403, 404].includes(r.status), `${route} no debe ser público`);

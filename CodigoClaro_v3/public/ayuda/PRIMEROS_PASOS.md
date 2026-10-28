@@ -1,4 +1,4 @@
-# Guía rápida de CódigoClaro
+# Primeros pasos con CódigoClaro
 
 ## Prueba la plataforma
 

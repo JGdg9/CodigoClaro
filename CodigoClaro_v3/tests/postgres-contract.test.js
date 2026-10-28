@@ -13,7 +13,29 @@ test('backend PostgreSQL es opt-in y no reemplaza el servidor SQLite actual',()=
 test('migración PostgreSQL define tablas de usuarios, cursos, preguntas, resultados, progreso, tareas y sesiones',()=>{for(const table of ['users','sessions','courses','course_lessons','questions','quiz_attempts','lesson_progress','study_tasks','study_sessions','schema_migrations'])assert.match(sql,new RegExp(`CREATE TABLE IF NOT EXISTS ${table}\\b`));});
 test('migración es repetible y no contiene órdenes destructivas',()=>{assert.match(sql,/ON CONFLICT DO NOTHING/);assert.match(sql,/CREATE INDEX IF NOT EXISTS/);assert.doesNotMatch(sql,/\bDROP\s+(TABLE|DATABASE|SCHEMA)\b/i);assert.doesNotMatch(sql,/\bTRUNCATE\b/i);});
 test('backend usa consultas parametrizadas y separa tareas por usuario',()=>{assert.match(server,/pool\.query\('DELETE FROM study_tasks WHERE id=\$1 AND user_id=\$2'/);assert.match(server,/WHERE id=\$1 AND user_id=\$2(?: AND [^']+)? RETURNING/);assert.match(server,/crypto\.timingSafeEqual/);assert.match(server,/password_hash/);});
-test('rutas principales de backend cubren cuentas, cursos, tests, progreso, tareas y estadísticas',()=>{for(const route of ['/api/register','/api/login','/api/logout','/api/courses','/api/admin/courses','/api/quiz','/api/quiz/submit','/api/progress','/api/progress/lesson','/api/tasks','/api/study/sessions','/api/stats/overview'])assert.ok(server.includes(route),`Falta ruta ${route}`);assert.match(server,/if\(!PUBLIC_REGISTRATION_ENABLED\)return fail\(res,503/);assert.match(server,/registrationEnabled:PUBLIC_REGISTRATION_ENABLED/);assert.match(server,/PUBLIC_REGISTRATION_ENABLED\s*===\s*undefined\s*\?\s*!IS_PROD/);assert.match(server,/if\(limitRegister\(req,8\)\)/);assert.match(server,/if\(limitLogin\(req,10\)\)/);assert.match(sqlite,/trustCloudflare=process\.env\.TRUST_CF_CONNECTING_IP==='true'/);assert.match(server,/trustCloudflare = process\.env\.TRUST_CF_CONNECTING_IP === 'true'/);assert.match(sqlite,/limitRegister=createRateLimiter\(\{trustCloudflare\}\),limitLogin=createRateLimiter\(\{trustCloudflare\}\),limitFeedback=createRateLimiter\(\{trustCloudflare\}\)/);assert.match(server,/limitRegister = createRateLimiter\(\{ trustCloudflare \}\)/);assert.match(sqlite,/limitRegister\(req,8\)/);assert.match(sqlite,/limitLogin\(req,10\)/);});
+test('rutas principales y configuración de registro conservan el contrato público', () => {
+  for (const route of ['/api/config', '/api/register', '/api/login', '/api/logout', '/api/courses', '/api/admin/courses', '/api/quiz', '/api/quiz/submit', '/api/progress', '/api/progress/lesson', '/api/tasks', '/api/study/sessions', '/api/stats/overview']) {
+    assert.ok(server.includes(route), 'Falta ruta ' + route);
+  }
+  assert.match(server, /if\(!REGISTRATION_OPEN\)return fail\(res,503/);
+  assert.match(server, /route==='\/api\/config'\)return json\(res,200,\{registrationOpen:REGISTRATION_OPEN\}\)/);
+  assert.match(server, /registrationEnabled:REGISTRATION_OPEN/);
+  assert.match(server, /REGISTRATION_OPEN\s*=\s*process\.env\.REGISTRATION_OPEN\s*===\s*'true'/);
+  assert.doesNotMatch(server, /PUBLIC_REGISTRATION_ENABLED/);
+  assert.match(sqlite, /if\(!REGISTRATION_OPEN\)return fail\(res,503/);
+  assert.match(sqlite, /route==='\/api\/config'\)return json\(res,200,\{registrationOpen:REGISTRATION_OPEN\}\)/);
+  assert.match(sqlite, /registrationEnabled:REGISTRATION_OPEN/);
+  assert.match(sqlite, /REGISTRATION_OPEN\s*=\s*process\.env\.REGISTRATION_OPEN\s*===\s*'true'/);
+  assert.doesNotMatch(sqlite, /PUBLIC_REGISTRATION_ENABLED/);
+  assert.match(sqlite, /trustCloudflare=process\.env\.TRUST_CF_CONNECTING_IP==='true'/);
+  assert.match(server, /trustCloudflare = process\.env\.TRUST_CF_CONNECTING_IP === 'true'/);
+  assert.match(sqlite, /limitRegister=createRateLimiter\(\{trustCloudflare\}\),limitLogin=createRateLimiter\(\{trustCloudflare\}\),limitFeedback=createRateLimiter\(\{trustCloudflare\}\)/);
+  assert.match(server, /limitRegister = createRateLimiter\(\{ trustCloudflare \}\)/);
+  assert.match(sqlite, /limitRegister\(req,8\)/);
+  assert.match(server, /if\(limitRegister\(req,8\)\)/);
+  assert.match(sqlite, /limitLogin\(req,10\)/);
+  assert.match(server, /if\(limitLogin\(req,10\)\)/);
+});
 test('PostgreSQL rechaza el secreto de sesión de ejemplo en producción sin distinguir mayúsculas',()=>{assert.match(server,/SESSION_SECRET\.length < 32 \|\| SESSION_SECRET\.toUpperCase\(\)\.startsWith\('CAMBIA_ESTO'\)/);});
 test('health comprueba la base y responde 503 si una consulta falla en ambos backends',()=>{assert.match(sqlite,/route==='\/api\/health'[\s\S]*?db\.prepare\('SELECT 1'\)\.get\(\)[\s\S]*?fail\(res,503/);assert.match(server,/route==='\/api\/health'[\s\S]*?pool\.query\('SELECT 1'\)[\s\S]*?fail\(res,503/);});
 test('la interfaz no promete que el login funcione durante una caída del servicio',()=>{assert.match(frontend,/Las cuentas existentes podrán iniciar sesión cuando el servicio esté disponible/);assert.match(frontend,/No se pudo confirmar el estado del registro/);assert.doesNotMatch(frontend,/El inicio de sesión sigue disponible/);});
