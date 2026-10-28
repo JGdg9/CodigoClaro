@@ -14,7 +14,7 @@ MOTORES DEL IDE
 - Python: Pyodide/WebAssembly cargado desde CDN; primera ejecución requiere Internet.
 - React/JSX: React y Babel desde CDN; no instala paquetes npm arbitrarios.
 - SQL: SQLite en WebAssembly; no es Oracle, MySQL ni PostgreSQL.
-- Java/Kotlin: editor y análisis estático, sin compilación remota en esta versión. Node.js: simulador didáctico de backend, no un runtime de Node real.
+- Java: compilación real en Judge0 por HTTPS solo con consentimiento explícito por sesión; se envían código y `stdin` al servicio externo, que puede limitar solicitudes. Evita datos personales y secretos. Kotlin: análisis estático. Node.js: simulador didáctico de backend, no un runtime real de Node.
 - MongoDB y Firestore: simuladores didácticos, no conexiones reales a servicios cloud.
 - PL/SQL no se ejecuta sin Oracle Database.
 
