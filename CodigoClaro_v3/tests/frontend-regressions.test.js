@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 const root = path.join(__dirname, '..');
 const panel = fs.readFileSync(path.join(root, 'public/index.html'), 'utf8');
 const aula = fs.readFileSync(path.join(root, 'public/aula.html'), 'utf8');
@@ -190,12 +191,33 @@ test('las limitaciones del piloto se explican en el registro y no cargan la port
   assert.match(panel, /setAttribute\('aria-describedby',reg\?'pilotDescription':'authSub'\)/);
   assert.match(panel, /Esta versión no verifica el correo ni permite restablecer la contraseña/);
   assert.match(panel, /id="registrationClosed" class="notice hidden" role="status"/);
-  assert.match(panel, /registrationEnabled=health\.registrationEnabled===true/);
+  assert.match(panel, /registrationEnabled=config\.registrationOpen===true/);
+  assert.match(panel, /api\('\/api\/config'\)\.then\(applyRegistrationConfig\)/);
+  assert.doesNotMatch(panel, /registrationEnabled=health\.registrationEnabled/);
   assert.match(panel, /authSubmit'\)\.disabled=reg&&!registrationEnabled/);
   assert.match(panel, /const me=await api\('\/api\/me'\)/);
-  assert.match(panel, /api\('\/api\/health'\)\.then\(health=>/);
-  assert.doesNotMatch(panel, /Promise\.all\(\[api\('\/api\/me'\),api\('\/api\/catalog'\),api\('\/api\/health'\)\]\)/);
+  assert.doesNotMatch(panel, /Promise\.all\(\[api\('\/api\/me'\),api\('\/api\/catalog'\),api\('\/api\/config'\)\]\)/);
   assert.doesNotMatch(panel, /Si la olvidas, aún no podrás recuperarla desde la aplicación/);
+});
+
+test('la configuración pública controla el alta con un booleano estricto', () => {
+  const start = panel.indexOf('function applyRegistrationConfig(config){');
+  const end = panel.indexOf('\n', start);
+  assert.ok(start >= 0 && end > start);
+  const calls = [];
+  const context = {
+    registrationEnabled: false,
+    authAction: 'register',
+    authMode: () => calls.push(context.authAction)
+  };
+  const apply = vm.runInNewContext(panel.slice(start, end) + '\napplyRegistrationConfig;', context);
+  apply({registrationOpen: true});
+  assert.equal(context.registrationEnabled, true);
+  apply({registrationOpen: false});
+  assert.equal(context.registrationEnabled, false);
+  apply({registrationOpen: 1});
+  assert.equal(context.registrationEnabled, false);
+  assert.deepEqual(calls, ['register', 'register', 'register']);
 });
 
 test('la navegación editorial usa texto con contraste suficiente', () => {
@@ -326,4 +348,48 @@ test('la transformación verdadero/falso conserva la respuesta correcta y la inc
   assert.equal(falseStatement.correct, false);
   assert.equal(falseStatement.statement, '[1,2]');
   assert.equal(makeQuizItem(q, 'choice').kind, 'choice');
+});
+
+test('el único .txt del repositorio son los requisitos y los enlaces locales a documentos funcionan', () => {
+  const repositoryRoot = path.join(root, '..');
+  const trackedFiles = execFileSync('git', ['ls-files', '--cached', '-z'], {
+    cwd: repositoryRoot,
+    encoding: 'utf8'
+  }).split('\0').filter(Boolean).map(file => file.replace(/\\/g, '/'));
+  const textFiles = trackedFiles.filter(file => file.toLowerCase().endsWith('.txt')).sort();
+  assert.deepEqual(textFiles, ['CodigoClaro_v3/requirements-docs.txt']);
+
+  const publicRoot = path.join(root, 'public');
+  const walk = directory => fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    const fullPath = path.join(directory, entry.name);
+    return entry.isDirectory() ? walk(fullPath) : [fullPath];
+  });
+  const brokenLinks = [];
+  for (const file of walk(publicRoot).filter(file => file.toLowerCase().endsWith('.html'))) {
+    const markup = fs.readFileSync(file, 'utf8')
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+      .replace(/<style\b[\s\S]*?<\/style>/gi, '');
+    for (const match of markup.matchAll(/\b(?:href|src)\s*=\s*(["'])(.*?)\1/gi)) {
+      const reference = match[2].trim();
+      const documentPath = reference.split(/[?#]/, 1)[0];
+      if (!documentPath || /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(documentPath)) continue;
+      if (!/\.(?:md|txt)$/i.test(documentPath)) continue;
+      let decodedPath;
+      try {
+        decodedPath = decodeURIComponent(documentPath);
+      } catch {
+        brokenLinks.push({ from: path.relative(publicRoot, file), href: reference });
+        continue;
+      }
+      const target = decodedPath.startsWith('/')
+        ? path.resolve(publicRoot, '.' + decodedPath)
+        : path.resolve(path.dirname(file), decodedPath);
+      const relative = path.relative(publicRoot, target);
+      if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative) || !fs.existsSync(target)) {
+        brokenLinks.push({ from: path.relative(publicRoot, file), href: reference });
+      }
+    }
+  }
+  assert.deepEqual(brokenLinks, []);
 });
