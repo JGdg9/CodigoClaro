@@ -10,7 +10,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     BaseDocTemplate,
     Frame,
-    PageBreak,
     PageTemplate,
     Paragraph,
     Spacer,
@@ -125,7 +124,7 @@ def page_chrome(canvas, doc):
     canvas.line(17 * mm, 14 * mm, width - 17 * mm, 14 * mm)
     canvas.setFont(BODY_FONT, 7.4)
     canvas.setFillColor(MUTED)
-    canvas.drawString(17 * mm, 9.5 * mm, "Rama educacion/cuestionarios-java-ide-pdf")
+    canvas.drawString(17 * mm, 9.5 * mm, "Rama programacion/estilo-interfaz")
     canvas.drawRightString(width - 17 * mm, 9.5 * mm, f"{doc.page}")
     canvas.restoreState()
 
@@ -172,7 +171,7 @@ def make_story(styles):
 
     intro = Table([[
         Paragraph(
-            "Esta edición reúne la ampliación de cuestionarios, el ajuste del IDE Java y la reorganización de los temarios PDF. También resume las funciones principales de CódigoClaro y el estado comprobado de esta rama.",
+            "Esta edición resume cambios de seguridad y confianza en el IDE Java, el banco de preguntas y los temarios. Describe las funciones de CódigoClaro y las comprobaciones realizadas en la copia local de esta rama.",
             styles["callout"],
         )
     ]], colWidths=[174 * mm])
@@ -188,8 +187,8 @@ def make_story(styles):
     story.extend([intro, Spacer(1, 7 * mm)])
 
     metrics = Table([
-        [metric("320", "preguntas en el servidor", styles), metric("463", "entradas en el aula estática", styles)],
-        [metric("20+", "preguntas únicas por filtro", styles), metric("4", "páginas por temario", styles)],
+        [metric("113", "pruebas automatizadas", styles), metric("108", "aprobadas", styles)],
+        [metric("20+", "preguntas únicas por filtro", styles), metric("75", "temarios individuales", styles)],
     ], colWidths=[87 * mm, 87 * mm], rowHeights=[25 * mm, 25 * mm])
     metrics.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), PAPER),
@@ -203,23 +202,22 @@ def make_story(styles):
     ]))
     story.extend([metrics, Spacer(1, 7 * mm), Paragraph("Cambios de esta rama", styles["section"])])
     for item in [
-        "El banco del servidor llega a 320 preguntas, con 20 preguntas distintas en cada una de 16 tecnologías. La página del aula carga además el banco estático generado y permite elegir tests de hasta 20 preguntas.",
-        "El aula ofrece al menos 20 preguntas únicas para cada uno de 19 filtros individuales, incluidos XML, Hibernate, TypeScript y PostgreSQL. Los filtros Web y Programación agrupan tecnologías relacionadas.",
-        "El IDE puede ejecutar Java en un endpoint remoto HTTPS solo cuando la persona activa el consentimiento. El código y la entrada estándar se envían al servicio; el token opcional no se almacena.",
-        "Los 75 temarios mantienen sus 10 secciones con menos espacio vacío. Cada PDF ocupa cuatro páginas y el catálogo refleja la paginación real.",
-        "La portada prioriza dos acciones, agrupa las herramientas secundarias y usa animaciones suaves solo cuando el sistema no solicita reducir movimiento; conserva el teclado y la adaptación móvil.",
+        "El aula ofrece al menos 20 preguntas distintas en cada uno de sus 19 filtros individuales. El banco generado coincide con las fuentes y las preguntas conservan opciones, respuesta válida y explicación.",
+        "La ejecución Java remota usa un endpoint HTTPS y exige consentimiento por sesión antes de enviar código y entrada estándar. El botón de comprobación no envía código, cancela intentos anteriores y termina tras 10 segundos; si se ha escrito, transmite el token opcional con la solicitud. Cambiar endpoint o token cancela peticiones; el token no se guarda.",
+        "Las 75 guías individuales se regeneraron con explicaciones, ejemplos, práctica y referencias primarias. Los catálogos de public y docs reflejan el número real de páginas y sus copias coinciden.",
+        "La portada presenta el aviso de cuenta piloto durante el registro, asociado al formulario. Los errores de API ocultan rutas técnicas y el texto de navegación tiene más contraste. En producción, el registro nuevo queda cerrado hasta completar la información de privacidad; el cierre no afecta a la ruta de login, que requiere que el servicio esté disponible. Ambos backends limitan intentos con contadores por proceso y capacidad acotada. CF-Connecting-IP solo se confía si TRUST_CF_CONNECTING_IP=true; los blueprints de Render lo activan para su proxy Cloudflare. La capacidad llena rechaza claves nuevas hasta que caduquen entradas; los contadores no se comparten entre instancias ni sobreviven a reinicios. PostgreSQL también rechaza el secreto de ejemplo.",
+        "El healthcheck SQLite consulta la base. La carga de salud y catálogo no bloquea la restauración de sesión; PostgreSQL renueva la caducidad y la cookie de las sesiones activas.",
     ]:
         story.append(bullet(item, styles))
     story.extend([
         Spacer(1, 3 * mm),
-        Paragraph("Rama revisada: educacion/cuestionarios-java-ide-pdf", styles["small"]),
-        Paragraph("Fecha del informe: 27 de octubre de 2026", styles["small"]),
-        PageBreak(),
+        Paragraph("Rama revisada: programacion/estilo-interfaz · cambios locales sin publicar", styles["small"]),
+        Paragraph("Fecha del informe: 28 de octubre de 2026", styles["small"]),
     ])
 
     story.append(Paragraph("Qué ofrece CódigoClaro", styles["section"]))
     rows = [
-        ("Temarios y catálogo", "75 temarios para 16 tecnologías en 10 secciones por tema. El catálogo muestra títulos, enlaces y número real de páginas; se conservan rutas heredadas a los PDF."),
+        ("Temarios y catálogo", "75 temarios individuales para Java, JavaScript, Python, Kotlin y React, con 10 secciones por tema. El catálogo muestra títulos, enlaces y número real de páginas; también hay rutas complementarias."),
         ("Tests y simulacros", "Selección múltiple, verdadero/falso, examen mixto y retos de código corregidos mediante rúbrica. Hay filtros por tecnología, modos agrupados y explicaciones para revisar respuestas."),
         ("Prácticas", "Ejercicios guiados con plantillas, pistas y soluciones. Se puede guardar el progreso local del aula y completar actividades asociadas al aprendizaje."),
         ("IDE de aprendizaje", "Editor local para practicar. JavaScript se ejecuta en un iframe aislado; Python usa Pyodide; SQL practica sobre SQLite; React ofrece vista previa; MongoDB y Firestore usan simuladores didácticos; Java puede usar Judge0 con consentimiento. Kotlin y PL/SQL conservan análisis estático."),
@@ -232,30 +230,20 @@ def make_story(styles):
         Spacer(1, 5 * mm),
         Paragraph("Cambios del IDE Java", styles["subsection"]),
         Paragraph(
-            "La compilación remota no se activa por defecto. La casilla de consentimiento se limita al endpoint HTTPS elegido y el token opcional permanece solo en el campo de la página. Si el servicio rechaza la petición o no responde en 30 segundos, el aula cancela el flujo y muestra el error; también depende de la disponibilidad y límites del endpoint.",
+            "La compilación remota no se activa por defecto. La casilla de consentimiento se limita al endpoint HTTPS elegido y el token opcional permanece solo en el campo de la página. La comprobación de conexión termina tras 10 segundos y no permite que una respuesta anterior sobrescriba la más reciente. Si el servicio rechaza la ejecución o no responde en 30 segundos, el aula cancela el flujo y muestra el error; también depende de la disponibilidad y límites del endpoint.",
             styles["body"],
         ),
-        PageBreak(),
     ])
 
     story.append(Paragraph("Verificación y estado de publicación", styles["section"]))
     story.append(feature_table([
-        ("Pruebas automatizadas", "npm test: 80 pruebas contabilizadas, 75 superadas, 0 fallidas y 5 pruebas de integración PostgreSQL omitidas porque no hay una base de pruebas configurada."),
+        ("Pruebas automatizadas", "Local: npm test contabiliza 113; 108 aprobadas, 0 fallidas y 5 integraciones PostgreSQL omitidas por falta de base. CI configura PostgreSQL 16 efímera para ejecutar esas cinco; el resultado de esta rama está pendiente."),
         ("Cobertura de cuestionarios", "Se comprueban preguntas únicas por tecnología, opciones distintas, índices de respuesta válidos, explicaciones y que el banco estático generado coincida con sus fuentes."),
-        ("Verificador de entrega", "Superado. Comprueba el catálogo de 75 temas, la paginación real, 90 PDF en public/temarios, recursos, enlaces locales y sintaxis."),
-        ("GitHub Pages", "La demo pública de main estaba disponible durante esta revisión y el último despliegue consultado completó la compilación y publicación. El proyecto publica los cambios después de integrarlos en main."),
-        ("Límites de verificación", "La prueba del IDE Java usa un servicio simulado; no se envió código real a Judge0. No se conectó a Neon ni a PostgreSQL real y no se probaron los motores externos/CDN en un navegador real. La demo estática incluye las respuestas para autocorregir; no debe usarse para exámenes confidenciales. La revisión visual de PDF fue por muestreo, no página por página en los 90 documentos."),
+        ("Verificador de entrega", "Superado. Comprueba los 75 temas, la paginación declarada, 90 PDF en public/temarios, los recursos, los enlaces locales, la sintaxis y la suite automatizada."),
+        ("PDF y catálogos", "Se comprobó que las 75 copias en public/temarios coinciden con docs/temarios y que cada PDF concuerda con el número de páginas del catálogo."),
+        ("Estado de publicación", "Esta rama contiene cambios locales sin publicar. No se creó un commit ni un PR desde esta copia y no se cambió main ni producción. La demo pública existente en main es independiente."),
+        ("Límites de verificación", "La prueba del IDE Java usa un servicio simulado; no se envió código real a Judge0. No se conectó a Neon ni a PostgreSQL real y no se probaron los motores externos/CDN en un navegador real. La política de privacidad aún necesita identidad y contacto del responsable. El registro está cerrado en producción hasta completar esos datos y revisar la información del piloto antes de invitar a participantes externos."),
     ], styles, [39 * mm, 135 * mm]))
-    story.extend([
-        Spacer(1, 7 * mm),
-        Paragraph("Siguiente revisión", styles["subsection"]),
-        Paragraph(
-            "Próximos pasos recomendados: configurar una base PostgreSQL de pruebas para ejecutar las cinco integraciones y validar Java con un endpoint externo antes de usarlo en clase. El informe describe las funciones de la aplicación y no es un examen oficial.",
-            styles["body"],
-        ),
-        Spacer(1, 3 * mm),
-        Paragraph("CódigoClaro · 27 octubre 2026", styles["small"]),
-    ])
     return story
 
 
