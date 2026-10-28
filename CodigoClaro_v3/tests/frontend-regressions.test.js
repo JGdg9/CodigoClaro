@@ -188,12 +188,33 @@ test('las limitaciones del piloto se explican en el registro y no cargan la port
   assert.match(panel, /Esta versión no verifica el correo ni permite restablecer la contraseña/);
   assert.match(panel, /id="registrationClosed" class="notice hidden" role="status"/);
   assert.match(panel, /registrationEnabled=config\.registrationOpen===true/);
+  assert.match(panel, /api\('\/api\/config'\)\.then\(applyRegistrationConfig\)/);
   assert.doesNotMatch(panel, /registrationEnabled=health\.registrationEnabled/);
   assert.match(panel, /authSubmit'\)\.disabled=reg&&!registrationEnabled/);
   assert.match(panel, /const me=await api\('\/api\/me'\)/);
   assert.match(panel, /api\('\/api\/config'\)\.then\(config=>/);
   assert.doesNotMatch(panel, /Promise\.all\(\[api\('\/api\/me'\),api\('\/api\/catalog'\),api\('\/api\/config'\)\]\)/);
   assert.doesNotMatch(panel, /Si la olvidas, aún no podrás recuperarla desde la aplicación/);
+});
+
+test('la configuración pública controla el alta con un booleano estricto', () => {
+  const start = panel.indexOf('function applyRegistrationConfig(config){');
+  const end = panel.indexOf('\n', start);
+  assert.ok(start >= 0 && end > start);
+  const calls = [];
+  const context = {
+    registrationEnabled: false,
+    authAction: 'register',
+    authMode: () => calls.push(context.authAction)
+  };
+  const apply = vm.runInNewContext(panel.slice(start, end) + '\napplyRegistrationConfig;', context);
+  apply({registrationOpen: true});
+  assert.equal(context.registrationEnabled, true);
+  apply({registrationOpen: false});
+  assert.equal(context.registrationEnabled, false);
+  apply({registrationOpen: 1});
+  assert.equal(context.registrationEnabled, false);
+  assert.deepEqual(calls, ['register', 'register', 'register']);
 });
 
 test('la navegación editorial usa texto con contraste suficiente', () => {
