@@ -94,7 +94,9 @@ python scripts/generar_temarios.py
 
 El generador lee `public/catalogo_temas.json` y vuelve a producir los 75 PDFs individuales. Para crear la ruta complementaria de TypeScript, ejecuta `python scripts/generar_temarios.py --typescript-route`. Los PDFs del catálogo incluyen enlaces a documentación oficial o mantenida por cada tecnología. **La presencia de una fuente oficial no significa que cada ejemplo se haya ejecutado en todas las versiones**: comprueba los ejemplos con el runtime de tu proyecto y abre una incidencia si detectas una errata.
 
-## Estructura del repositorio
+## Estructura de la aplicación
+
+En el árbol siguiente, `.` representa `CodigoClaro_v3/`, que contiene este README. Para la orientación general, consulta el [README de la raíz](../README.md). La nota vigente está en [NOVEDADES_v1.4.2.md](docs/NOVEDADES_v1.4.2.md).
 
 ```text
 .

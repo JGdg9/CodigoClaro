@@ -1,17 +1,9 @@
-CódigoClaro v1.1.4 - Tests de múltiples tecnologías
+CódigoClaro v1.4.2 — notas de la versión actual
 
-- Ampliado el banco de preguntas de servidor: las 14 tecnologías disponibles tienen al menos 6 preguntas activas iniciales.
-- Ampliado el banco local de Tests y simulacros para cubrir Java, Python, JavaScript, HTML, CSS, XML/XPath, SQL, PL/SQL, MongoDB, React, Node.js, Hibernate, Kotlin, Git, APIs, Seguridad y Bases de datos.
-- Todos los filtros individuales de aula tienen al menos 5 preguntas, permitiendo realizar tests de 5, 10 y 16 preguntas sin mezclar tecnologías ni repetir preguntas.
-- Se sustituyó el orden aleatorio basado en sort por Fisher-Yates.
-- Añadidas regresiones que verifican cobertura por tecnología, ausencia de duplicados, respuestas no expuestas y funcionamiento del endpoint de corrección en cada tecnología.
-- Verificación: npm test (14/14 pruebas), node --check server.js, node --check lib/quizzes.js y sintaxis del JavaScript inline de aula.html.
+La versión vigente declarada por el paquete es 1.4.2.
 
+Consulta las novedades de esta versión:
+https://github.com/JGdg9/CodigoClaro/blob/main/CodigoClaro_v3/docs/NOVEDADES_v1.4.2.md
 
-CódigoClaro v1.1.5 — Variedad de tests e IDE integrado
-- Nuevo selector de formato: tipo test, verdadero/falso, examen mixto y retos de código con rúbrica.
-- Retos de código integrados con plantillas y soluciones de referencia; evaluación por patrones identificada como orientativa.
-- IDE ahora conecta los botones Ejecutar a JavaScript sandbox, Pyodide, SQLite/SQL.js, preview React y simuladores MongoDB/Firestore/backend.
-- Añadido selector para cargar retos guiados en el IDE.
-- Java compila y ejecuta mediante Judge0 por HTTPS después del consentimiento explícito de la sesión. Kotlin y PL/SQL conservan análisis estático. Node.js usa simulación JS y no APIs reales de Node.
-- Verificación: npm test (17/17), sintaxis del servidor y del JavaScript inline. Motores CDN pendientes de prueba manual con conexión en navegador.
+Consulta el informe de cambios y funcionalidades:
+https://github.com/JGdg9/CodigoClaro/blob/main/CodigoClaro_v3/docs/INFORME_CAMBIOS_Y_FUNCIONALIDADES.pdf
