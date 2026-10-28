@@ -393,3 +393,9 @@ test('el único .txt del repositorio son los requisitos y los enlaces locales a 
   }
   assert.deepEqual(brokenLinks, []);
 });
+
+test('el campo de correo usa un ejemplo neutro', () => {
+  const field = panel.match(/<input\b[^>]*\bid="authEmail"[^>]*>/);
+  assert.ok(field, 'debe existir el campo de correo');
+  assert.match(field[0], /placeholder="nombre@ejemplo\.com"/);
+});
