@@ -1,4 +1,4 @@
-/** CódigoClaro — El registro público debe permanecer cerrado mientras no se habilite explícitamente. */
+/** CódigoClaro — El registro queda cerrado por defecto y se habilita solo en el piloto configurado. */
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -11,7 +11,7 @@ const { DatabaseSync } = require('node:sqlite');
 
 const root = path.resolve(__dirname, '..');
 
-async function startTestServer(dbPath, registrationEnabled) {
+async function startTestServer(dbPath, registrationEnabled, extraEnv = {}) {
   const port = await new Promise((resolve, reject) => {
     const server = net.createServer();
     server.once('error', reject);
@@ -23,6 +23,7 @@ async function startTestServer(dbPath, registrationEnabled) {
   const base = `http://127.0.0.1:${port}`;
   const env = {
     ...process.env,
+    ...extraEnv,
     PORT: String(port),
     DB_PATH: dbPath,
     NODE_ENV: 'production',
@@ -135,19 +136,22 @@ test('producción mantiene cerrado el registro si no se configura la bandera', a
   }
 });
 
-test('el inicio de sesión y las sesiones existentes funcionan con el registro cerrado', async () => {
+test('el piloto crea cuentas de estudiante y las sesiones existentes siguen funcionando si se cierra el registro', async () => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-privacy-login-'));
   const dbPath = path.join(temp, 'privacy.sqlite');
   let running;
   try {
-    running = await startTestServer(dbPath, true);
-    const account = { email: 'cuenta-existente@codigoclaro.test', password: 'ClaveSegura_2026!', name: 'Cuenta existente', consent: true };
+    running = await startTestServer(dbPath, true, { ADMIN_EMAIL: 'cuenta-existente@codigoclaro.test' });
+    const openHealth = await (await fetch(`${running.base}/api/health`)).json();
+    assert.equal(openHealth.registrationEnabled, true);
+    const account = { email: 'cuenta-existente@codigoclaro.test', password: 'ClaveSegura_2026!', name: 'Cuenta existente', consent: true, role: 'admin', isAdmin: true };
     const created = await fetch(`${running.base}/api/register`, {
       method: 'POST',
       headers: { origin: running.base, 'content-type': 'application/json' },
       body: JSON.stringify(account)
     });
     assert.equal(created.status, 201);
+    assert.equal((await created.json()).user.role, 'student', 'registrarse con ADMIN_EMAIL no concede permisos administrativos');
     const existingCookie = created.headers.get('set-cookie').split(';')[0];
     await stopTestServer(running.proc);
 
@@ -177,4 +181,20 @@ test('el inicio de sesión y las sesiones existentes funcionan con el registro c
     await stopTestServer(running?.proc);
     fs.rmSync(temp, { recursive: true, force: true });
   }
+});
+
+test('el Blueprint de Render habilita el registro solo para el servicio piloto', () => {
+  const serviceBlocks = file => fs.readFileSync(path.join(root, file), 'utf8')
+    .split(/(?=^\s*-\s+type:\s*web\s*$)/m)
+    .filter(block => /^\s*-\s+type:\s*web\s*$/m.test(block));
+  const serviceName = block => block.match(/^\s+name:\s*([^\s#]+)/m)?.[1] || '';
+  const registrationEnabled = block => /^\s+-\s+key:\s*PUBLIC_REGISTRATION_ENABLED\s*\r?\n\s+value:\s*["']true["']\s*$/m.test(block);
+  const pilotServices = serviceBlocks('render.yaml');
+  const enabledServiceNames = pilotServices.filter(registrationEnabled).map(serviceName);
+  assert.deepEqual(enabledServiceNames, ['codigoclaro'], 'el valor true debe pertenecer únicamente al servicio piloto codigoclaro');
+
+  const postgresServices = serviceBlocks('render-postgres.yaml');
+  const postgresService = postgresServices.find(block => serviceName(block) === 'codigoclaro-postgres-staging');
+  assert.ok(postgresService, 'debe existir el servicio PostgreSQL de staging');
+  assert.equal(registrationEnabled(postgresService), false, 'el Blueprint PostgreSQL no debe habilitar el registro público');
 });

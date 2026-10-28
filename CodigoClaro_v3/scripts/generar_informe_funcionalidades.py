@@ -124,7 +124,7 @@ def page_chrome(canvas, doc):
     canvas.line(17 * mm, 14 * mm, width - 17 * mm, 14 * mm)
     canvas.setFont(BODY_FONT, 7.4)
     canvas.setFillColor(MUTED)
-    canvas.drawString(17 * mm, 9.5 * mm, "Rama programacion/estilo-interfaz")
+    canvas.drawString(17 * mm, 9.5 * mm, "CódigoClaro · informe de producto")
     canvas.drawRightString(width - 17 * mm, 9.5 * mm, f"{doc.page}")
     canvas.restoreState()
 
@@ -171,7 +171,7 @@ def make_story(styles):
 
     intro = Table([[
         Paragraph(
-            "Esta edición resume cambios de seguridad y confianza en el IDE Java, el banco de preguntas y los temarios. Describe las funciones de CódigoClaro y las comprobaciones realizadas en la copia local de esta rama.",
+        "Esta edición resume mejoras del piloto, ejecución Java, banco de preguntas y temarios. Describe las funciones de CódigoClaro y las comprobaciones realizadas para esta entrega.",
             styles["callout"],
         )
     ]], colWidths=[174 * mm])
@@ -187,7 +187,7 @@ def make_story(styles):
     story.extend([intro, Spacer(1, 7 * mm)])
 
     metrics = Table([
-        [metric("113", "pruebas automatizadas", styles), metric("108", "aprobadas", styles)],
+        [metric("116", "pruebas automatizadas", styles), metric("111", "aprobadas", styles)],
         [metric("20+", "preguntas únicas por filtro", styles), metric("75", "temarios individuales", styles)],
     ], colWidths=[87 * mm, 87 * mm], rowHeights=[25 * mm, 25 * mm])
     metrics.setStyle(TableStyle([
@@ -200,18 +200,18 @@ def make_story(styles):
         ("TOPPADDING", (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
     ]))
-    story.extend([metrics, Spacer(1, 7 * mm), Paragraph("Cambios de esta rama", styles["section"])])
+    story.extend([metrics, Spacer(1, 7 * mm), Paragraph("Cambios destacados", styles["section"])])
     for item in [
         "El aula ofrece al menos 20 preguntas distintas en cada uno de sus 19 filtros individuales. El banco generado coincide con las fuentes y las preguntas conservan opciones, respuesta válida y explicación.",
-        "La ejecución Java remota usa un endpoint HTTPS y exige consentimiento por sesión antes de enviar código y entrada estándar. El botón de comprobación no envía código, cancela intentos anteriores y termina tras 10 segundos; si se ha escrito, transmite el token opcional con la solicitud. Cambiar endpoint o token cancela peticiones; el token no se guarda.",
+        "La ejecución Java remota usa un endpoint HTTPS y exige consentimiento por sesión antes de enviar código y entrada estándar. El IDE codifica ambos como UTF-8/Base64 y decodifica la salida del runner; se verificó una muestra genérica con acentos. El botón de comprobación no envía código, cancela intentos anteriores y termina tras 10 segundos; si se ha escrito, transmite el token opcional con la solicitud. Cambiar endpoint o token cancela peticiones; el token no se guarda.",
         "Las 75 guías individuales se regeneraron con explicaciones, ejemplos, práctica y referencias primarias. Los catálogos de public y docs reflejan el número real de páginas y sus copias coinciden.",
-        "La portada presenta el aviso de cuenta piloto durante el registro, asociado al formulario. Los errores de API ocultan rutas técnicas y el texto de navegación tiene más contraste. En producción, el registro nuevo queda cerrado hasta completar la información de privacidad; el cierre no afecta a la ruta de login, que requiere que el servicio esté disponible. Ambos backends limitan intentos con contadores por proceso y capacidad acotada. CF-Connecting-IP solo se confía si TRUST_CF_CONNECTING_IP=true; los blueprints de Render lo activan para su proxy Cloudflare. La capacidad llena rechaza claves nuevas hasta que caduquen entradas; los contadores no se comparten entre instancias ni sobreviven a reinicios. PostgreSQL también rechaza el secreto de ejemplo.",
+        "La portada informa que el registro del servicio Render piloto está abierto temporalmente y pide datos ficticios y una contraseña exclusiva de prueba; cualquier persona con el enlace puede crear una cuenta. El Blueprint activa PUBLIC_REGISTRATION_ENABLED solo en ese servicio, mientras que otros entornos de producción siguen cerrados por defecto; las cuentas nuevas reciben el rol student aunque se intente enviar role=admin. La política aún requiere completar identidad y contacto antes de invitar participantes externos. Los errores de API ocultan rutas técnicas y el texto de navegación tiene más contraste. Ambos backends limitan intentos con contadores por proceso y capacidad acotada. CF-Connecting-IP solo se confía si TRUST_CF_CONNECTING_IP=true; los blueprints de Render lo activan para su proxy Cloudflare. La capacidad llena rechaza claves nuevas hasta que caduquen entradas; los contadores no se comparten entre instancias ni sobreviven a reinicios. PostgreSQL también rechaza el secreto de ejemplo.",
         "El healthcheck SQLite consulta la base. La carga de salud y catálogo no bloquea la restauración de sesión; PostgreSQL renueva la caducidad y la cookie de las sesiones activas.",
     ]:
         story.append(bullet(item, styles))
     story.extend([
         Spacer(1, 3 * mm),
-        Paragraph("Rama revisada: programacion/estilo-interfaz · cambios locales sin publicar", styles["small"]),
+        Paragraph("Versión del informe: 28 de octubre de 2026 · CódigoClaro 1.4.2", styles["small"]),
         Paragraph("Fecha del informe: 28 de octubre de 2026", styles["small"]),
     ])
 
@@ -230,19 +230,19 @@ def make_story(styles):
         Spacer(1, 5 * mm),
         Paragraph("Cambios del IDE Java", styles["subsection"]),
         Paragraph(
-            "La compilación remota no se activa por defecto. La casilla de consentimiento se limita al endpoint HTTPS elegido y el token opcional permanece solo en el campo de la página. La comprobación de conexión termina tras 10 segundos y no permite que una respuesta anterior sobrescriba la más reciente. Si el servicio rechaza la ejecución o no responde en 30 segundos, el aula cancela el flujo y muestra el error; también depende de la disponibilidad y límites del endpoint.",
+            "La ejecución Java remota requiere consentimiento por sesión para el endpoint HTTPS elegido. El IDE codifica código y entrada estándar como UTF-8/Base64 y decodifica la salida; una muestra con acentos se ejecutó correctamente. Se puede cancelar el sondeo, y el sistema termina tras 30 segundos; una tarea ya recibida podría continuar en el runner. El token opcional permanece solo en el campo de la página. La disponibilidad y los límites dependen del endpoint comunitario.",
             styles["body"],
         ),
     ])
 
     story.append(Paragraph("Verificación y estado de publicación", styles["section"]))
     story.append(feature_table([
-        ("Pruebas automatizadas", "Local: npm test contabiliza 113; 108 aprobadas, 0 fallidas y 5 integraciones PostgreSQL omitidas por falta de base. CI configura PostgreSQL 16 efímera para ejecutar esas cinco; el resultado de esta rama está pendiente."),
+        ("Pruebas automatizadas", "Local: npm test contabiliza 116; 111 aprobadas, 0 fallidas y 5 integraciones PostgreSQL omitidas por falta de una base configurada. CI define PostgreSQL 16 efímera para ejecutar esas cinco; consulta el resultado del workflow asociado a esta entrega."),
         ("Cobertura de cuestionarios", "Se comprueban preguntas únicas por tecnología, opciones distintas, índices de respuesta válidos, explicaciones y que el banco estático generado coincida con sus fuentes."),
         ("Verificador de entrega", "Superado. Comprueba los 75 temas, la paginación declarada, 90 PDF en public/temarios, los recursos, los enlaces locales, la sintaxis y la suite automatizada."),
         ("PDF y catálogos", "Se comprobó que las 75 copias en public/temarios coinciden con docs/temarios y que cada PDF concuerda con el número de páginas del catálogo."),
-        ("Estado de publicación", "Esta rama contiene cambios locales sin publicar. No se creó un commit ni un PR desde esta copia y no se cambió main ni producción. La demo pública existente en main es independiente."),
-        ("Límites de verificación", "La prueba del IDE Java usa un servicio simulado; no se envió código real a Judge0. No se conectó a Neon ni a PostgreSQL real y no se probaron los motores externos/CDN en un navegador real. La política de privacidad aún necesita identidad y contacto del responsable. El registro está cerrado en producción hasta completar esos datos y revisar la información del piloto antes de invitar a participantes externos."),
+        ("Estado de publicación", "La demo estática de GitHub Pages y la aplicación completa de Render se despliegan por separado. Verifica el estado del servicio con /api/health después de sincronizar un cambio; este informe describe la configuración y las comprobaciones, no certifica por sí solo un despliegue remoto."),
+        ("Límites de verificación", "Una muestra genérica de Java con acentos se compiló y ejecutó en Judge0; el preflight CORS desde el origen del servicio también respondió. Las pruebas automatizadas usan un runner simulado y no se probó la interacción completa de la interfaz en un navegador real. No se conectó a Neon ni a PostgreSQL real ni se validaron Python, SQL o React contra sus CDN. La política de privacidad aún necesita identidad y contacto del responsable: el registro piloto está abierto a cualquiera con el enlace, así que usa solo datos ficticios y no invites participantes externos."),
     ], styles, [39 * mm, 135 * mm]))
     return story
 
@@ -256,7 +256,7 @@ def generate():
         topMargin=24 * mm, bottomMargin=20 * mm,
         title="CódigoClaro - Informe de cambios y funcionalidades",
         author="CódigoClaro",
-        subject="Mejoras de cuestionarios, IDE Java y temarios PDF",
+        subject="CódigoClaro piloto, cuestionarios, IDE Java y temarios PDF",
     )
     frame = Frame(
         doc.leftMargin, doc.bottomMargin,

@@ -15,7 +15,7 @@ MOTORES DISPONIBLES
 - MongoDB y Firestore: simuladores locales con datos de demostración; no conectan a Atlas ni Firebase.
 - Backend: simulador de lógica de rutas; no crea un servidor HTTP real.
 - Node.js: la plantilla se ejecuta como JavaScript aislado con funciones de demostración, no con las APIs reales de Node.js.
-- Java y Kotlin: editor, plantillas y análisis estático. No compilan ni ejecutan en esta versión; hace falta un JDK/runtime local.
+- Java: compilación y ejecución reales mediante Judge0 con consentimiento explícito por sesión. Kotlin: editor, plantillas y análisis estático; necesita un runtime propio para ejecutar.
 - PL/SQL: análisis estático. Para ejecutar procedimientos, cursores y triggers hace falta Oracle Database.
 
 TESTS Y RETOS
@@ -25,7 +25,7 @@ TESTS Y RETOS
 
 PERSISTENCIA Y PRIVACIDAD
 - El código del editor se guarda en localStorage del navegador.
-- No se envía código a Judge0 ni a compiladores remotos en esta versión.
+- Java se compila en Judge0 mediante HTTPS únicamente después de marcar el consentimiento de esta sesión y pulsar Ejecutar. El endpoint recibe el código y `stdin`; puede limitar solicitudes. Usa programas de prueba sin datos personales ni secretos. Kotlin ofrece análisis estático y Node.js es un simulador.
 - No pegues contraseñas, tokens, claves API ni código privado en los ejemplos.
 - Los iframes aislados reducen el acceso al documento principal, pero no son una caja de arena de seguridad profesional para ejecutar código no confiable.
 
