@@ -1,9 +1,0 @@
-CódigoClaro v1.4.2 — notas de la versión actual
-
-La versión vigente declarada por el paquete es 1.4.2.
-
-Consulta las novedades de esta versión:
-https://github.com/JGdg9/CodigoClaro/blob/main/CodigoClaro_v3/docs/NOVEDADES_v1.4.2.md
-
-Consulta el informe de cambios y funcionalidades:
-https://github.com/JGdg9/CodigoClaro/blob/main/CodigoClaro_v3/docs/INFORME_CAMBIOS_Y_FUNCIONALIDADES.pdf
