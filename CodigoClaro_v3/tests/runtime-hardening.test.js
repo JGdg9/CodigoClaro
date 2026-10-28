@@ -69,6 +69,12 @@ test('páginas principales, recursos estáticos y guías Markdown responden corr
     const r = await request(route); assert.equal(r.status, 404, `${route} se retiró del material público`);
   }
 });
+test('la privacidad indica que requiere revisión humana antes de publicarse', async () => {
+  const response = await request('/privacidad.html');
+  assert.equal(response.status, 200);
+  assert.match(await response.text(), /Pendiente de revisión humana y legal/);
+});
+
 test('los archivos internos no se exponen como contenido estático', async () => {
   for (const route of ['/server.js', '/package.json', '/lib/quizzes.js', '/tests/api.test.js', '/.env']) {
     const r = await request(route); assert.ok([403, 404].includes(r.status), `${route} no debe ser público`);
