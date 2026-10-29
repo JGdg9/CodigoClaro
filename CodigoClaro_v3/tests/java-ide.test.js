@@ -150,6 +150,31 @@ test('con consentimiento Java compila y muestra la salida devuelta por el servic
   assert.equal(setup.messages.find(message => message.kind)?.kind, 'ok');
 });
 
+test('el IDE selecciona un runtime vigente para Java, Kotlin, Node.js y Python', async () => {
+  const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
+  const cases = [
+    { id: 'java', label: 'Java', code: 'class Main { public static void main(String[] args) { System.out.println("Hola"); } }', languages: [{ id: 62, name: 'Java (OpenJDK 13.0.1)' }, { id: 91, name: 'Java (JDK 17.0.6)' }], expected: 91 },
+    { id: 'kotlin', label: 'Kotlin', code: 'fun main() { println("Hola") }', languages: [{ id: 78, name: 'Kotlin (1.3.70)' }, { id: 111, name: 'Kotlin (2.1.10)' }], expected: 111 },
+    { id: 'node', label: 'Node.js', code: 'console.log("Hola")', languages: [{ id: 93, name: 'JavaScript (Node.js 18.15.0)' }, { id: 102, name: 'JavaScript (Node.js 22.08.0)' }], expected: 102 },
+    { id: 'python', label: 'Python', code: 'print("Hola")', languages: [{ id: 100, name: 'Python (3.12.5)' }, { id: 113, name: 'Python (3.14.0)' }], expected: 113 }
+  ];
+
+  for (const item of cases) {
+    const setup = runnerContext(true);
+    setup.context.ideLang = () => ({ id: item.id, label: item.label });
+    setup.context.ideGetCode = () => item.code;
+    setup.context.ccJudgeLanguages = item.languages;
+    setup.context.ideVersionScore = name => (name.match(/\d+(?:\.\d+)*/g) || []).join('.').split('.').reduce((score, part, index) => score + Number(part) / 100 ** index, 0);
+    await vm.runInNewContext(source + '\nideRunJudge0;', setup.context)();
+
+    const post = setup.calls.find(call => call.options.method === 'POST');
+    assert.ok(post, `debe enviar una tarea ${item.label}`);
+    assert.equal(JSON.parse(post.options.body).language_id, item.expected, `debe elegir el runtime más reciente de ${item.label}`);
+    assert.equal(judgeBase64.decode(JSON.parse(post.options.body).source_code), item.code);
+    assert.equal(setup.messages.find(message => message.kind)?.kind, 'ok');
+  }
+});
+
 test('Judge0 conserva texto español al codificar y decodificar UTF-8 en Base64', () => {
   const samples = [
     'public class Main { // acción, año, pingüino, € 😀 }',
