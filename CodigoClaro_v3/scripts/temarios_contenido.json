@@ -32,7 +32,10 @@
         "alternatives": [
           "Usar una f-string en lugar de concatenar cadenas.",
           "Separar saludo en un módulo e importarlo desde un archivo principal."
-        ]
+        ],
+        "scenario": "En un taller de iniciación, la misma función de saludo debe poder probarse en el REPL y ejecutarse desde un archivo para una persona o un equipo.",
+        "reasoning": "saludar concatena el prefijo literal con el nombre recibido. El archivo imprime el caso «Luz»; la función también devuelve «Hola, » para el nombre vacío y «Hola, equipo» para el tercer caso. Como la definición no depende del REPL ni del archivo, puede probarse en ambos contextos.",
+        "extension": "Prueba con «Ana María» y comprueba que el espacio y la tilde se conservan literalmente."
       },
       "sources": [
         {
@@ -76,7 +79,10 @@
         "alternatives": [
           "Calcular cantidad por precio con el operador *.",
           "Usar math.fsum sobre los importes si se modelan muchas unidades."
-        ]
+        ],
+        "scenario": "Una tienda calcula el importe de una línea de pedido a partir de la cantidad de unidades y el precio unitario.",
+        "reasoning": "total multiplica directamente cantidad por precio, sin convertir ni validar los argumentos. Así obtiene 6 con dos enteros, 0 con cantidad cero y un precio float, y 1.5 cuando el precio es 0.5. Python conserva el tipo numérico que resulta de la operación: por ejemplo, el primer caso produce int y los otros float; la solución aún no documenta los tipos aceptados como pide el enunciado.",
+        "extension": "Prueba una cantidad recibida como texto y decide si la función debe rechazarla o convertirla; documenta esa regla."
       },
       "sources": [
         {
@@ -120,7 +126,10 @@
         "alternatives": [
           "Guardar cada condición en una variable booleana y combinarlas con and.",
           "Usar retornos tempranos para rechazar primero edad y luego rol."
-        ]
+        ],
+        "scenario": "Un sistema de acceso permite entrar solo a personas mayores de edad cuyo rol esté autorizado para el recinto.",
+        "reasoning": "La expresión usa and para exigir que se cumplan las dos condiciones: edad de al menos 18 y pertenencia del rol a autorizados. El editor de 20 años supera ambas; el editor de 17 falla la primera; la visita de 20 falla la segunda.",
+        "extension": "Prueba la edad límite 18 con un rol permitido y luego con un conjunto de roles vacío para comprobar cada condición por separado."
       },
       "sources": [
         {
@@ -164,7 +173,10 @@
         "alternatives": [
           "Usar sum(range(2, limite + 1, 2)) para una suma directa.",
           "Usar una comprensión de pares y sum cuando el rango sea explícito."
-        ]
+        ],
+        "scenario": "Al cerrar una actividad, se suman los números de registro pares desde 1 hasta el límite indicado, que puede ser cero o negativo.",
+        "reasoning": "El acumulador empieza en cero. range(2, limite + 1, 2) recorre de dos en dos desde el primer par y excluye el extremo superior, por eso limite + 1 permite incluir el límite cuando es par. Con límites 0 y 1 no hay iteraciones y el resultado es 0; con 6 suma 2 + 4 + 6 = 12.",
+        "extension": "Comprueba que un límite impar como 7 también da 12 y explica por qué el 7 no se suma."
       },
       "sources": [
         {
@@ -204,7 +216,10 @@
         "alternatives": [
           "Devolver una lista con primero y último en vez de una tupla.",
           "Usar slices de un elemento con una comprobación especial para la secuencia vacía."
-        ]
+        ],
+        "scenario": "Un inventario necesita mostrar el primer y el último elemento de una secuencia, y representar claramente que no hay extremos si está vacía.",
+        "reasoning": "La condición if not valores detecta la secuencia vacía y devuelve None antes de indexarla. Para las demás entradas, los índices 0 y -1 seleccionan el primer y último elemento; en una secuencia de un solo elemento ambos índices apuntan al mismo valor, de ahí (8, 8).",
+        "extension": "Pasa una tupla con tres elementos y verifica que el resultado mantiene el mismo contrato, ya que las tuplas también admiten esos índices."
       },
       "sources": [
         {
@@ -244,7 +259,10 @@
         "alternatives": [
           "Usar collections.Counter para contar directamente.",
           "Recorrer con dict.get como en la solución orientativa."
-        ]
+        ],
+        "scenario": "Un analizador de registros cuenta cuántas veces aparece cada etiqueta y necesita consultar o actualizar una cuenta por palabra.",
+        "reasoning": "El diccionario resultado empieza vacío. Para cada palabra, get(palabra, 0) obtiene la cuenta anterior o cero si es nueva, y luego se guarda esa cuenta más uno. Sin palabras queda un diccionario vacío; una aparición produce 1, y la segunda aparición de «sol» eleva solo su frecuencia a 2.",
+        "extension": "Prueba «Sol» y «sol» y define si las etiquetas distinguen mayúsculas; la implementación actual las cuenta como claves distintas."
       },
       "sources": [
         {
@@ -288,7 +306,10 @@
         "alternatives": [
           "Acumular suma y cantidad en un bucle.",
           "Usar math.fsum y dividir por len para mejorar la suma de floats."
-        ]
+        ],
+        "scenario": "Una herramienta de análisis resume un conjunto de mediciones de longitud variable y define qué devolver cuando todavía no hay mediciones.",
+        "reasoning": "El parámetro *numeros reúne cero o más argumentos posicionales en una tupla. La función trata primero el caso vacío y devuelve None; si hay valores, suma y divide por su cantidad. Un único 4 da 4.0 porque la división con / devuelve un float, y 2, 4 y 6 producen una media de 4.0.",
+        "extension": "Llama a media con 1 y 2 y comprueba que devuelve 1.5; documenta si aceptar números no finitos como NaN o infinito forma parte del contrato."
       },
       "sources": [
         {
@@ -328,7 +349,10 @@
         "alternatives": [
           "Usar una expresión generadora en vez de una función con yield.",
           "Usar una comprensión de lista si se necesita guardar todos los resultados."
-        ]
+        ],
+        "scenario": "Un flujo procesa identificadores y necesita producir, sin guardar toda la lista, los cuadrados de los valores positivos.",
+        "reasoning": "La función generadora recorre la entrada en su orden original, descarta los valores que no son mayores que cero y usa yield para emitir el cuadrado de cada positivo. Una entrada vacía o con -2 y 0 no emite nada; con -1, 2 y 3 emite 4 y 9. Para comparar con las listas esperadas hay que consumir el iterador, por ejemplo convirtiéndolo en lista.",
+        "extension": "Consume el generador dos veces y observa que la segunda lectura no vuelve a producir valores; explica cuándo convendría materializarlo en una lista."
       },
       "sources": [
         {
@@ -368,11 +392,14 @@
             "expected": "-4"
           }
         ],
-        "solution": "[python]\r\n# operaciones.py\r\ndef convertir(numero):\r\n    return numero * 2\r\n\r\n# principal.py\r\nfrom operaciones import convertir\r\nprint(convertir(3))\r\nCriterio de aceptación: La función puede residir en cualquier módulo razonable y produce los mismos valores al importarla o llamarla.",
+        "solution": "[python]\n# operaciones.py\ndef convertir(numero):\n    return numero * 2\n\n# principal.py\nfrom operaciones import convertir\n\ndef main():\n    print(convertir(3))\n\nif __name__ == \"__main__\":\n    main()\nCriterio de aceptación: Importar operaciones o principal no imprime ni pide datos; ejecutar principal.py muestra 6.",
         "alternatives": [
           "Importar el módulo y llamar operaciones.convertir.",
           "Importar solo convertir con from operaciones import convertir."
-        ]
+        ],
+        "scenario": "Un pequeño programa separa una operación reutilizable de la presentación del resultado para que pueda importarse en otro ejercicio.",
+        "reasoning": "operaciones.py define convertir sin entrada ni salida. principal.py también se puede importar en silencio porque su llamada a main queda dentro de la guarda __main__; al ejecutarlo directamente, muestra 6. La función produce 0, 6 y -4 para los tres casos.",
+        "extension": "Importa convertir desde principal.py y captura la salida estándar; determina si el requisito exige que también importar el archivo principal sea silencioso."
       },
       "sources": [
         {
@@ -412,7 +439,10 @@
         "alternatives": [
           "Capturar ValueError alrededor de int y devolver None.",
           "Validar el formato antes de convertir y tratar como inválido cualquier texto no admitido."
-        ]
+        ],
+        "scenario": "Un formulario recibe una edad como texto y solo acepta guardar un entero estrictamente positivo.",
+        "reasoning": "int(texto) intenta convertir el valor dentro del bloque try. Si el formato no es un entero, ValueError lleva a None; si la conversión funciona, la condición final devuelve el número solo cuando es mayor que cero. Así «5» da 5, «0» da None y «x» también da None.",
+        "extension": "Añade -2 y una cadena vacía como entradas inválidas y comprueba que ninguna se transforma en un entero positivo."
       },
       "sources": [
         {
@@ -450,13 +480,20 @@
           {
             "input": "[1,2]",
             "expected": "None"
+          },
+          {
+            "input": "{nombre: sin comillas}",
+            "expected": "None"
           }
         ],
         "solution": "[python]\r\nimport json\r\n\r\ndef leer_nombre(texto):\r\n    try:\r\n        datos = json.loads(texto)\r\n    except json.JSONDecodeError:\r\n        return None\r\n    if isinstance(datos, dict) and isinstance(datos.get(\"nombre\"), str):\r\n        return datos[\"nombre\"]\r\n    return None\r\nCriterio de aceptación: Se aceptan excepciones o validación de esquema equivalentes si texto malformado y tipos inesperados no se presentan como datos correctos.",
         "alternatives": [
           "Usar json.load sobre un fichero abierto con with.",
           "Leer con pathlib y pasar el texto a json.loads."
-        ]
+        ],
+        "scenario": "Un servicio recibe el cuerpo de una solicitud como texto JSON y extrae el nombre solo si el cuerpo tiene la forma esperada.",
+        "reasoning": "json.loads convierte el texto y el except traduce JSON malformado a None. Después se comprueba que la raíz sea un diccionario y que nombre sea str. El objeto con nombre de texto devuelve ese texto; el campo numérico, la lista y el texto malformado se rechazan.",
+        "extension": "Prueba un objeto cuyo campo nombre sea una cadena vacía: la implementación la acepta y la devuelve. Decide si un nombre vacío es válido para el servicio."
       },
       "sources": [
         {
@@ -504,7 +541,10 @@
         "alternatives": [
           "Usar una dataclass si Cuenta se centra en guardar datos.",
           "Usar una clase tradicional con __init__ cuando el ciclo de vida requiera más control."
-        ]
+        ],
+        "scenario": "Una cuenta de ahorro registra ingresos y debe proteger el saldo cuando alguien intenta ingresar una cantidad negativa.",
+        "reasoning": "Cada Cuenta guarda el saldo en self.saldo. ingresar comprueba primero si cantidad es negativa y lanza ValueError antes de modificar el estado; en otro caso suma la cantidad. Así ingresar 5 desde 0 deja saldo 5, ingresar 0 conserva 10, y el intento de ingresar -3 se rechaza con saldo aún en 10.",
+        "extension": "Realiza dos ingresos válidos seguidos y luego uno negativo; comprueba que el saldo conserva la suma de los dos primeros y no cambia tras el rechazo."
       },
       "sources": [
         {
@@ -544,11 +584,14 @@
             "expected": "El manifiesto no incluye la carpeta .venv"
           }
         ],
-        "solution": "[shell]\r\npython -m venv .venv\r\n# Activa .venv con el comando correspondiente a tu shell\r\npython -m pip install requests\r\npython -m pip freeze > requirements.txt\r\nCriterio de aceptación: Se acepta un gestor distinto si deja identificable el intérprete y registra dependencias reproducibles fuera del entorno local.",
+        "solution": "[shell]\npython -m venv .venv\n# PowerShell: .\\.venv\\Scripts\\Activate.ps1\n# macOS/Linux: source .venv/bin/activate\npython -c \"import sys; print(sys.executable)\"\npython -m pip --version\npython -m pip install requests\npython -m pip freeze > requirements.txt\nCriterio de aceptación: Se acepta otro gestor si se comprueba que el intérprete y pip pertenecen al entorno y se registran dependencias reproducibles fuera de .venv.",
         "alternatives": [
           "Crear el entorno con el módulo estándar venv.",
           "Usar virtualenv si el proyecto requiere sus opciones adicionales."
-        ]
+        ],
+        "scenario": "Un proyecto instala requests de forma aislada y registra sus dependencias para que otra persona pueda reconstruir el entorno.",
+        "reasoning": "La primera orden crea el entorno. Tras activar la ruta correspondiente a la shell, sys.executable muestra el intérprete seleccionado y python -m pip --version identifica el pip asociado a ese mismo intérprete. La instalación y pip freeze registran requests y sus dependencias en requirements.txt, fuera de .venv.",
+        "extension": "Después de activar .venv, consulta sys.executable y la versión de pip invocada mediante python -m pip; verifica que ambas rutas apunten al entorno del proyecto."
       },
       "sources": [
         {
@@ -573,7 +616,7 @@
         "Depurar añadiendo prints sin eliminar información sensible ni estructurar los registros."
       ],
       "exercise": {
-        "statement": "Escribe una función que cuente vocales minúsculas y mayúsculas y añade pruebas para texto vacío, texto mixto y texto sin vocales.",
+        "statement": "Escribe una función que cuente las vocales españolas a, e, i, o, u, á, é, í, ó, ú y ü, tanto minúsculas como mayúsculas, y añade pruebas para texto vacío, texto mixto y texto sin vocales.",
         "cases": [
           {
             "input": "\"\"",
@@ -586,13 +629,24 @@
           {
             "input": "\"xyz\"",
             "expected": "0"
+          },
+          {
+            "input": "\"ÁRBOL\"",
+            "expected": "2"
+          },
+          {
+            "input": "\"pingüino\"",
+            "expected": "4"
           }
         ],
-        "solution": "[python]\r\ndef contar_vocales(texto):\r\n    return sum(letra.lower() in \"aeiou\" for letra in texto)\r\n\r\nimport unittest\r\n\r\nclass PruebasVocales(unittest.TestCase):\r\n    def test_casos(self):\r\n        self.assertEqual(contar_vocales(\"\"), 0)\r\n        self.assertEqual(contar_vocales(\"Hola\"), 2)\r\n        self.assertEqual(contar_vocales(\"xyz\"), 0)\r\nCriterio de aceptación: Se acepta una solución con bucle o contador si cuenta las mismas letras y las pruebas expresan el contrato.",
+        "solution": "[python]\r\ndef contar_vocales(texto):\r\n    return sum(letra.lower() in \"aeiouáéíóúü\" for letra in texto)\r\n\r\nimport unittest\r\n\r\nclass PruebasVocales(unittest.TestCase):\r\n    def test_casos(self):\r\n        self.assertEqual(contar_vocales(\"\"), 0)\r\n        self.assertEqual(contar_vocales(\"Hola\"), 2)\r\n        self.assertEqual(contar_vocales(\"xyz\"), 0)\n        self.assertEqual(contar_vocales(\"ÁRBOL\"), 2)\n        self.assertEqual(contar_vocales(\"pingüino\"), 4)\r\nCriterio de aceptación: Se acepta una solución con bucle o contador si cuenta las mismas letras y las pruebas expresan el contrato.",
         "alternatives": [
           "Implementar los casos con unittest de la biblioteca estándar.",
           "Usar pytest si el proyecto ya lo tiene instalado y configurado."
-        ]
+        ],
+        "scenario": "Una aplicación resume texto contando las vocales latinas básicas sin distinguir entre mayúsculas y minúsculas.",
+        "reasoning": "La expresión recorre cada carácter, lo convierte a minúscula y cuenta las vocales españolas incluidas en el conjunto aeiouáéíóúü. True cuenta como 1 en Python. El texto vacío y xyz dan 0, Hola da 2 y ÁRBOL también da 2 y pingüino da 4, incluida ü. unittest fija esos resultados, incluidas mayúsculas y vocales acentuadas.",
+        "extension": "Añade casos con ñ y con una vocal acentuada en minúscula para comprobar que ñ no se cuenta como vocal y que las tildes no alteran el recuento."
       },
       "sources": [
         {
@@ -603,7 +657,8 @@
           "label": "Python Software Foundation — logging — Logging facility for Python",
           "url": "https://docs.python.org/3/library/logging.html"
         }
-      ]
+      ],
+      "scenario": "Una aplicación resume texto en español contando las vocales, incluidas las tildes y la diéresis, sin distinguir mayúsculas."
     },
     {
       "track": "Python",
@@ -636,7 +691,10 @@
         "alternatives": [
           "Validar manualmente los tipos y campos requeridos.",
           "Usar una biblioteca de esquemas mantenida para validar estructuras complejas."
-        ]
+        ],
+        "scenario": "Un cliente valida la respuesta ya recibida de una API antes de utilizar los nombres que contiene.",
+        "reasoning": "La función exige estado exactamente 200 y que datos sea una lista. Luego revisa cada elemento, exige un diccionario con nombre de tipo str y acumula los nombres; si una comprobación falla lanza ValueError. La lista con «uno» se acepta, el nombre numérico se rechaza y el estado 503 se rechaza antes de inspeccionar los datos. La función valida una respuesta recibida, pero no hace la petición HTTP.",
+        "extension": "Prueba una lista vacía, que pasa las validaciones y devuelve una lista vacía; aclara también si el contrato debe aceptar otros estados 2xx además de 200."
       },
       "sources": [
         {
@@ -684,7 +742,10 @@
         "alternatives": [
           "Declarar main como función de nivel superior.",
           "Usar un objeto con un método main anotado para el lanzador JVM."
-        ]
+        ],
+        "scenario": "Un ejercicio de consola suma dos cantidades y muestra el resultado desde el punto de entrada del programa.",
+        "reasoning": "main llama a sumar con 2 y 3, y println muestra el valor devuelto. sumar usa el operador + y devuelve Int, por lo que los tres pares dados producen 5, 0 y 5; la función puede declararse fuera de main porque ambas son funciones de nivel superior.",
+        "extension": "Llama a sumar con dos valores negativos y confirma que la suma conserva el signo esperado."
       },
       "sources": [
         {
@@ -728,7 +789,10 @@
         "alternatives": [
           "Dejar que el compilador infiera los tipos cuando la expresión sea clara.",
           "Anotar Int y Double explícitamente si la firma mejora la lectura."
-        ]
+        ],
+        "scenario": "Una caja calcula el importe de un pedido con unidades enteras y un precio que puede incluir decimales, y marca si el importe es positivo.",
+        "reasoning": "cantidad se convierte explícitamente con toDouble antes de multiplicarse por precio, así importe es Double. El operador to forma un Pair con el importe y la comparación importe > 0. Los casos dan (6.0, true), (0.0, false) y (1.5, true), mostrando tanto la conversión como la decisión sobre el total.",
+        "extension": "Prueba una cantidad positiva con precio 0.0 para comprobar que el importe cero no se clasifica como mayor que cero."
       },
       "sources": [
         {
@@ -772,7 +836,10 @@
         "alternatives": [
           "Usar if (texto == null) para tratar la ausencia.",
           "Usar safe-call con Elvis como en la solución orientativa."
-        ]
+        ],
+        "scenario": "Una aplicación lee un campo opcional de configuración y usa un valor centinela cuando falta o contiene un entero inválido.",
+        "reasoning": "El safe-call evita invocar toIntOrNull si texto es null. Si hay texto, toIntOrNull devuelve el entero o null cuando no puede parsearlo; el operador Elvis convierte ambos casos de ausencia en -1. Por eso «12» devuelve 12, «x» y null devuelven -1 sin usar una aserción de no nulidad.",
+        "extension": "Prueba una cadena con espacios alrededor, como « 12 », y decide si el contrato requiere aplicar trim antes de convertir."
       },
       "sources": [
         {
@@ -812,7 +879,10 @@
         "alternatives": [
           "Expresar la clasificación con when.",
           "Encadenar if/else si hay solo dos ramas."
-        ]
+        ],
+        "scenario": "Una estación meteorológica clasifica lecturas como frías, templadas o cálidas a partir de dos umbrales.",
+        "reasoning": "when evalúa las ramas en orden: menos de 10 es frío; si no se cumplió, menos de 25 corresponde a 10–24 y es templado; lo restante, 25 o más, es cálido. Así 9, 10 y 25 caen justo en las categorías indicadas, sin huecos ni solapamientos en los límites.",
+        "extension": "Añade los casos -1 y 24 para comprobar el extremo inferior y el último valor templado."
       },
       "sources": [
         {
@@ -852,7 +922,10 @@
         "alternatives": [
           "Recorrer un rango y acumular el total.",
           "Usar una fórmula cerrada para la suma si se documentan los límites."
-        ]
+        ],
+        "scenario": "Un informe suma los números de una secuencia hasta el límite incluido, y debe producir cero si no hay valores positivos que recorrer.",
+        "reasoning": "total empieza en cero y el for acumula cada elemento del rango 1..limite. En Kotlin el rango queda vacío cuando el inicio supera el final, por lo que el límite 0 no ejecuta el cuerpo; el límite 1 suma 1 y el 4 suma 1 + 2 + 3 + 4 = 10.",
+        "extension": "Comprueba un límite negativo y uno igual a 2; explica qué elementos contiene cada rango."
       },
       "sources": [
         {
@@ -892,7 +965,10 @@
         "alternatives": [
           "Usar cuerpo de expresión para una función breve.",
           "Usar bloque con return cuando haya varias operaciones."
-        ]
+        ],
+        "scenario": "Una caja calcula el precio final de un producto con una tasa de impuesto habitual, aunque algunos productos tengan una tasa distinta.",
+        "reasoning": "La firma define tasa = 0.21, que se usa cuando solo se pasa base. La fórmula base por 1 más tasa aplica un recargo proporcional: 100 con la tasa por defecto da 121, 0 sigue siendo 0, y al pasar 0.1 explícitamente, 100 da 110. La tasa se interpreta como fracción, no como 21.",
+        "extension": "Prueba la tasa 0.0 y define si la función debe validar tasas negativas o mayores que 1."
       },
       "sources": [
         {
@@ -932,7 +1008,10 @@
         "alternatives": [
           "Usar filter y distinct como en la solución orientativa.",
           "Construir un resultado con bucle y LinkedHashSet para preservar orden."
-        ]
+        ],
+        "scenario": "Un filtro de datos conserva cada identificador positivo una sola vez y en el orden en que apareció por primera vez.",
+        "reasoning": "filter elimina primero los valores que no son mayores que cero; distinct elimina duplicados conservando el orden de primera aparición de la lista. La lista vacía y la formada por -1 y 0 quedan vacías; en [3, 3, 1, -2], el segundo 3 y -2 no aparecen, y el resultado es [3, 1].",
+        "extension": "Prueba [1, 2, 1, 2] para confirmar que el orden final es el de la primera aparición de cada valor."
       },
       "sources": [
         {
@@ -976,7 +1055,10 @@
         "alternatives": [
           "Usar una data class para igualdad por valores.",
           "Usar una clase normal si la identidad importa y definir solo las operaciones necesarias."
-        ]
+        ],
+        "scenario": "Un catálogo representa artículos con precio no negativo y permite crear una copia con un precio actualizado sin alterar el artículo original.",
+        "reasoning": "Articulo es una data class, así que copy crea una instancia con el campo precio sustituido y deja intacto el original. init aplica require al precio de cada instancia: el precio inicial 0 permite copiar a 5; desde 5 se obtiene una copia con 3; construir con -1 lanza una excepción. La misma validación también se aplica al nuevo objeto creado por copy.",
+        "extension": "Intenta cambiar el precio de una instancia a -2 y comprueba que require lo rechaza y el precio del artículo original sigue igual."
       },
       "sources": [
         {
@@ -1020,7 +1102,10 @@
         "alternatives": [
           "Modelar las variantes con sealed class.",
           "Usar sealed interface cuando las variantes no necesiten compartir estado."
-        ]
+        ],
+        "scenario": "Un cargador puede devolver datos o un error, y la interfaz de usuario debe describir ambas variantes de forma exhaustiva.",
+        "reasoning": "Resultado es sealed y tiene dos variantes con datos: Exito guarda un entero y Fallo un mensaje. El when comprueba el subtipo y construye el texto correspondiente; por eso el éxito con 3, el fallo con mensaje y el éxito con 0 se describen sin una rama else. Al ser sellado, el compilador puede comprobar que se cubren las variantes conocidas.",
+        "extension": "Añade una tercera variante a Resultado y observa que el when debe incorporar una rama para seguir siendo exhaustivo."
       },
       "sources": [
         {
@@ -1064,7 +1149,10 @@
         "alternatives": [
           "Encadenar map y filter para transformaciones pequeñas.",
           "Usar un bucle explícito para una secuencia de pasos con nombres."
-        ]
+        ],
+        "scenario": "Un buscador normaliza etiquetas escritas en distintas mayúsculas y descarta las que son demasiado cortas para mostrarse.",
+        "reasoning": "map transforma cada palabra con lowercase y conserva su posición; después filter conserva solo las de longitud al menos cuatro. La lista vacía no cambia, SOL queda como sol pero se filtra por longitud, y de Kotlin, API y Datos quedan kotlin y datos en su orden original.",
+        "extension": "Prueba palabras repetidas de cuatro o más letras para comprobar que se conservan todas las apariciones, ya que la solución no elimina duplicados."
       },
       "sources": [
         {
@@ -1108,7 +1196,10 @@
         "alternatives": [
           "Usar toIntOrNull y decidir sobre null.",
           "Usar try/catch para traducir NumberFormatException a la respuesta del dominio."
-        ]
+        ],
+        "scenario": "Un importador duplica un código numérico recibido como texto y representa con null los códigos que no se pueden leer.",
+        "reasoning": "toInt convierte el texto; si funciona, se multiplica por dos. Si el formato no representa un Int, se captura NumberFormatException y se devuelve null. Así 4 da 8, 0 da 0 y x da null. La multiplicación usa Int y el ejercicio no especifica qué hacer si el resultado desborda ese rango.",
+        "extension": "Prueba el valor Int máximo y decide si el desbordamiento puede aceptarse o debe detectarse explícitamente."
       },
       "sources": [
         {
@@ -1148,7 +1239,10 @@
         "alternatives": [
           "Usar firstOrNull para obtener el último valor equivalente con lastOrNull.",
           "Recorrer la lista guardando el último elemento y conservar el tipo T."
-        ]
+        ],
+        "scenario": "Un componente de historial recupera el último elemento de una lista sin conocer de antemano si guarda números, texto u otro tipo.",
+        "reasoning": "El parámetro de tipo T se conserva en la entrada y en el resultado T?, por lo que no hacen falta conversiones a Any ni casts. lastOrNull devuelve null si la lista está vacía, el único 7 si contiene un elemento, y b para la lista de dos cadenas. La alternativa actual que menciona firstOrNull no es equivalente: devuelve el primero, no el último.",
+        "extension": "Prueba la función con una lista vacía de Int y otra de String y verifica que ambos resultados son null sin perder el tipo genérico."
       },
       "sources": [
         {
@@ -1161,8 +1255,8 @@
       "track": "Kotlin",
       "title": "Coroutines",
       "explanation": "suspend marca una función que puede ceder y reanudarse mediante operaciones suspendibles; por sí sola no crea un hilo ni inicia concurrencia. kotlinx.coroutines aporta builders como launch, que devuelve Job, y async, que devuelve Deferred con resultado. Ambos necesitan un CoroutineScope que gestione hijos y cancelación. delay suspende una coroutine sin bloquear el hilo. La cancelación es cooperativa y debe propagarse; evita iniciar tareas desligadas del ciclo de vida de la operación.",
-      "example": "[kotlin]\r\nimport kotlinx.coroutines.async\r\nimport kotlinx.coroutines.runBlocking\r\n\r\nfun main() = runBlocking {\r\n    val a = async { 20 }\r\n    val b = async { 22 }\r\n    println(a.await() + b.await())\r\n}\r\nContexto: Requiere la dependencia kotlinx-coroutines-core; async y runBlocking no pertenecen a la biblioteca estándar.",
-      "output": "42",
+      "example": "[kotlin]\nimport kotlinx.coroutines.async\nimport kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\n\nsuspend fun calcular(nombre: String, valor: Int, esperaMs: Long): Int {\n    println(\"$nombre inicia\")\n    delay(esperaMs)\n    println(\"$nombre termina\")\n    return valor\n}\n\nfun main() = runBlocking {\n    val a = async { calcular(\"A\", 20, 100L) }\n    val b = async { calcular(\"B\", 22, 20L) }\n    println(\"Total: ${a.await() + b.await()}\")\n}\nContexto: Requiere la dependencia kotlinx-coroutines-core; async, delay y runBlocking pertenecen a esa biblioteca, no a Kotlin estándar.",
+      "output": "A inicia\nB inicia\nB termina\nA termina\nTotal: 42",
       "mistakes": [
         "Afirmar que suspend mueve automáticamente el trabajo a otro hilo.",
         "Lanzar tareas en un scope global que no se cancela con quien las necesita.",
@@ -1184,11 +1278,14 @@
             "expected": "5"
           }
         ],
-        "solution": "[kotlin]\r\nimport kotlinx.coroutines.async\r\n\r\nsuspend fun combinar(a: Int, b: Int) = kotlinx.coroutines.coroutineScope {\r\n    val primero = async { a }\r\n    val segundo = async { b }\r\n    primero.await() + segundo.await()\r\n}\r\nCriterio de aceptación: Se acepta secuencial si no se requiere concurrencia; si se usan coroutines, las tareas hijas deben respetar la cancelación del scope.",
+        "solution": "[kotlin]\nimport kotlinx.coroutines.async\nimport kotlinx.coroutines.coroutineScope\nimport kotlinx.coroutines.delay\n\nprivate suspend fun calcular(nombre: String, valor: Int, esperaMs: Long): Int {\n    println(\"$nombre inicia\")\n    delay(esperaMs)\n    println(\"$nombre termina\")\n    return valor\n}\n\nsuspend fun combinar(a: Int, b: Int): Int = coroutineScope {\n    val primero = async { calcular(\"A\", a, 100L) }\n    val segundo = async { calcular(\"B\", b, 20L) }\n    primero.await() + segundo.await()\n}\nCriterio de aceptación: Los dos cálculos usan una operación suspendible; si se cancela el scope, ambos hijos respetan la cancelación.",
         "alternatives": [
           "Usar async/await dentro de coroutineScope cuando los resultados puedan ejecutarse concurrentemente.",
           "Llamar funciones suspend de forma secuencial si la concurrencia no aporta valor."
-        ]
+        ],
+        "scenario": "Un cálculo combina dos tareas hijas bajo el mismo alcance para que su ciclo de vida dependa de la operación que las inicia.",
+        "reasoning": "coroutineScope crea un alcance estructurado y async inicia dos hijos que calculan valores mediante delay. Cada hijo anuncia el inicio, se suspende sin bloquear el hilo y anuncia al terminar; como B espera menos, normalmente termina mientras A sigue suspendida. await recupera los dos resultados y la suma produce 15, 0 y 5 en los casos indicados. Si se cancela la operación principal, coroutineScope propaga la cancelación a ambos hijos.",
+        "extension": "Haz que cada tarea hija invoque una operación suspendible y prueba cancelar el scope mientras espera; comprueba que ambas tareas hijas reciben la cancelación."
       },
       "sources": [
         {
@@ -1228,11 +1325,14 @@
             "expected": "el mismo texto con comillas"
           }
         ],
-        "solution": "[kotlin]\r\nimport kotlinx.serialization.Serializable\r\nimport kotlinx.serialization.encodeToString\r\nimport kotlinx.serialization.decodeFromString\r\nimport kotlinx.serialization.json.Json\r\n\r\n@Serializable data class Nota(val texto: String)\r\n\r\nfun copiaJson(texto: String): String {\r\n    val serializado = Json.encodeToString(Nota(texto))\r\n    return Json.decodeFromString<Nota>(serializado).texto\r\n}\r\nCriterio de aceptación: Se acepta otro formato si realiza una ida y vuelta sin perder contenido y el manejo del fichero cierra recursos.",
+        "solution": "[kotlin]\nimport java.nio.charset.StandardCharsets.UTF_8\nimport java.nio.file.Files\nimport kotlinx.serialization.Serializable\nimport kotlinx.serialization.encodeToString\nimport kotlinx.serialization.decodeFromString\nimport kotlinx.serialization.json.Json\n\n@Serializable data class Nota(val texto: String)\n\nfun copiaJson(texto: String): String {\n    val ruta = Files.createTempFile(\"nota-\", \".json\")\n    try {\n        val serializado = Json.encodeToString(Nota(texto))\n        Files.writeString(ruta, serializado, UTF_8)\n        val leido = Files.readString(ruta, UTF_8)\n        return Json.decodeFromString<Nota>(leido).texto\n    } finally {\n        Files.deleteIfExists(ruta)\n    }\n}\nCriterio de aceptación: Se acepta otro formato si escribe y lee un fichero sin perder contenido y elimina o cierra los recursos correctamente.",
         "alternatives": [
           "Usar Files.readString y writeString para texto pequeño.",
           "Usar un stream con use cuando el volumen requiera lectura progresiva."
-        ]
+        ],
+        "scenario": "Una aplicación archiva notas que pueden contener tildes y comillas y necesita recuperar exactamente el texto original.",
+        "reasoning": "Nota es serializable; la solución codifica su JSON, lo escribe en un archivo temporal con UTF-8, lo vuelve a leer y decodifica la nota. La limpieza en finally elimina el temporal incluso si una operación falla. Así los casos con texto simple, tildes y comillas deben recuperar exactamente la cadena original.",
+        "extension": "Guarda el JSON en un archivo y vuelve a leerlo antes de decodificar; comprueba de nuevo los casos con tildes y comillas."
       },
       "sources": [
         {
@@ -1272,11 +1372,14 @@
             "expected": "0.0"
           }
         ],
-        "solution": "[kotlin]\r\nfun conDescuento(precio: Double, tasa: Double): Double {\r\n    require(tasa in 0.0..1.0)\r\n    return precio * (1 - tasa)\r\n}\r\n\r\n@Test fun descuentoCompleto() {\r\n    assertEquals(0.0, conDescuento(50.0, 1.0))\r\n}\r\nCriterio de aceptación: Se acepta redondeo explícito si el dominio define precisión monetaria; todas las soluciones deben respetar el rango de la tasa.",
+        "solution": "[kotlin]\nimport kotlin.test.Test\nimport kotlin.test.assertEquals\nimport kotlin.test.assertFailsWith\n\nfun conDescuento(precio: Double, tasa: Double): Double {\n    require(tasa in 0.0..1.0)\n    return precio * (1 - tasa)\n}\n\nclass DescuentoTest {\n    @Test fun tasaCero() {\n        assertEquals(100.0, conDescuento(100.0, 0.0))\n    }\n\n    @Test fun tasaParcial() {\n        assertEquals(75.0, conDescuento(100.0, 0.25))\n    }\n\n    @Test fun tasaCompleta() {\n        assertEquals(0.0, conDescuento(50.0, 1.0))\n    }\n\n    @Test fun rechazaTasaFueraDeRango() {\n        assertFailsWith<IllegalArgumentException> { conDescuento(100.0, 1.1) }\n    }\n}\nCriterio de aceptación: Se acepta redondeo explícito si el dominio define precisión monetaria; las pruebas deben cubrir las tres tasas del enunciado y el rango inválido.",
         "alternatives": [
           "Usar kotlin.test con el runner ya configurado.",
           "Usar las assertions de JUnit directamente si el proyecto depende de JUnit."
-        ]
+        ],
+        "scenario": "Una tienda aplica descuentos con una tasa acotada entre 0 y 1 y necesita que los cambios de la fórmula no alteren los resultados.",
+        "reasoning": "require comprueba que la tasa esté entre 0.0 y 1.0; después se multiplica el precio por 1 - tasa. Las tres pruebas verifican 100.0, 75.0 y 0.0 para las tasas 0.0, 0.25 y 1.0. La prueba adicional comprueba que una tasa fuera del rango lanza IllegalArgumentException.",
+        "extension": "Añade pruebas para tasa 0.0 y 0.25, más una aserción de que una tasa fuera del rango lanza IllegalArgumentException."
       },
       "sources": [
         {
@@ -1316,11 +1419,14 @@
             "expected": "La estructura sigue siendo válida"
           }
         ],
-        "solution": "[jsx]\r\nfunction Tarjeta() {\r\n  return <article><h2>A</h2><p>Contenido</p></article>;\r\n}\r\n\r\nexport default function App() {\r\n  return <main><Tarjeta /><Tarjeta /></main>;\r\n}\r\nCriterio de aceptación: Se acepta cualquier composición semántica equivalente que renderice cada tarjeta como una unidad.",
+        "solution": "[jsx]\nfunction Tarjeta({ titulo, descripcion }) {\n  return <article><h2>{titulo}</h2><p>{descripcion}</p></article>;\n}\n\nexport default function App() {\n  return (\n    <main>\n      <Tarjeta titulo=\"A\" descripcion=\"Contenido\" />\n      <Tarjeta titulo=\"B\" descripcion=\"\" />\n    </main>\n  );\n}\nCriterio de aceptación: Cada tarjeta conserva article y h2; un párrafo vacío sigue siendo un elemento p válido.",
         "alternatives": [
           "Declarar el componente con function.",
           "Declarar el componente como función flecha si esa convención usa el proyecto."
-        ]
+        ],
+        "extension": "Añade una prop descripcion opcional: si se omite, conserva article y h2 y no renderiza p; si contiene texto, lo muestra dentro de p.",
+        "reasoning": "Tarjeta recibe título y descripción por props; App la usa dos veces, una con descripción vacía. Por ello el título A, las dos tarjetas y el párrafo vacío quedan representados sin fijar los datos dentro del componente.",
+        "scenario": "El catálogo del ciclo DAM muestra cada asignatura como tarjeta reutilizable en una lista."
       },
       "sources": [
         {
@@ -1364,7 +1470,10 @@
         "alternatives": [
           "Desestructurar nombre y children al recibir props.",
           "Leer props.nombre directamente y pasar el contenido mediante children."
-        ]
+        ],
+        "extension": "Añade una prop bloqueada: cuando sea true, conserva el texto y expone aria-disabled=\"true\" sin cambiar la clase que depende de activa.",
+        "reasoning": "La solución recibe texto y activa como props, elige una clase con una expresión condicional y muestra el texto dentro del span. Los casos true y false cambian la clase; con texto vacío el elemento sigue renderizándose sin error.",
+        "scenario": "Una insignia del aula virtual distingue actividades activas de actividades pendientes."
       },
       "sources": [
         {
@@ -1400,11 +1509,14 @@
             "expected": "1"
           }
         ],
-        "solution": "[jsx]\r\nconst [valor, setValor] = useState(0);\r\nconst sumar = () => setValor(actual => actual + 1);\r\nconst restar = () => setValor(actual => Math.max(0, actual - 1));\r\nCriterio de aceptación: Se aceptan reducer o dos setters si los eventos dan los mismos valores en secuencias repetidas.",
+        "solution": "[jsx]\nimport { useState } from \"react\";\n\nexport default function Contador() {\n  const [valor, setValor] = useState(0);\n  const sumar = () => setValor(actual => actual + 1);\n  const restar = () => setValor(actual => Math.max(0, actual - 1));\n\n  return (\n    <section>\n      <p>{valor}</p>\n      <button onClick={sumar}>Sumar</button>\n      <button onClick={restar}>Restar</button>\n    </section>\n  );\n}\nCriterio de aceptación: Se aceptan reducer o dos setters si los eventos dan los mismos valores en secuencias repetidas.",
         "alternatives": [
           "Usar actual => actual + 1 para actualizaciones acumuladas.",
           "Usar useReducer si las transiciones de estado tienen varias reglas."
-        ]
+        ],
+        "extension": "Desde uno, pulsa restar dos veces: el resultado permanece en cero y nunca aparece un valor negativo.",
+        "reasoning": "Contador llama useState en el nivel superior de un componente React. Los botones actualizan el estado con el valor anterior; Math.max limita el mínimo a cero. La secuencia sumar, sumar, restar termina en uno y restar desde cero conserva el cero.",
+        "scenario": "Un contador registra cuántas respuestas ha revisado una persona durante una sesión de estudio."
       },
       "sources": [
         {
@@ -1444,11 +1556,14 @@
             "expected": "El campo conserva luna y no cambia el resultado enviado"
           }
         ],
-        "solution": "[jsx]\r\nconst [valor, setValor] = useState(\"\");\r\nconst [enviado, setEnviado] = useState(\"\");\r\nfunction manejarEnvio(evento) {\r\n  evento.preventDefault();\r\n  setEnviado(valor);\r\n}\r\nCriterio de aceptación: Se aceptan eventos o componentes separados si la escritura y el envío siguen siendo acciones distintas.",
+        "solution": "[jsx]\nimport { useState } from \"react\";\n\nexport default function Busqueda() {\n  const [valor, setValor] = useState(\"\");\n  const [enviado, setEnviado] = useState(\"\");\n\n  function manejarEnvio(evento) {\n    evento.preventDefault();\n    setEnviado(valor);\n  }\n\n  return (\n    <form onSubmit={manejarEnvio}>\n      <label htmlFor=\"busqueda\">Buscar</label>\n      <input id=\"busqueda\" value={valor}\n        onChange={evento => setValor(evento.target.value)} />\n      <button type=\"submit\">Buscar</button>\n      <p aria-live=\"polite\">{enviado}</p>\n    </form>\n  );\n}\nCriterio de aceptación: Se aceptan eventos o componentes separados si la escritura y el envío siguen siendo acciones distintas.",
         "alternatives": [
           "Controlar el input con value y onChange.",
           "Usar FormData en el submit si no se necesita reflejar cada tecla en estado."
-        ]
+        ],
+        "extension": "Define que los espacios solos no inician una búsqueda: al enviar \"   \", conserva el campo y muestra un mensaje de validación.",
+        "reasoning": "El componente controla el campo con value y onChange. manejarEnvio cancela la navegación del formulario y copia el valor actual a enviado; escribir luna después de enviar sol cambia el campo, pero mantiene sol como resultado hasta el siguiente envío. El párrafo aria-live presenta el resultado.",
+        "scenario": "Un formulario de búsqueda de temas separa el texto que se está escribiendo del último texto enviado."
       },
       "sources": [
         {
@@ -1492,7 +1607,10 @@
         "alternatives": [
           "Usar retornos tempranos para estados excluyentes.",
           "Usar una expresión ternaria para una decisión binaria pequeña."
-        ]
+        ],
+        "extension": "Cuando cargando y error sean verdaderos a la vez, comprueba que se muestra Cargando por la prioridad del primer retorno.",
+        "reasoning": "Los retornos tempranos fijan la prioridad: carga antes que error; si ambos son falsos, cantidad cero muestra Sin resultados y una cantidad positiva se presenta como resultado. Los casos cubren carga, alerta y lista vacía.",
+        "scenario": "Una página de resultados muestra carga, error o el número de elementos encontrados."
       },
       "sources": [
         {
@@ -1536,7 +1654,10 @@
         "alternatives": [
           "Crear elementos con map y una key id estable.",
           "Construir el array de elementos antes del return y renderizarlo después."
-        ]
+        ],
+        "extension": "Reordena dos tareas existentes y confirma que cada nombre sigue ligado a su id, sin intercambiar contenido o estado.",
+        "reasoning": "map transforma cada tarea en un li y tarea.id sirve como identidad estable. El array vacío no crea filas; el caso A crea una; al insertar otra antes, la key permite conservar la identidad y el contenido de A.",
+        "scenario": "El panel del profesorado muestra tareas que pueden añadirse antes o después de las existentes."
       },
       "sources": [
         {
@@ -1576,7 +1697,10 @@
         "alternatives": [
           "Extraer el efecto con su limpieza a un Hook personalizado.",
           "Usar useSyncExternalStore para una suscripción a un almacén externo con API de suscripción."
-        ]
+        ],
+        "extension": "Haz que el reloj funcione solo cuando activo sea true: al cambiarlo a false, limpia el intervalo y no realiza más actualizaciones.",
+        "reasoning": "El efecto crea un intervalo que actualiza ahora y devuelve clearInterval como limpieza. Con dependencias vacías, se configura una vez al montar y se cancela al desmontar; la solución no tiene una dependencia que pueda cambiar.",
+        "scenario": "Un panel de estudio actualiza un reloj visible cada segundo mientras permanece montado."
       },
       "sources": [
         {
@@ -1620,7 +1744,10 @@
         "alternatives": [
           "Devolver un objeto con nombres como { valor, incrementar }.",
           "Devolver una tupla si el orden de los valores es estable y conocido."
-        ]
+        ],
+        "extension": "Inicializa el primer panel abierto y el segundo cerrado; al alternar el segundo, el primero debe seguir abierto.",
+        "reasoning": "Cada llamada a useAlternador crea su propio useState. El actualizador funcional invierte el valor previo de esa instancia: alternar el primer panel lo abre sin afectar al segundo; alternar luego el segundo deja ambos abiertos.",
+        "scenario": "Dos paneles de una guía permiten abrir sus propias pistas sin alterar el estado del otro panel."
       },
       "sources": [
         {
@@ -1660,11 +1787,14 @@
             "expected": "Se aplica el valor por defecto documentado"
           }
         ],
-        "solution": "[jsx]\r\nconst IdiomaContext = createContext(\"es\");\r\nfunction Saludo() {\r\n  const idioma = useContext(IdiomaContext);\r\n  return <p>{idioma === \"en\" ? \"Hello\" : \"Hola\"}</p>;\r\n}\r\nCriterio de aceptación: Se acepta separar contextos o pasar props si todos los consumidores muestran el mismo valor de idioma.",
+        "solution": "[jsx]\nimport { createContext, useContext, useState } from \"react\";\n\nconst IdiomaContext = createContext(\"es\");\nexport function Saludo() {\n  const idioma = useContext(IdiomaContext);\n  return <p>{idioma === \"en\" ? \"Hello\" : \"Hola\"}</p>;\n}\nfunction Encabezado() { return <header><Saludo /></header>; }\nfunction Contenido() { return <main><Saludo /></main>; }\n\nexport default function App() {\n  const [idioma, setIdioma] = useState(\"es\");\n  return (\n    <IdiomaContext.Provider value={idioma}>\n      <button onClick={() => setIdioma(actual => actual === \"es\" ? \"en\" : \"es\")}>\n        Cambiar idioma\n      </button>\n      <Encabezado />\n      <Contenido />\n    </IdiomaContext.Provider>\n  );\n}\nCriterio de aceptación: Los dos consumidores reflejan el idioma elegido; un consumidor renderizado fuera del Provider recibe el valor por defecto documentado.",
         "alternatives": [
           "Elevar el estado al ancestro común y pasarlo por props.",
           "Usar Context cuando el valor se consume a través de muchos niveles."
-        ]
+        ],
+        "extension": "Coloca un consumidor fuera y dos dentro del proveedor en: el exterior muestra Hola y los interiores muestran Hello.",
+        "reasoning": "IdiomaContext define es como valor predeterminado. App comparte el estado mediante Provider y ambos componentes descendientes consumen el mismo idioma; el botón lo alterna entre español e inglés. Si Saludo se renderiza fuera del Provider, useContext devuelve es.",
+        "scenario": "El encabezado y el contenido de una aplicación educativa comparten el idioma seleccionado."
       },
       "sources": [
         {
@@ -1704,11 +1834,14 @@
             "expected": "Muestra la vista 404"
           }
         ],
-        "solution": "[jsx]\r\n<Routes>\r\n  <Route path=\"/\" element={<Inicio />} />\r\n  <Route path=\"/temas/:id\" element={<Detalle />} />\r\n  <Route path=\"*\" element={<NoEncontrada />} />\r\n</Routes>\r\nCriterio de aceptación: Se acepta una ruta de datos o framework si las tres URL muestran estados equivalentes y se validan sus parámetros.",
+        "solution": "[jsx]\nimport { BrowserRouter, Route, Routes, useParams } from \"react-router-dom\";\n\nfunction Inicio() { return <h1>Inicio</h1>; }\nfunction Detalle() {\n  const { id } = useParams();\n  if (!/^\\d+$/.test(id ?? \"\")) return <p>ID no válido</p>;\n  return <h1>Tema {id}</h1>;\n}\nfunction NoEncontrada() { return <h1>404: página no encontrada</h1>; }\n\nexport default function App() {\n  return (\n    <BrowserRouter>\n      <Routes>\n        <Route path=\"/\" element={<Inicio />} />\n        <Route path=\"/temas/:id\" element={<Detalle />} />\n        <Route path=\"*\" element={<NoEncontrada />} />\n      </Routes>\n    </BrowserRouter>\n  );\n}\nCriterio de aceptación: Se acepta una ruta de datos o framework si las tres URL muestran estados equivalentes y se validan sus parámetros.",
         "alternatives": [
           "Usar el modo declarativo con Routes y Route.",
           "Usar el modo de datos si la navegación necesita loaders y acciones."
-        ]
+        ],
+        "extension": "Abre /temas/abc cuando las fichas solo admiten ids numéricos: muestra un estado de identificador no válido en vez de consultar una ficha.",
+        "reasoning": "BrowserRouter proporciona el contexto de navegación. La ruta raíz muestra Inicio; Detalle lee el parámetro id, muestra /temas/3 como Tema 3 y rechaza identificadores no numéricos; la ruta comodín presenta la vista 404.",
+        "scenario": "Un catálogo enlaza desde el inicio a la ficha de un tema identificada por su id."
       },
       "sources": [
         {
@@ -1746,13 +1879,20 @@
           {
             "input": "HTTP 404 o JSON sin title de texto",
             "expected": "Muestra Error"
+          },
+          {
+            "input": "La petición se cancela al cambiar la URL",
+            "expected": "No muestra el resultado anterior ni presenta la cancelación como error"
           }
         ],
-        "solution": "[jsx]\r\nif (estado === \"cargando\") return <p>Cargando</p>;\r\nif (estado === \"error\") return <p role=\"alert\">Error</p>;\r\nreturn <p>{titulo}</p>;\r\nCriterio de aceptación: Se aceptan hooks de datos o una máquina de estados si no se muestran datos antiguos ni se ocultan errores.",
+        "solution": "[jsx]\nimport { useEffect, useState } from \"react\";\n\nexport function TituloRemoto({ url }) {\n  const [estado, setEstado] = useState({ url: null, tipo: \"cargando\" });\n  const visible = estado.url === url ? estado : { tipo: \"cargando\" };\n\n  useEffect(() => {\n    const controller = new AbortController();\n    let activa = true;\n    async function cargar() {\n      try {\n        const respuesta = await fetch(url, { signal: controller.signal });\n        if (!respuesta.ok) throw new Error(\"HTTP\");\n        const datos = await respuesta.json();\n        if (typeof datos.title !== \"string\") throw new Error(\"Formato\");\n        if (activa) setEstado({ url, tipo: \"dato\", titulo: datos.title });\n      } catch (error) {\n        if (activa && error.name !== \"AbortError\") {\n          setEstado({ url, tipo: \"error\" });\n        }\n      }\n    }\n    setEstado({ url, tipo: \"cargando\" });\n    void cargar();\n    return () => { activa = false; controller.abort(); };\n  }, [url]);\n\n  if (visible.tipo === \"cargando\") return <p>Cargando</p>;\n  if (visible.tipo === \"error\") return <p role=\"alert\">Error</p>;\n  return <p>{visible.titulo}</p>;\n}\nCriterio de aceptación: Se aceptan hooks o una máquina de estados si comprueban HTTP y JSON, respetan la cancelación, y nunca muestran datos antiguos.",
         "alternatives": [
           "Usar un loader o caché de datos del framework.",
           "Usar un Hook de consulta que gestione estados, caché y cancelación."
-        ]
+        ],
+        "extension": "Si el servidor responde HTTP 200 con title vacío o numérico, muestra Error y no presenta un título inválido.",
+        "reasoning": "El componente asocia cada estado con su URL. Si la prop cambia, visible presenta Cargando inmediatamente aunque aún conserve el estado anterior; así no muestra el título de la URL previa durante ese render. El efecto verifica HTTP y el tipo de title, y su limpieza aborta e ignora resultados de la petición anterior.",
+        "scenario": "Una ficha de estudio obtiene el título de un tema y cambia de URL cuando la persona selecciona otro."
       },
       "sources": [
         {
@@ -1792,11 +1932,14 @@
             "expected": "Error visible asociado al campo"
           }
         ],
-        "solution": "[jsx]\r\nconst invalido = nombre.trim().length === 0;\r\n<label htmlFor=\"nombre\">Nombre</label>\r\n<input id=\"nombre\" value={nombre} onChange={e => setNombre(e.target.value)}\r\n  aria-invalid={invalido} aria-describedby={invalido ? \"error-nombre\" : undefined} />\r\n{invalido && <p id=\"error-nombre\">Escribe un nombre</p>}\r\nCriterio de aceptación: Se acepta validación nativa o una librería si la regla también se aplica en servidor y el mensaje es perceptible.",
+        "solution": "[jsx]\nimport { useState } from \"react\";\n\nexport default function FormularioNombre() {\n  const [nombre, setNombre] = useState(\"\");\n  const [error, setError] = useState(\"\");\n\n  function manejarEnvio(evento) {\n    evento.preventDefault();\n    if (nombre.trim() === \"\") {\n      setError(\"Escribe un nombre\");\n      return;\n    }\n    setError(\"\");\n  }\n\n  return (\n    <form onSubmit={manejarEnvio}>\n      <label htmlFor=\"nombre\">Nombre</label>\n      <input id=\"nombre\" value={nombre}\n        onChange={evento => setNombre(evento.target.value)}\n        aria-invalid={Boolean(error)}\n        aria-describedby={error ? \"error-nombre\" : undefined} />\n      {error && <p id=\"error-nombre\" role=\"alert\">{error}</p>}\n      <button type=\"submit\">Continuar</button>\n    </form>\n  );\n}\nCriterio de aceptación: Se acepta validación nativa o una librería si la regla también se aplica en servidor y el mensaje es perceptible.",
         "alternatives": [
           "Usar restricciones HTML nativas más mensajes personalizados.",
           "Usar una biblioteca de formularios si centraliza reglas y estados; validar también en servidor."
-        ]
+        ],
+        "extension": "Al aceptar \" Ada \", conserva la entrada durante la edición y guarda el nombre normalizado como Ada al enviar.",
+        "reasoning": "El formulario conserva el nombre y, al enviarse, trim comprueba si queda algún carácter distinto de espacios. Un valor válido limpia el error; una cadena vacía o de espacios muestra un mensaje con role=alert y enlaza el campo mediante aria-describedby.",
+        "scenario": "El formulario de alta de una cuenta requiere un nombre con al menos un carácter distinto de espacios."
       },
       "sources": [
         {
@@ -1840,7 +1983,10 @@
         "alternatives": [
           "Medir primero y no memorizar cálculos baratos.",
           "Usar useMemo o React Compiler para trabajo costoso después de perfilar."
-        ]
+        ],
+        "extension": "Con consulta ADA, devuelve Ada y deja intacto el array original; mide la interacción antes de añadir una optimización.",
+        "reasoning": "filter construye una lista nueva sin mutar nombres; toLowerCase hace que la coincidencia no distinga mayúsculas. Por eso [] permanece vacío, ada encuentra Ada y la consulta i encuentra Lin.",
+        "scenario": "Un buscador filtra nombres de temas mientras la persona escribe."
       },
       "sources": [
         {
@@ -1880,11 +2026,14 @@
             "expected": "Vuelve a existir el botón Mostrar"
           }
         ],
-        "solution": "[jsx]\r\nimport { expect, test } from \"vitest\";\r\nimport { render, screen } from \"@testing-library/react\";\r\nimport userEvent from \"@testing-library/user-event\";\r\n\r\ntest(\"al alternar, cambia el nombre accesible\", async () => {\r\n  const usuario = userEvent.setup();\r\n  render(<Alternador />);\r\n  await usuario.click(screen.getByRole(\"button\", { name: \"Mostrar\" }));\r\n  expect(screen.getByRole(\"button\", { name: \"Ocultar\" })).toBeTruthy();\r\n});\r\nCriterio de aceptación: Se aceptan consultas equivalentes y pruebas separadas por caso si siguen el flujo que usaría una persona.",
+        "solution": "[jsx]\nimport { useState } from \"react\";\nimport { expect, test } from \"vitest\";\nimport { render, screen } from \"@testing-library/react\";\nimport userEvent from \"@testing-library/user-event\";\n\nfunction Alternador() {\n  const [visible, setVisible] = useState(false);\n  return <button onClick={() => setVisible(actual => !actual)}>\n    {visible ? \"Ocultar\" : \"Mostrar\"}\n  </button>;\n}\n\ntest(\"al alternar, cambia el nombre accesible\", async () => {\n  const usuario = userEvent.setup();\n  render(<Alternador />);\n  expect(screen.getByRole(\"button\", { name: \"Mostrar\" })).toBeTruthy();\n  await usuario.click(screen.getByRole(\"button\", { name: \"Mostrar\" }));\n  expect(screen.getByRole(\"button\", { name: \"Ocultar\" })).toBeTruthy();\n  await usuario.click(screen.getByRole(\"button\", { name: \"Ocultar\" }));\n  expect(screen.getByRole(\"button\", { name: \"Mostrar\" })).toBeTruthy();\n});\nCriterio de aceptación: Se aceptan consultas equivalentes y pruebas separadas por caso si siguen el flujo que usaría una persona.",
         "alternatives": [
           "Consultar por rol y nombre accesible con user-event.",
           "Consultar por label para controles de formulario y usar fireEvent para eventos específicos."
-        ]
+        ],
+        "extension": "Activa el botón con la barra espaciadora y comprueba que el nombre accesible cambia a Ocultar.",
+        "reasoning": "Alternador empieza con el botón Mostrar y cambia su texto al hacer clic. La prueba incluye el componente junto al caso y verifica por rol y nombre accesible el estado inicial, el cambio a Ocultar y el retorno a Mostrar.",
+        "scenario": "Una pista de solución se muestra u oculta mediante un botón accesible."
       },
       "sources": [
         {
@@ -1928,7 +2077,10 @@
         "alternatives": [
           "Renderizar contenido no confiable como texto dentro de JSX.",
           "Permitir HTML enriquecido solo tras sanitizarlo con una biblioteca mantenida como DOMPurify."
-        ]
+        ],
+        "extension": "Muestra como comentario literal <img src=x onerror=alert(1)> y confirma que no se crea una imagen ni se ejecuta el manejador.",
+        "reasoning": "El texto interpolado dentro de p se renderiza como texto, por lo que las etiquetas introducidas no se interpretan como HTML. La nota de la solución sitúa el uso de la credencial en un endpoint del servidor, fuera del bundle cliente.",
+        "scenario": "La aplicación muestra comentarios de estudiantes y consulta una API privada sin exponer su credencial en el navegador."
       },
       "sources": [
         {
@@ -1976,7 +2128,10 @@
         "alternatives": [
           "Explorar instrucciones breves con jshell.",
           "Crear un proyecto con herramienta de construcción cuando haya varias clases o dependencias."
-        ]
+        ],
+        "scenario": "Una aplicación de consola de una matrícula saluda a la persona que inicia sesión.",
+        "reasoning": "saludar concatena el prefijo con el nombre y devuelve el texto; main demuestra una llamada con Ana. Los casos comprueban nombre habitual, cadena vacía y otro nombre, aunque el programa actual no recibe esos valores desde la consola.",
+        "extension": "Prueba el nombre \"DAM 2\" y conserva los espacios internos: el resultado esperado es \"Hola, DAM 2\"."
       },
       "sources": [
         {
@@ -2024,7 +2179,10 @@
         "alternatives": [
           "Usar BigDecimal para cálculos monetarios que requieran decimal exacto.",
           "Separar el valor numérico de su formato de presentación."
-        ]
+        ],
+        "scenario": "El sistema calcula el importe de una matrícula multiplicando el número de unidades por su precio.",
+        "reasoning": "total recibe una cantidad entera y un precio double, y devuelve su producto como double. Los casos comprueban importe normal, cantidad cero y un precio fraccionario; BigDecimal es una alternativa cuando se exige exactitud decimal monetaria.",
+        "extension": "Define el contrato para una cantidad o precio negativo y añade un caso que lo rechace con IllegalArgumentException."
       },
       "sources": [
         {
@@ -2068,7 +2226,10 @@
         "alternatives": [
           "Separar condiciones en variables booleanas con nombres claros.",
           "Probar cada límite con pruebas unitarias."
-        ]
+        ],
+        "scenario": "Un proceso por lotes solo acepta como identificador válido un número positivo y par.",
+        "reasoning": "La expresión combina n > 0 y n % 2 == 0 con &&, así que ambas condiciones deben cumplirse. Los ejemplos separan un valor válido, uno impar y uno negativo.",
+        "extension": "Añade los límites 2 y 0: 2 debe dar true y 0 debe dar false."
       },
       "sources": [
         {
@@ -2112,7 +2273,10 @@
         "alternatives": [
           "Usar enum para un conjunto fijo de estados nombrados.",
           "Usar if/else si las ramas representan condiciones no equivalentes."
-        ]
+        ],
+        "scenario": "Una pantalla de administración traduce códigos HTTP en mensajes comprensibles.",
+        "reasoning": "El switch devuelve mensajes para 200 y 404, y el default agrupa cualquier otro código. Los casos muestran cada rama; para un conjunto creciente de estados, un enum ayudaría a nombrarlos.",
+        "extension": "Prueba el código 201 y especifica si debe conservar el mensaje general o distinguirse como \"creado\"."
       },
       "sources": [
         {
@@ -2156,7 +2320,10 @@
         "alternatives": [
           "Usar una fórmula si solo se necesita la suma y se ha considerado el desbordamiento.",
           "Usar while cuando el número de repeticiones dependa de una condición."
-        ]
+        ],
+        "scenario": "Un módulo de notas suma los números de créditos desde 1 hasta el límite indicado.",
+        "reasoning": "suma empieza en cero y el for recorre actual desde 1 mientras no supere n, acumulando cada valor. Con n igual a cero el bucle no entra y devuelve cero, como pide el contrato.",
+        "extension": "Comprueba n = -3 y conserva el resultado 0; para límites grandes, decide si el acumulador necesita ser long."
       },
       "sources": [
         {
@@ -2200,7 +2367,10 @@
         "alternatives": [
           "Usar una lista cuando la cantidad de elementos debe cambiar.",
           "Documentar y validar el caso vacío en la frontera del método."
-        ]
+        ],
+        "scenario": "Un informe académico busca la nota máxima entre los resultados de una evaluación.",
+        "reasoning": "El método rechaza primero el array vacío, inicia mayor con el primer elemento y lo reemplaza solo cuando encuentra uno superior. Empezar en el primer dato permite resolver correctamente también el caso de valores todos negativos.",
+        "extension": "Añade el caso de array vacío y verifica que produce IllegalArgumentException."
       },
       "sources": [
         {
@@ -2238,13 +2408,20 @@
           {
             "input": "area(0,5)",
             "expected": "0"
+          },
+          {
+            "input": "area(2)",
+            "expected": "4"
           }
         ],
-        "solution": "[java]\npublic class Main {\n    static int area(int a, int b) { return a * b; }\n    static int area(int lado) { return area(lado, lado); }\n    public static void main(String[] args) { System.out.println(area(3,4)); }\n}",
+        "solution": "[java]\npublic class Main {\n    static int area(int ancho, int alto) { return ancho * alto; }\n    static int area(int lado) { return area(lado, lado); }\n    public static void main(String[] args) {\n        System.out.println(area(3, 4));\n        System.out.println(area(2, 2));\n        System.out.println(area(0, 5));\n        System.out.println(area(2));\n    }\n}\nCriterio de aceptación: Se acepta una implementación equivalente que demuestre tanto el rectángulo como la sobrecarga de un argumento para el cuadrado.",
         "alternatives": [
           "Usar nombres distintos si las operaciones expresan conceptos diferentes.",
           "Validar dimensiones positivas cuando lo exija el dominio."
-        ]
+        ],
+        "scenario": "Un componente de facturación calcula superficies de rectángulos y cuadrados.",
+        "reasoning": "area(int, int) multiplica los lados; area(int) delega en esa versión usando el mismo lado dos veces. La solución ejecuta los tres casos rectangulares y también area(2), que comprueba directamente la sobrecarga de cuadrado.",
+        "extension": "Añade area(5) y espera 25 para comprobar la llamada de un argumento."
       },
       "sources": [
         {
@@ -2288,7 +2465,10 @@
         "alternatives": [
           "Usar enum para más de dos estados.",
           "Preferir acciones encender/apagar si alternar puede ser ambiguo."
-        ]
+        ],
+        "scenario": "Una aplicación de domótica guarda y cambia el estado de una lámpara.",
+        "reasoning": "La instancia empieza con encendida en false, por lo que estado devuelve \"apagada\"; alternar invierte ese booleano y la siguiente llamada vuelve al estado inicial. Para más de dos estados, enum representa mejor el dominio.",
+        "extension": "Alterna la lámpara tres veces y comprueba que termina encendida."
       },
       "sources": [
         {
@@ -2328,11 +2508,14 @@
             "expected": "nombre vacío"
           }
         ],
-        "solution": "[java]\nclass Producto {\n    private final String nombre; private final double precio;\n    Producto(String nombre) { this(nombre, 0.0); }\n    Producto(String nombre, double precio) { this.nombre = nombre; this.precio = precio; }\n    double precio() { return precio; }\n}\npublic class Main {\n    public static void main(String[] args) { System.out.println(new Producto(\"Lápiz\",1.5).precio()); }\n}",
+        "solution": "[java]\nclass Producto {\n    private final String nombre;\n    private final double precio;\n    Producto(String nombre) { this(nombre, 0.0); }\n    Producto(String nombre, double precio) {\n        if (nombre == null || nombre.isBlank()) {\n            throw new IllegalArgumentException(\"nombre vacío\");\n        }\n        this.nombre = nombre;\n        this.precio = precio;\n    }\n    double precio() { return precio; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(new Producto(\"Lápiz\", 1.5).precio());\n    }\n}\nCriterio de aceptación: El constructor alternativo conserva el precio cero y cualquier nombre nulo o vacío se rechaza con IllegalArgumentException.",
         "alternatives": [
           "Usar un factory method estático para una creación compleja.",
           "Usar record para datos inmutables si encaja con el dominio."
-        ]
+        ],
+        "scenario": "El catálogo crea productos con precio indicado o con precio inicial de cero.",
+        "reasoning": "El constructor corto delega en el completo con precio 0.0. El constructor completo rechaza nombres nulos, vacíos o compuestos solo por espacios antes de asignar los campos, por lo que el caso vacío lanza IllegalArgumentException y los casos válidos conservan el precio.",
+        "extension": "Define que un nombre formado solo por espacios es inválido y espera IllegalArgumentException al crear el producto."
       },
       "sources": [
         {
@@ -2376,7 +2559,10 @@
         "alternatives": [
           "Usar composición si los objetos colaboran pero no son subtipos.",
           "Declarar una interfaz cuando tipos no relacionados comparten una operación."
-        ]
+        ],
+        "scenario": "Un informe calcula superficies de distintas figuras mediante una lista de referencias Figura.",
+        "reasoning": "Cuadrado guarda el lado y sobrescribe area; aunque la variable sea de tipo Figura, la llamada se resuelve con la implementación real de Cuadrado. La composición sería preferible cuando la relación no exprese que un objeto es una figura.",
+        "extension": "Añade Rectangulo como subtipo y espera área 12 para lados 3 y 4 a través de una referencia Figura."
       },
       "sources": [
         {
@@ -2420,7 +2606,10 @@
         "alternatives": [
           "Añadir un método default para comportamiento realmente compartido.",
           "Combinar interfaces con composición en vez de una jerarquía larga."
-        ]
+        ],
+        "scenario": "Un reproductor procesa audio y vídeo a través del mismo contrato.",
+        "reasoning": "Audio y Video implementan reproducir con resultados distintos; la referencia Reproducible a Video demuestra despacho dinámico. Un método default solo conviene si ambos tipos comparten realmente el mismo comportamiento.",
+        "extension": "Guarda un Audio y un Video en una lista de Reproducible y espera las salidas \"audio\" y \"vídeo\" al recorrerla."
       },
       "sources": [
         {
@@ -2464,7 +2653,10 @@
         "alternatives": [
           "Devolver un tipo de resultado explícito cuando un dato inválido sea normal.",
           "Crear una excepción de dominio si el fallo necesita datos adicionales."
-        ]
+        ],
+        "scenario": "Un importador de calificaciones convierte texto a entero y solo acepta valores positivos.",
+        "reasoning": "parseInt detecta texto no numérico; el control posterior lanza IllegalArgumentException para cero o negativos. El catch de main agrupa ambos fallos en un mensaje de usuario, aunque una prueba unitaria puede comprobar la clase concreta.",
+        "extension": "Prueba \"+7\" y espera el entero 7; conserva la distinción entre fallo de formato y valor fuera del dominio."
       },
       "sources": [
         {
@@ -2508,7 +2700,10 @@
         "alternatives": [
           "Usar groupingBy de Streams si expresa mejor la transformación.",
           "Usar TreeMap cuando el resultado requiera claves ordenadas."
-        ]
+        ],
+        "scenario": "Un analizador cuenta cuántas veces aparece cada palabra en un registro de actividad.",
+        "reasoning": "Map.merge crea el contador con 1 o suma 1 al existente, y una lista vacía deja el mapa vacío. HashMap no garantiza el orden de impresión ni el formato exacto indicado en el caso; TreeMap es una alternativa si se pide ordenar las claves.",
+        "extension": "Con las palabras \"sol\", \"mar\", \"sol\", exige la representación ordenada \"mar=1, sol=2\" y define si se incluyen llaves."
       },
       "sources": [
         {
@@ -2552,7 +2747,10 @@
         "alternatives": [
           "Usar un bucle si un flujo declarativo oculta pasos relevantes.",
           "Usar Comparator.comparing para ordenar según una propiedad."
-        ]
+        ],
+        "scenario": "Un buscador filtra términos de una consulta y los presenta ordenados alfabéticamente.",
+        "reasoning": "El stream elimina palabras con menos de cuatro caracteres y después las ordena con el orden natural; toList materializa el resultado. El bucle sería más claro si la transformación añadiera muchos pasos, y Comparator.comparing sirve para ordenar por una propiedad.",
+        "extension": "Incluye dos veces \"lago\" y espera que ambas apariciones sigan en la lista ordenada."
       },
       "sources": [
         {
@@ -2596,7 +2794,10 @@
         "alternatives": [
           "Probar una función pura aparte y dejar una prueba de integración para disco.",
           "Usar directorio temporal aislado por prueba."
-        ]
+        ],
+        "scenario": "Una exportación temporal guarda texto UTF-8 y verifica que puede recuperarse sin perder acentos.",
+        "reasoning": "El método crea un archivo temporal, escribe y lee con UTF-8 y lo elimina en finally incluso si una operación falla. El bucle compara texto normal, vacío y acentuado; una prueba unitaria de la función y otra de integración con disco separan responsabilidades.",
+        "extension": "Añade \"Línea 1\\ncafé\" y comprueba que la vuelta conserva exactamente el salto de línea y las tildes."
       },
       "sources": [
         {
@@ -2640,11 +2841,14 @@
             "expected": "Node 0"
           }
         ],
-        "solution": "[javascript]\n\"use strict\";\nconst curso = \"Node\";\nlet lecciones = 0;\nconsole.log(curso, lecciones);",
+        "solution": "[javascript]\n\"use strict\";\nfunction resumen(nombreCurso, totalLecciones) {\n  const curso = nombreCurso;\n  let lecciones = 0;\n  lecciones += totalLecciones;\n  console.log(curso, lecciones);\n}\nresumen(\"JS\", 1);\nresumen(\"DOM\", 2);\nresumen(\"Node\", 0);",
         "alternatives": [
           "Devolver el resumen desde una función pura y dejar console.log en el punto de entrada.",
           "Probar expresiones breves en la consola interactiva."
-        ]
+        ],
+        "scenario": "La consola de un curso muestra el nombre del curso y cuántas lecciones contiene.",
+        "reasoning": "resumen recibe datos en vez de fijarlos dentro de la solución. curso se declara con const y lecciones con let; la función muestra cada pareja, por lo que los tres casos JS 1, DOM 2 y Node 0 quedan cubiertos.",
+        "extension": "Crea una función resumen(curso, lecciones) y verifica que resumen(\"Kotlin\", 4) produce \"Kotlin 4\"."
       },
       "sources": [
         {
@@ -2673,22 +2877,25 @@
         "cases": [
           {
             "input": "\"12\"",
-            "expected": "12"
+            "expected": "{ valor: 12, esNaN: false }"
           },
           {
             "input": "\"0\"",
-            "expected": "0"
+            "expected": "{ valor: 0, esNaN: false }"
           },
           {
             "input": "\"x\"",
-            "expected": "NaN; Number.isNaN true"
+            "expected": "{ valor: NaN, esNaN: true }"
           }
         ],
-        "solution": "[javascript]\nfunction convertir(texto) {\n  const n = Number(texto);\n  return Number.isNaN(n) ? null : n;\n}\nconsole.log(convertir(\"12\"));",
+        "solution": "[javascript]\nfunction convertir(texto) {\n  const valor = Number(texto);\n  return { valor, esNaN: Number.isNaN(valor) };\n}\nconsole.log(convertir(\"x\"));",
         "alternatives": [
           "Devolver un objeto {ok, valor} para distinguir error de un null válido.",
           "Validar el formato permitido antes de convertir."
-        ]
+        ],
+        "scenario": "Un formulario convierte una cantidad escrita como texto y distingue una entrada no numérica.",
+        "reasoning": "Number convierte el texto y Number.isNaN comprueba el resultado sin volver a convertirlo. La función devuelve tanto el valor numérico como la marca esNaN; para x el valor es NaN y la marca es true, mientras 12 y 0 son conversiones válidas.",
+        "extension": "Prueba \" 12 \" y fija explícitamente si se aceptan espacios exteriores; si se aceptan, el resultado esperado es 12."
       },
       "sources": [
         {
@@ -2732,7 +2939,10 @@
         "alternatives": [
           "Usar if/else cuando las ramas contienen acciones o son más de dos.",
           "Usar ?? si solo null y undefined deben activar el valor alternativo."
-        ]
+        ],
+        "scenario": "Una tienda señala como disponible un artículo solo si queda alguna unidad.",
+        "reasoning": "La comparación estricta unidades > 0 produce disponible para números positivos y agotado para cero o negativos. El operador ternario expresa aquí dos resultados simples; if/else sería más legible con varias acciones.",
+        "extension": "Añade unidades = 0.5 y espera \"disponible\" si el sistema admite existencias fraccionarias."
       },
       "sources": [
         {
@@ -2776,7 +2986,10 @@
         "alternatives": [
           "Usar reduce y tratar explícitamente el caso vacío.",
           "Usar map o filter para producir otra lista sin mutar la original."
-        ]
+        ],
+        "scenario": "Un panel calcula la nota media de una lista de resultados, tratando la lista vacía como cero.",
+        "reasoning": "La guarda inicial evita dividir entre cero; el for suma cada valor y luego divide por la cantidad. Los casos comprueban media normal, un solo elemento y lista vacía.",
+        "extension": "Con [1.5, 2.5], espera 2 y confirma que el promedio admite valores decimales."
       },
       "sources": [
         {
@@ -2820,7 +3033,10 @@
         "alternatives": [
           "Usar función normal si this depende de la llamada.",
           "Usar flecha para capturar léxicamente this cuando sea intencional."
-        ]
+        ],
+        "scenario": "Una calculadora configura un sumador reutilizable con el recargo fijo de una categoría.",
+        "reasoning": "crearSumador captura base en el cierre y devuelve una función que suma cada nuevo valor a esa base. Los casos muestran que funciona con base positiva, cero y negativa.",
+        "extension": "Crea crearSumador(-3) y llámalo con -2; el resultado esperado es -5."
       },
       "sources": [
         {
@@ -2864,7 +3080,10 @@
         "alternatives": [
           "Recorrer una vez si hace falta calcular muchas métricas.",
           "Usar structuredClone para copias profundas de estructuras compatibles."
-        ]
+        ],
+        "scenario": "Un carrito obtiene los nombres de productos por debajo de un límite y calcula el coste total del pedido.",
+        "reasoning": "filter selecciona los productos con precio estrictamente menor al límite; map extrae sus nombres y reduce suma el precio de todos los productos. El caso de precio igual al límite confirma que se excluye del filtro aunque su coste siga en el total.",
+        "extension": "Con té a 2 y pan a 3, límite 3, espera nombres [\"té\"] y total 5."
       },
       "sources": [
         {
@@ -2908,7 +3127,10 @@
         "alternatives": [
           "Delegar eventos a un contenedor para listas dinámicas grandes.",
           "Usar submit de formulario cuando la acción corresponda al envío."
-        ]
+        ],
+        "scenario": "Una lista de tareas añade el texto introducido cuando la persona pulsa el botón.",
+        "reasoning": "querySelector localiza botón, lista y campo; solo registra el manejador si los tres existen. Al hacer clic, crea un li y asigna el valor mediante textContent, de modo que etiquetas escritas se muestran como texto.",
+        "extension": "Ignora el envío de un campo vacío o compuesto solo por espacios y espera que la lista no gane ningún elemento."
       },
       "sources": [
         {
@@ -2952,7 +3174,10 @@
         "alternatives": [
           "Usar default si hay una única abstracción principal.",
           "Separar lógica pura del adaptador que accede al DOM o a Node."
-        ]
+        ],
+        "scenario": "La lógica de precios se separa del punto de entrada de una aplicación de catálogo.",
+        "reasoning": "operaciones.js exporta sumar y principal.js la importa con un alias; la llamada usa la misma función con nombre local distinto. Un export default sería apropiado si el módulo tuviera una abstracción principal única.",
+        "extension": "Exporta también restar desde operaciones.js e impórtala en principal.js; restar(7, 2) debe devolver 5."
       },
       "sources": [
         {
@@ -2996,7 +3221,10 @@
         "alternatives": [
           "Usar Promise.all para esperar tareas independientes en paralelo.",
           "Devolver directamente una promesa si no hay lógica adicional que requiera await."
-        ]
+        ],
+        "scenario": "Un servicio ofrece una operación asíncrona de suma para mantener una interfaz común con llamadas de red.",
+        "reasoning": "Una función async devuelve una promesa; await crea un punto de continuación y el return resuelve el resultado con la suma. Promise.all es una alternativa para esperar varias sumas independientes a la vez.",
+        "extension": "Espera sumarAsync(2, 3) y sumarAsync(4, 5) con Promise.all y comprueba [5, 9]."
       },
       "sources": [
         {
@@ -3036,11 +3264,14 @@
             "expected": "SyntaxError controlado"
           }
         ],
-        "solution": "[javascript]\nfunction leerRegistro(texto) {\n  const dato = JSON.parse(texto);\n  if (dato.activo !== true) throw new Error(\"Registro inactivo\");\n  return JSON.stringify(dato);\n}\nconsole.log(leerRegistro('{\"activo\":true}'));",
+        "solution": "[javascript]\nfunction leerRegistro(texto) {\n  let dato;\n  try {\n    dato = JSON.parse(texto);\n  } catch (error) {\n    if (error instanceof SyntaxError) throw new SyntaxError(\"JSON inválido\");\n    throw error;\n  }\n  if (dato === null || Array.isArray(dato) || typeof dato !== \"object\") {\n    throw new Error(\"Registro inválido\");\n  }\n  if (dato.activo !== true) throw new Error(\"Registro inactivo\");\n  return JSON.stringify(dato);\n}\nconsole.log(leerRegistro('{\"activo\":true}'));",
         "alternatives": [
           "Usar un esquema de validación para objetos con muchas reglas.",
           "Separar validación de datos y petición HTTP."
-        ]
+        ],
+        "scenario": "Un cliente acepta del servidor solo registros JSON cuyo campo activo sea true.",
+        "reasoning": "JSON.parse convierte el texto; un SyntaxError se traduce a un error de formato controlado. Antes de leer activo, la función rechaza null, arrays y valores que no sean objetos; luego rechaza registros inactivos y serializa solo el registro aceptado.",
+        "extension": "Añade la entrada \"null\" y exige un error de formato controlado antes de acceder a propiedades."
       },
       "sources": [
         {
@@ -3084,7 +3315,10 @@
         "alternatives": [
           "Usar función fábrica para estructuras simples sin identidad de clase.",
           "Componer un autor independiente si tiene comportamiento propio."
-        ]
+        ],
+        "scenario": "Una biblioteca digital presenta artículos generales y añade el autor a la ficha de cada libro.",
+        "reasoning": "Libro llama a super para inicializar el título heredado y sobrescribe ficha para incluir autor; las llamadas conservan el comportamiento de Articulo cuando corresponde. Una fábrica es suficiente para estructuras sin identidad ni comportamiento de clase.",
+        "extension": "Guarda un Articulo y un Libro en una lista de Articulo y comprueba que cada ficha usa su implementación correspondiente."
       },
       "sources": [
         {
@@ -3128,7 +3362,10 @@
         "alternatives": [
           "Devolver un resultado explícito si el error forma parte normal del dominio.",
           "Crear subclase de Error para fallos diferenciables del dominio."
-        ]
+        ],
+        "scenario": "Una calculadora de notas debe detener una operación cuando el divisor es cero.",
+        "reasoning": "La guarda b === 0 lanza RangeError antes de dividir; los demás pares producen a / b. El ejemplo principal prueba el camino válido, así que conviene verificar también la ruta capturada por el catch.",
+        "extension": "Prueba dividir(1, -0) y espera RangeError, ya que en JavaScript -0 === 0."
       },
       "sources": [
         {
@@ -3172,7 +3409,10 @@
         "alternatives": [
           "Usar una biblioteca de rutas cuando crezcan endpoints y middleware.",
           "Separar la lógica de dominio del adaptador HTTP."
-        ]
+        ],
+        "scenario": "Un monitor consulta una ruta de salud para saber si el servicio HTTP está disponible.",
+        "reasoning": "createServer comprueba tanto el método GET como la ruta exacta /salud; solo esa combinación responde 200 y \"ok\", mientras las demás reciben 404. Un router dedicado sería útil al crecer el número de endpoints.",
+        "extension": "Envía POST /salud y espera 404 porque el endpoint solo admite GET."
       },
       "sources": [
         {
@@ -3216,7 +3456,10 @@
         "alternatives": [
           "Probar funciones puras con datos controlados.",
           "Añadir una prueba del error esperado para lista vacía."
-        ]
+        ],
+        "scenario": "Un servicio ordena resultados y necesita verificar máximos positivos, negativos y unitarios.",
+        "reasoning": "maximo rechaza la lista vacía y Math.max obtiene el mayor elemento; node:test ejecuta aserciones para tres listas válidas. La alternativa de probar el error vacío completa el contrato del método.",
+        "extension": "Añade assert.throws para maximo([]) y exige RangeError."
       },
       "sources": [
         {
@@ -3256,11 +3499,14 @@
             "expected": "se rechaza con mensaje accesible"
           }
         ],
-        "solution": "[javascript]\nconst formulario = document.querySelector(\"#formulario\");\nconst entrada = document.querySelector(\"#mensaje\");\nconst salida = document.querySelector(\"#salida\");\nformulario.addEventListener(\"submit\", (evento) => {\n  evento.preventDefault();\n  if (entrada.value.trim() === \"\") { entrada.setCustomValidity(\"Escribe un mensaje.\"); entrada.reportValidity(); return; }\n  entrada.setCustomValidity(\"\");\n  salida.textContent = entrada.value; // El servidor valida antes de guardar.\n});",
+        "solution": "[javascript]\n// Cliente: #salida tiene aria-live=\"polite\".\nconst formulario = document.querySelector(\"#formulario\");\nconst entrada = document.querySelector(\"#mensaje\");\nconst salida = document.querySelector(\"#salida\");\nformulario.addEventListener(\"submit\", async (evento) => {\n  evento.preventDefault();\n  if (entrada.value.trim() === \"\") {\n    entrada.setCustomValidity(\"Escribe un mensaje.\");\n    entrada.reportValidity();\n    return;\n  }\n  entrada.setCustomValidity(\"\");\n  const respuesta = await fetch(\"/comentarios\", {\n    method: \"POST\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify({ mensaje: entrada.value })\n  });\n  if (!respuesta.ok) {\n    salida.textContent = \"No se pudo guardar el mensaje.\";\n    return;\n  }\n  salida.textContent = entrada.value;\n});\n\n// Servidor Node.js con Express y express.json() configurados.\napp.post(\"/comentarios\", (req, res) => {\n  const mensaje = req.body?.mensaje;\n  if (typeof mensaje !== \"string\" || mensaje.trim() === \"\") {\n    return res.status(400).json({ error: \"Escribe un mensaje.\" });\n  }\n  // Guardar mensaje después de la validación.\n  return res.sendStatus(204);\n});",
         "alternatives": [
           "Sanitizar HTML con una biblioteca mantenida si se permite marcado limitado.",
           "Restringir CORS y aplicar autorización real en el servidor."
-        ]
+        ],
+        "scenario": "Un foro muestra comentarios como texto y no debe interpretar etiquetas aportadas por usuarios.",
+        "reasoning": "El cliente presenta la entrada con textContent, bloquea el campo vacío y envía el texto al servidor. La ruta Express vuelve a comprobar tipo y contenido antes de guardar, así que una petición que omita el formulario también recibe HTTP 400 si el mensaje está vacío.",
+        "extension": "Envía una petición que omita el formulario con mensaje vacío y espera que el servidor la rechace con un error de validación."
       },
       "sources": [
         {

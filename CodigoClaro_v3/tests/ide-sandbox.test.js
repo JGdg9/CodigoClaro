@@ -111,3 +111,21 @@ test("el IDE incorpora validación XML y consultas XPath locales", () => {
   assert.match(aula, /if\s*\(!language\)\s*\{\s*ideStatus\('Este reto todavía no tiene un editor asignado\.'/);
   assert.match(aula, /xpath:'xpath'/);
 });
+
+test("React delega el renderizado estático a su worker local aislado", () => {
+  const aula = fs.readFileSync(path.join(__dirname, "../public/aula.html"), "utf8");
+  assert.match(aula, /async function ideRunReact\(\)/);
+  assert.match(aula, /CCReactPreview\.render\(code\)/);
+  assert.match(aula, /frame\.srcdoc=result\.document/);
+  assert.match(aula, /React\/JSX ofrece vista previa estática en un worker local/);
+  assert.match(aula, /eventos, efectos y scripts no se ejecutan/);
+  assert.doesNotMatch(aula, /function ideReactPreviewDocument|Babel\.transform|ReactDOM\.createRoot|Ejecución React desactivada por seguridad/);
+  const worker = fs.readFileSync(path.join(__dirname, "../public/react-preview-worker.js"), "utf8");
+  const client = fs.readFileSync(path.join(__dirname, "../public/react-preview-client.js"), "utf8");
+  assert.match(worker, /new arr\("require","module","exports"/);
+  assert.match(worker, /renderToReadableStream/);
+  assert.match(worker, /AbortController/);
+  assert.match(client, /DOMPurify/);
+  assert.match(client, /setTimeout/);
+  assert.match(client, /script-src 'none'/);
+});

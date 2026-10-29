@@ -303,7 +303,7 @@ def build_story():
     for title, desc in stages:
         story.append(KeepTogether([para(escape(title), "h2"), para(escape(desc), "body")]))
     story += [Spacer(1, 8 * mm), para("Cómo estudiar cada tema", "h2"),
-              para("Lee el objetivo, contrasta los conceptos en las fuentes enlazadas y realiza la práctica. Usa el criterio de comprobación para explicar qué funciona y qué caso límite falta. Los enlaces llevan a estándares o documentación mantenidos por sus organismos y proyectos oficiales.", "body"),
+              para("Lee el objetivo, contrasta los conceptos en las fuentes enlazadas y realiza la práctica. Usa el criterio de comprobación para explicar qué funciona y qué caso límite falta. Los estándares definen el protocolo; OWASP mantiene guías de seguridad, y cada organismo o proyecto documenta sus herramientas. Comprueba la versión y el contexto antes de aplicar una recomendación.", "body"),
               para("Las recomendaciones de seguridad dependen del contexto del sistema. Esta ruta enseña controles verificables; no fija valores universales de producción.", "small")]
     for index, topic in enumerate(TOPICS, 1):
         story.extend([para(f"TEMA {index:02d}  /  15", "eyebrow"), para(escape(topic["title"]), "h1"),
@@ -320,7 +320,6 @@ def build_story():
               para("Las fuentes de cada tema enlazan a la sección más relevante. Consulta la versión indicada por el organismo cuando cambie el runtime o la norma.", "body"), Spacer(1, 3 * mm)]
     for name, url in SOURCES.items():
         story.append(para(f'<link href="{escape(url)}" color="#6651A5"><u>{escape(name)}</u></link>', "source"))
-    story += [Spacer(1, 6 * mm), callout("Criterio editorial", "Los estándares describen el protocolo; OWASP publica guías de seguridad; Node.js y PostgreSQL documentan sus herramientas. Cuando una práctica depende del despliegue, el tema lo señala en lugar de presentarla como regla universal.", LILAC)]
     return story
 
 

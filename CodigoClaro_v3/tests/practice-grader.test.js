@@ -3,6 +3,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
+const { DatabaseSync } = require("node:sqlite");
 
 function loadExercises() {
   const html = fs.readFileSync(require.resolve("../public/aula.html"), "utf8");
@@ -45,6 +46,20 @@ function createSqlFixture(results) {
   };
 }
 
+function createMemorySqlite() {
+  const database = new DatabaseSync(":memory:");
+  return {
+    run(statement) { database.exec(statement); },
+    exec(query) {
+      const statement = database.prepare(query);
+      const columns = statement.columns().map(item => item.name);
+      const rows = statement.all();
+      return [{ columns, values: rows.map(row => columns.map(column => row[column])) }];
+    },
+    close() { database.close(); }
+  };
+}
+
 test("JavaScript acepta un bucle alternativo al método filter y prueba todos los casos", async () => {
   calls = [];
   const exercise = exercises.find(item => item[1] === "JavaScript · filtrar aprobados");
@@ -62,6 +77,169 @@ test("JavaScript acepta otro algoritmo válido para contar frecuencias", async (
   const report = await grader.grade(exercise, answer);
   assert.equal(report.percent, 100);
   assert.deepEqual(report.cases.map(item => item.passed), [true, true, true]);
+});
+
+test("las prácticas SQL aceptan consultas equivalentes y comprueban datos distintos en cada caso", async () => {
+  const approved = exercises.find(item => item[1] === "SQL · listar aprobados");
+  const averages = exercises.find(item => item[1] === "SQL · media por curso");
+  const noOrders = exercises.find(item => item[1] === "SQL · detectar registros sin relación");
+
+  assert.equal(grader.requiresSqlDatabase(approved), true);
+  const approvedReport = await grader.grade(approved,
+    "WITH notas_validas AS (SELECT nombre, nota FROM alumnos WHERE nota BETWEEN 5 AND 10) SELECT nombre, nota FROM notas_validas ORDER BY nota DESC",
+    {createDatabase:createMemorySqlite});
+  assert.equal(approvedReport.mode, "behavioral");
+  assert.equal(approvedReport.executed, true);
+  assert.equal(approvedReport.percent, 100);
+  assert.deepEqual(approvedReport.cases.map(item => item.passed), [true, true]);
+
+  const averageReport = await grader.grade(averages,
+    "WITH promedios AS (SELECT curso_id, AVG(nota) AS media FROM alumnos GROUP BY curso_id) SELECT curso_id, media FROM promedios WHERE media >= 5",
+    {createDatabase:createMemorySqlite});
+  assert.equal(averageReport.mode, "behavioral");
+  assert.equal(averageReport.percent, 100);
+  assert.deepEqual(averageReport.cases.map(item => item.passed), [true, true]);
+
+  const relationReport = await grader.grade(noOrders,
+    "SELECT c.id, c.nombre FROM clientes c LEFT JOIN pedidos p ON p.cliente_id = c.id WHERE p.id IS NULL",
+    {createDatabase:createMemorySqlite});
+  assert.equal(relationReport.mode, "behavioral");
+  assert.equal(relationReport.percent, 100);
+  assert.deepEqual(relationReport.cases.map(item => item.passed), [true, true]);
+});
+
+test("SQL con salida incorrecta falla casos y las consultas bloqueadas siguen sin ejecutarse", async () => {
+  const exercise = exercises.find(item => item[1] === "SQL · listar aprobados");
+  const wrong = await grader.grade(exercise,
+    "SELECT nombre, nota FROM alumnos WHERE nota > 5 ORDER BY nota DESC",
+    {createDatabase:createMemorySqlite});
+  assert.equal(wrong.mode, "behavioral");
+  assert.equal(wrong.executed, true);
+  assert.equal(wrong.percent, 50, "el caso con nota exactamente 5 detecta el límite excluido");
+
+  const blocked = await grader.grade(exercise,
+    "WITH RECURSIVE serie(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM serie) SELECT n FROM serie",
+    {createDatabase:createMemorySqlite});
+  assert.equal(blocked.mode, "structural-only");
+  assert.equal(blocked.executed, false);
+  assert.equal(blocked.behaviorPercent, null);
+  assert.match(blocked.message, /no llegó a SQLite/i);
+});
+
+test("el corrector SQL rechaza constantes, proyecciones parciales y tablas ajenas al enunciado", async () => {
+  const approved = exercises.find(item => item[1] === "SQL · listar aprobados");
+  const cases = [
+    {answer:"SELECT 'Dora' AS nombre, 10 AS nota",executed:true},
+    {answer:"SELECT nombre FROM alumnos WHERE nota >= 5 ORDER BY nota DESC",executed:true},
+    {answer:"SELECT nombre, nota FROM cursos WHERE nota >= 5 ORDER BY nota DESC",executed:false}
+  ];
+  for (const item of cases) {
+    const report = await grader.grade(approved, item.answer, {createDatabase:createMemorySqlite});
+    assert.notEqual(report.percent, 100, item.answer);
+    assert.equal(report.executed, item.executed, item.answer);
+    if (!item.executed) assert.equal(report.behaviorPercent, null, item.answer);
+  }
+});
+
+test("CTE VALUES y tablas fuera del enunciado se bloquean antes de SQLite", async () => {
+  const exercise = exercises.find(item => item[1] === "SQL · listar aprobados");
+  let queryCount = 0;
+  const trackingFactory = () => {
+    const database = createMemorySqlite();
+    return {
+      run:statement => database.run(statement),
+      exec:query => { queryCount++; return database.exec(query); },
+      close:() => database.close()
+    };
+  };
+  const report = await grader.grade(exercise,
+    "WITH nums(n) AS (VALUES (1),(2),(3)) SELECT nombre, nota FROM alumnos ORDER BY nota DESC",
+    {createDatabase:trackingFactory});
+  assert.equal(report.mode, "structural-only");
+  assert.equal(report.executed, false);
+  assert.equal(queryCount, 0);
+
+  const wrongSource = await grader.grade(exercise,
+    "SELECT nombre, nota FROM cursos WHERE nota >= 5 ORDER BY nota DESC",
+    {createDatabase:trackingFactory});
+  assert.equal(wrongSource.mode, "structural-only");
+  assert.equal(wrongSource.executed, false);
+  assert.equal(queryCount, 0);
+});
+
+test("las consultas SQL sin motor local y la práctica con transacción mantienen fallback honesto", async () => {
+  const queryPractice = exercises.find(item => item[1] === "SQL · media por curso");
+  const transaction = exercises.find(item => item[1] === "SQL · actualizar con transacción");
+  const unavailable = await grader.grade(queryPractice, "SELECT curso_id, AVG(nota) FROM alumnos GROUP BY curso_id");
+  assert.equal(unavailable.mode, "structural-only");
+  assert.equal(unavailable.executed, false);
+  assert.equal(unavailable.behaviorPercent, null);
+  assert.equal(grader.requiresSqlDatabase(transaction), false);
+  const structural = await grader.grade(transaction, "BEGIN TRANSACTION; UPDATE cuentas SET saldo = saldo - 20 WHERE id = 1; COMMIT;");
+  assert.equal(structural.mode, "structural-only");
+  assert.equal(structural.executed, false);
+});
+
+test("el aula conecta las prácticas SQL a bases SQLite temporales independientes", () => {
+  const aula = fs.readFileSync(require.resolve("../public/aula.html"), "utf8");
+  const check = aula.match(/async function checkE\(i\)\{[^\n]*/);
+  assert.ok(check);
+  assert.match(check[0], /CCPracticeGrader\.requiresSqlDatabase\(e\)/);
+  assert.match(check[0], /await ideLoadSql\(\)/);
+  assert.match(check[0], /options\.createDatabase=\(\)=>new ccSqlDb\.constructor\(\)/);
+  assert.match(check[0], /CCPracticeGrader\.grade\(e,ans,options\)/);
+});
+
+test("JavaScript sustituye el array inicial con cada caso local", async () => {
+  const exercise = exercises.find(item => item[1] === "JavaScript · filtrar aprobados");
+  const answer = "const notas = [99]; const aprobadas = notas.filter(nota => nota >= 5);";
+  const report = await grader.grade(exercise, answer);
+  assert.equal(report.percent, 100);
+  assert.deepEqual(report.cases.map(item => item.passed), [true, true, true, true]);
+});
+
+test("JavaScript conserva los declaradores siguientes al inyectar la entrada", async () => {
+  const exercise = exercises.find(item => item[1] === "JavaScript · filtrar aprobados");
+  const answer = "const notas = [99], aprobadas = notas.filter(nota => nota >= 5);";
+  const report = await grader.grade(exercise, answer);
+  assert.equal(report.mode, "behavioral");
+  assert.equal(report.percent, 100);
+  assert.deepEqual(report.cases.map(item => item.passed), [true, true, true, true]);
+});
+
+test("JavaScript inyecta casos en una entrada let declarada y asignada en sentencias separadas", async () => {
+  calls = [];
+  const exercise = exercises.find(item => item[1] === "JavaScript · filtrar aprobados");
+  const answer = "let notas; notas = [4, 7, 9, 3]; const aprobadas = notas.filter(n => n >= 5);";
+  const report = await grader.grade(exercise, answer);
+  assert.equal(report.mode, "behavioral");
+  assert.equal(report.percent, 100);
+  assert.deepEqual(report.cases.map(item => item.passed), [true, true, true, true]);
+
+  const exactCase = runWorker(calls[0].source, {
+    source:answer,inputName:"notas",outputName:"aprobadas",
+    cases:[{input:[4, 7, 9, 3],expected:[7, 9]}]
+  });
+  assert.deepEqual(exactCase.map(item => item.value), [[7, 9]]);
+});
+
+test("JavaScript pasa a revisión estructural si no reconoce con seguridad el inicializador", async () => {
+  const exercise = exercises.find(item => item[1] === "JavaScript · filtrar aprobados");
+  const answer = "const notas = Array.of(99); const aprobadas = notas.filter(nota => nota >= 5);";
+  const report = await grader.grade(exercise, answer);
+  assert.equal(report.mode, "structural-only");
+  assert.equal(report.executed, false);
+  assert.equal(report.behaviorPercent, null);
+  assert.match(report.message, /no se pudo ejecutar localmente/i);
+});
+
+test("una respuesta JavaScript que no compila queda como revisión estructural", async () => {
+  const exercise = exercises.find(item => item[1] === "JavaScript · filtrar aprobados");
+  const report = await grader.grade(exercise, "const aprobadas = ;");
+  assert.equal(report.mode, "structural-only");
+  assert.equal(report.executed, false);
+  assert.equal(report.behaviorPercent, null);
+  assert.match(report.message, /no se pudo ejecutar localmente/i);
 });
 
 test("Python no se envía a un runtime ni se presenta como evaluación de comportamiento", async () => {
@@ -171,6 +349,50 @@ test("el corrector SQL acepta alias habituales en inglés", () => {
   }, () => createSqlFixture(results));
   assert.equal(report.percent, 100);
   assert.deepEqual(report.tests.map(item => item.passed), [true,true,true]);
+});
+
+test("el corrector SQL acepta alias camelCase equivalentes a los nombres del contrato", () => {
+  const results = {
+    active:[{columns:["loanId","bookTitle","borrowerName"],values:[[2,"SQL","Ana"],[3,"Kotlin","Luis"]]}],
+    counts:[{columns:["userId","loanCount"],values:[[1,2],[2,2],[3,0]]}],
+    unborrowed:[{columns:["bookTitle"],values:[["XML"]]}]
+  };
+  const report = grader.gradeSqlAssignment({
+    active:"SELECT p.id AS loanId,l.titulo AS bookTitle,u.nombre AS borrowerName FROM prestamos p JOIN libros l ON l.id=p.libro_id JOIN usuarios u ON u.id=p.usuario_id WHERE p.fecha_devolucion IS NULL",
+    counts:"SELECT u.id AS userId,COUNT(p.id) AS loanCount FROM usuarios u LEFT JOIN prestamos p ON p.usuario_id=u.id GROUP BY u.id",
+    unborrowed:"SELECT l.titulo AS bookTitle FROM libros l WHERE NOT EXISTS(SELECT 1 FROM prestamos p WHERE p.libro_id=l.id)"
+  }, () => createSqlFixture(results));
+  assert.equal(report.percent, 100);
+  assert.deepEqual(report.tests.map(item => item.passed), [true,true,true]);
+});
+
+test("las tres consultas se ejecutan en SQLite en memoria sin usar servicios", () => {
+  const report = grader.gradeSqlAssignment({
+    active:"SELECT p.id AS loanId,l.titulo AS bookTitle,u.nombre AS borrowerName FROM prestamos p JOIN libros l ON l.id=p.libro_id JOIN usuarios u ON u.id=p.usuario_id WHERE p.fecha_devolucion IS NULL",
+    counts:"SELECT u.id AS userId,COUNT(p.id) AS loanCount FROM usuarios u LEFT JOIN prestamos p ON p.usuario_id=u.id GROUP BY u.id",
+    unborrowed:"SELECT l.titulo AS bookTitle FROM libros l WHERE NOT EXISTS(SELECT 1 FROM prestamos p WHERE p.libro_id=l.id)"
+  }, createMemorySqlite);
+  assert.equal(report.percent, 100);
+  assert.equal(report.executed, true);
+  assert.deepEqual(report.tests.map(item => item.passed), [true,true,true]);
+});
+
+test("el contrato declara los límites de la evaluación conductual y estructural", () => {
+  const contract = grader.contracts();
+  assert.match(contract.behavioralLimits, /solo en los casos locales incluidos/i);
+  assert.match(contract.behavioralLimits, /no demuestra.*correcta para todas las entradas/i);
+  assert.match(contract.behavioralLimits, /inicializadores simples de array/i);
+  assert.match(contract.behavioralLimits, /asignaciones directas a una variable let\/var/i);
+  assert.match(contract.behavioralLimits, /pasa a revisión estructural/i);
+  assert.match(contract.behavioralLimits, /SQL admite SELECT y CTE no recursivos/i);
+  assert.match(contract.behavioralLimits, /consultas rechazadas por la política no llegan a SQLite/i);
+  assert.deepEqual(contract.behavioralPractices.slice(-3), ["SQL · listar aprobados","SQL · media por curso","SQL · detectar registros sin relación"]);
+  assert.match(contract.behavioralLimits, /bases SQLite temporales con datos distintos por caso/i);
+  assert.match(contract.otherLanguages, /estructural/i);
+  assert.equal(contract.privacy.sendsAnswerToService, false);
+  assert.equal(contract.privacy.telemetry, false);
+  assert.equal(contract.privacy.persistentStorage, false);
+  assert.equal(contract.privacy.networkAccessInBehavioralRunner, false);
 });
 
 test.after(() => {

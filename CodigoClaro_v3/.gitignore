@@ -9,3 +9,6 @@ npm-debug.log*
 # Python caches
 __pycache__/
 *.py[cod]
+
+# Temporary exports, rendered PDFs, and visual review captures
+tmp/

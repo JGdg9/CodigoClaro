@@ -16,7 +16,8 @@ Los ejercicios y tests de demostración sin cuenta no guardan datos en el servid
 ## Qué esperar del IDE
 
 - JavaScript se ejecuta en el navegador.
-- Python y React pueden necesitar conexión a Internet para cargar sus motores la primera vez.
+- React/JSX ofrece una vista previa estática local; los eventos y efectos no se ejecutan y no hay interactividad.
+- Algunas bibliotecas generales del IDE pueden requerir conexión a Internet.
 - SQL usa SQLite en un entorno didáctico; no equivale a Oracle, MySQL ni PostgreSQL.
 - MongoDB y Firestore son simuladores y no se conectan a servicios cloud reales.
 - Java se ejecuta en Judge0 por HTTPS después de tu consentimiento. Se envían el código y la entrada del programa a ese servicio; usa ejemplos sin datos personales ni secretos.

@@ -3,7 +3,12 @@
 from pathlib import Path
 from html.parser import HTMLParser
 from collections import Counter
-import json, os, re, shutil, subprocess, sys, tempfile
+import hashlib, json, os, re, shutil, subprocess, sys, tempfile
+
+try:
+    from pypdf import PdfReader
+except ImportError:
+    PdfReader=None
 
 ROOT=Path(__file__).resolve().parent
 PUB=ROOT/'public'
@@ -33,12 +38,35 @@ else:
     notes.append(f"Se encontró 1 archivo .txt: {actual_txt[0]}.")
 
 try:
+    content_validation=subprocess.run(
+        [sys.executable,str(ROOT/'scripts'/'generar_temarios.py'),'--validate-only'],
+        cwd=ROOT,capture_output=True,text=True,timeout=60
+    )
+    if content_validation.returncode:
+        errors.append('El contenido versionado de los temarios no supera la validación: '+
+                      (content_validation.stdout+'\n'+content_validation.stderr).strip())
+    else:
+        notes.append(content_validation.stdout.strip())
+except Exception as exc:
+    errors.append(f'No se pudo validar el contenido versionado de los temarios: {exc}')
+
+try:
     public_catalog=json.loads((PUB/'catalogo_temas.json').read_text(encoding='utf-8'))
     expected_pages={item['file']:item.get('pages') for item in public_catalog}
+    docs_catalog=json.loads((ROOT/'docs'/'catalogo_temas.json').read_text(encoding='utf-8'))
 except Exception as exc:
     public_catalog=[]
     expected_pages={}
+    docs_catalog=[]
     errors.append(f'No se pudo leer el catálogo público de temarios: {exc}')
+if len(public_catalog)!=75 or len(docs_catalog)!=75:
+    errors.append(f'Los catálogos público y documental deben tener 75 temas (hay {len(public_catalog)} y {len(docs_catalog)}).')
+elif any((public.get('file'),public.get('pages'),public.get('version')) !=
+         (docs.get('file'),docs.get('pages'),docs.get('version'))
+         for public,docs in zip(public_catalog,docs_catalog)):
+    errors.append('Los catálogos público y documental deben coincidir en archivos, páginas y versión.')
+if PdfReader is None:
+    errors.append('Falta pypdf; instala requirements-docs.txt para validar el contenido y la paginación mínima de los temarios.')
 class CheckHTML(HTMLParser):
     def __init__(self): super().__init__(); self.ids=[]; self.local=[]
     def handle_starttag(self, tag, attrs):
@@ -62,23 +90,65 @@ for track,count_expected in expected.items():
     if len(files)!=count_expected: errors.append(f'{track}: se esperaban {count_expected} PDF individuales; hay {len(files)}')
     for f in files:
         if f.stat().st_size<500 or f.read_bytes()[:5]!=b'%PDF-': errors.append(f'PDF incompleto o inválido: {f.name}')
+        actual_pages=None
+        if PdfReader:
+            try:
+                reader=PdfReader(str(f),strict=True)
+                actual_pages=len(reader.pages)
+                if actual_pages<10: errors.append(f'{f.name}: tiene {actual_pages} páginas; requiere al menos 10')
+                if len(reader.pages)>0:
+                    for page_number,page in enumerate(reader.pages,start=1):
+                        text=page.extract_text() or ''
+                        # El pie y el título no cuentan como explicación didáctica.
+                        text='\n'.join(line for line in text.splitlines()
+                                       if not re.match(r'\s*CódigoClaro\s*[·|•]',line,re.I)
+                                       and not re.match(r'\s*Página\s+\d+\s*$',line,re.I))
+                        words=re.findall(r'\b[\wáéíóúüñÁÉÍÓÚÜÑ]+\b',text,re.UNICODE)
+                        if len(words)<100: errors.append(f'{f.name}: la página {page_number} tiene solo {len(words)} palabras de contenido; requiere al menos 100')
+            except Exception as exc:
+                errors.append(f'No se pudo leer el contenido PDF de {f.name}: {exc}')
         pdfinfo=shutil.which('pdfinfo')
         if pdfinfo:
             # pdfinfo may emit Windows-1252 metadata (for example accented author names).
             # Replace undecodable bytes so the ASCII Pages field remains parseable on Windows.
             meta=subprocess.run([pdfinfo,str(f)],capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=10)
             match=re.search(r'^Pages:\s+(\d+)',meta.stdout,re.M)
-            actual_pages=int(match.group(1)) if match else None
+            info_pages=int(match.group(1)) if match else None
+            if actual_pages is None: actual_pages=info_pages
+            elif info_pages!=actual_pages: errors.append(f'{f.name}: pdfinfo y pypdf discrepan ({info_pages} frente a {actual_pages} páginas)')
             expected_count=expected_pages.get(f.name)
             if not match or actual_pages!=expected_count: errors.append(f'{f.name}: catálogo declara {expected_count} páginas y el PDF contiene {actual_pages if actual_pages is not None else "sin dato"}')
+        mirror=ROOT/'docs'/'temarios'/f.name
+        if not mirror.is_file():
+            errors.append(f'Falta la copia documental de {f.name} en docs/temarios')
+        elif hashlib.sha256(f.read_bytes()).digest()!=hashlib.sha256(mirror.read_bytes()).digest():
+            errors.append(f'Las copias public/docs de {f.name} no son idénticas')
 pdfs=list((PUB/'temarios').glob('*.pdf'))
 if len(pdfs)!=90: errors.append(f'Se esperaban 90 PDF en total; hay {len(pdfs)}')
+doc_pdfs=list((ROOT/'docs'/'temarios').glob('*.pdf'))
+public_names=sorted(path.name for path in pdfs)
+docs_names=sorted(path.name for path in doc_pdfs)
+if public_names!=docs_names:
+    errors.append('public/temarios y docs/temarios deben contener exactamente los mismos PDF.')
+else:
+    for public_pdf,docs_pdf in zip(sorted(pdfs,key=lambda path:path.name),sorted(doc_pdfs,key=lambda path:path.name)):
+        if hashlib.sha256(public_pdf.read_bytes()).digest()!=hashlib.sha256(docs_pdf.read_bytes()).digest():
+            errors.append(f'Las copias public/docs no son idénticas: {public_pdf.name}')
 typescript_route=PUB/'temarios'/'Ruta_TypeScript_JavaScript_React_Node_15_Temas.pdf'
 if not typescript_route.is_file(): errors.append('Falta la ruta complementaria TypeScript de 15 temas')
 for f in pdfs:
     if f.stat().st_size<500 or f.read_bytes()[:5]!=b'%PDF-': errors.append(f'Cabecera PDF incorrecta: {f.name}')
     if not f.read_bytes()[-1024:].strip().endswith(b'%%EOF'): errors.append(f'No se ha localizado %%EOF al final de {f.name}')
+    if PdfReader and f.name not in expected_pages:
+        try:
+            page_count=len(PdfReader(str(f),strict=True).pages)
+            if page_count<10: errors.append(f'{f.name}: tiene {page_count} páginas; requiere al menos 10')
+        except Exception as exc:
+            errors.append(f'No se pudo leer la paginación de {f.name}: {exc}')
 if not (PUB/'aula.html').is_file(): errors.append('Falta el aula completa')
+if not (PUB/'premium-piloto.html').is_file(): errors.append('Falta el prototipo local del apartado Premium')
+elif 'premium-piloto.html' not in (PUB/'index.html').read_text(encoding='utf-8'):
+    errors.append('La portada no enlaza al prototipo Premium')
 if not (PUB/'temarios').is_dir(): errors.append('Falta public/temarios con los PDF')
 if not (PUB/'ayuda').is_dir(): errors.append('Falta public/ayuda con la documentación de usuario')
 if not (PUB/'temarios.html').is_file(): errors.append('Falta la página de temarios')
@@ -89,7 +159,7 @@ if len(quiz_ids)<15: errors.append(f'Banco de preguntas demasiado pequeño: {len
 if len(set(quiz_ids))!=len(quiz_ids): errors.append('Hay identificadores de preguntas duplicados')
 # Static HTML, local references and inline JS parse checks.
 node=shutil.which('node')
-for name in ['index.html','aula.html','temarios.html','diagnostico.html','privacidad.html','condiciones.html','guia-temarios.html']:
+for name in ['index.html','aula.html','temarios.html','diagnostico.html','privacidad.html','condiciones.html','guia-temarios.html','premium-piloto.html']:
     file=PUB/name
     if not file.exists(): errors.append(f'Falta página: {name}'); continue
     src=file.read_text(encoding='utf-8')
@@ -137,9 +207,9 @@ if errors:
     print('FALLO: se encontraron problemas:')
     for e in errors: print(' - '+e)
     sys.exit(1)
-print('OK: catálogo con 75 temas individuales y ruta TypeScript complementaria.')
+print(f'OK: catálogo con 75 temas individuales y {len(pdfs) - len(public_catalog)} PDF complementarios.')
 if shutil.which('pdfinfo'): print('OK: los 75 temarios individuales coinciden con el número de páginas del catálogo.')
-print(f'OK: {len(pdfs)} PDF en public/temarios con cabecera válida y marcador final.')
+print(f'OK: los {len(pdfs)} PDF en public/temarios tienen al menos 10 páginas, cabecera válida y marcador final.')
 print('OK: estructura HTML, IDs, enlaces locales y sintaxis JS revisados.')
 for n in notes: print('OK: '+n)
 print('Límite: no certifica visualmente cada navegador ni los motores externos/CDN del IDE; revísalos manualmente antes de probar con participantes.')

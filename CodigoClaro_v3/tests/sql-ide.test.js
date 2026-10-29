@@ -8,10 +8,11 @@ const vm = require("node:vm");
 
 const aula = fs.readFileSync(path.join(__dirname, "../public/aula.html"), "utf8");
 const postgresWorker = fs.readFileSync(path.join(__dirname, "../public/postgres-ide-worker.js"), "utf8");
-const start = aula.indexOf("function ideSqlStructureIsSafe");
-const end = aula.indexOf("\n// ideRunSQL", start);
+const sqliteWorker = fs.readFileSync(path.join(__dirname, "../public/sqlite-ide-worker.js"), "utf8");
+const start = sqliteWorker.indexOf("function ideSqlStructureIsSafe");
+const end = sqliteWorker.indexOf("\nfunction exportDatabase", start);
 assert.ok(start >= 0 && end > start);
-const sql = vm.runInNewContext(aula.slice(start, end) + "\n({isSafe:ideSqlStructureIsSafe,render:ideRenderSqlResults})");
+const sql = vm.runInNewContext(sqliteWorker.slice(start, end) + "\n({isSafe:ideSqlStructureIsSafe,render:renderSqlResults})");
 
 function createStatement(rowCount, value = index => index) {
   let index = 0;
@@ -114,6 +115,53 @@ test("la salida PostgreSQL se limita a 200 filas y 20 KB", () => {
   assert.match(output, /200 fila\(s\) devueltas/);
   assert.match(output, /Salida limitada a 200 filas o 20 KB/);
   assert.doesNotMatch(output, /\n200\n/);
+});
+
+test("SQLite se ejecuta en un worker terminable y guarda la última base correcta", async () => {
+  const start = aula.indexOf("function ideSqlitePersistDatabase(");
+  const end = aula.indexOf("async function ideRunSQL(", start);
+  assert.ok(start >= 0 && end > start);
+  const timers = [];
+  const stored = {};
+  class FakeWorker {
+    static autoRespondRun = false;
+    static instances = [];
+    constructor(url) { this.url = String(url); this.listeners = {}; this.messages = []; this.terminated = false; FakeWorker.instances.push(this); }
+    addEventListener(type, listener) { this.listeners[type] = listener; }
+    postMessage(message) {
+      this.messages.push(message);
+      if (message.action === "init") this.listeners.message({data:{id:message.id,ok:true,ready:true}});
+      else if (message.action === "run" && FakeWorker.autoRespondRun) this.listeners.message({data:{id:message.id,ok:true,output:"1",database:new Uint8Array([1,2,3]).buffer}});
+    }
+    terminate() { this.terminated = true; }
+  }
+  const context = {
+    ccSqlWorker:null,ccSqlWorkerReady:null,ccSqlWorkerPending:new Map(),ccSqlRequestId:0,ccSqlActiveRequest:null,
+    Worker:FakeWorker,URL,document:{baseURI:"https://example.test/aula.html"},Uint8Array,ArrayBuffer,btoa,
+    ccStorageGet:key=>stored[key]||null,ccStorageSet:(key,value)=>{stored[key]=value},ccStorageRemove:key=>{delete stored[key]},
+    setTimeout:(callback,delay)=>{const timer={callback,delay,cleared:false};timers.push(timer);return timer},
+    clearTimeout:timer=>{if(timer)timer.cleared=true}
+  };
+  const api = vm.runInNewContext(aula.slice(start,end)+"\n({request:ideSqliteRequest})",context);
+  const timedOut = api.request("run",{sql:"SELECT 1"},5000);
+  await new Promise(resolve=>setImmediate(resolve));
+  const worker = FakeWorker.instances[0];
+  assert.ok(worker.messages.some(message=>message.action==="run"));
+  const watchdog = timers.find(timer=>timer.delay===5000&&!timer.cleared);
+  assert.ok(watchdog,"la consulta debe tener un watchdog de cinco segundos");
+  watchdog.callback();
+  await assert.rejects(timedOut,/superó el límite de 5 segundos/);
+  assert.equal(worker.terminated,true,"el timeout debe terminar el worker");
+  assert.equal(stored.cc_sqlite_demo_db,undefined,"no se debe persistir una ejecución interrumpida");
+
+  FakeWorker.autoRespondRun=true;
+  const completed=await api.request("run",{sql:"SELECT 1"},5000);
+  assert.equal(completed.output,"1");
+  assert.equal(stored.cc_sqlite_demo_db,"AQID","el worker debe devolver la base para persistirla localmente");
+  assert.match(aula,/new Worker\(new URL\('\.\/sqlite-ide-worker\.js',document\.baseURI\)/);
+  assert.match(sqliteWorker,/db\.iterateStatements\(source\)/);
+  assert.match(sqliteWorker,/INSERT OR IGNORE INTO alumnos/);
+  assert.doesNotMatch(aula,/function ideRenderSqlResults\(/);
 });
 
 test("PostgreSQL se carga en un worker local con persistencia IndexedDB y sin enviar consultas", () => {

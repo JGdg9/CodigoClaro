@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#faf9f6">
+<meta name="description" content="Prueba local y sin cobro de un proyecto guiado de CódigoClaro Premium.">
+<title>Proyecto guiado · prueba Premium · CódigoClaro</title>
+<style>
+:root{color-scheme:light;--paper:#faf9f6;--surface:#fff;--soft:#f1eee9;--line:#dedbd6;--ink:#111;--muted:#585858;--accent:#0007cb;--green:#216e4e;--amber:#815d17}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:inherit}
+.wrap{max-width:1040px;margin:auto;padding:22px 24px 60px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--line);padding:12px 0 18px}
+.brand{text-decoration:none;font-weight:700;letter-spacing:-.02em}
+.back{font-size:14px;color:var(--muted)}
+.eyebrow{font:500 12px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted)}
+.hero{padding:48px 0 30px;max-width:760px}
+h1{font-size:clamp(38px,7vw,68px);line-height:.98;font-weight:350;letter-spacing:-.055em;margin:12px 0 18px}
+h2{font-size:25px;line-height:1.15;font-weight:450;letter-spacing:-.035em;margin:4px 0 10px}
+h3{font-size:17px;margin:6px 0}
+p{margin:8px 0 14px}
+.lead{font-size:18px;color:#414141;max-width:680px}
+.panel{background:var(--surface);border:1px solid var(--line);padding:22px;border-radius:6px;margin:16px 0}
+.notice{border:1px solid #d7c899;background:#fff9e9;padding:14px 16px;border-radius:6px;color:#513d12;margin:18px 0}
+.notice strong{display:block;margin-bottom:3px}
+.status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0}
+.status-card{min-width:0;padding:clamp(18px,3vw,25px);border:1px solid var(--line);border-top:3px solid var(--green);background:var(--surface);border-radius:6px}
+.status-card.evaluation{border-top-color:var(--amber)}
+.status-card .eyebrow{margin-bottom:9px}
+.status-card h2{margin:0 0 10px}
+.status-card p{color:#414141}
+.status-card ul{padding-left:20px;color:#414141;margin:10px 0 0}
+.status-card li+li{margin-top:5px}
+.status-footnote{font-size:14px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.pill{display:inline-flex;border:1px solid var(--line);padding:3px 9px;border-radius:99px;font-size:12px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ink);padding:10px 15px;background:transparent;color:var(--ink);border-radius:4px;text-decoration:none;font:inherit;cursor:pointer}
+.btn:hover{background:#e8e4de}
+.btn.primary{background:var(--ink);color:#fff}
+.btn:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.objectives{padding-left:22px;margin:14px 0;color:#414141}
+.milestones{display:grid;gap:10px;margin:14px 0}
+.milestone{border:1px solid var(--line);background:#fff;padding:16px;border-radius:6px}
+.milestone-top{display:flex;gap:11px;align-items:flex-start}
+.milestone input{width:18px;height:18px;margin:4px 0 0;accent-color:var(--green);flex:none}
+.milestone p{color:#414141;margin:8px 0 0}
+.small{font-size:13px;color:var(--muted)}
+.progress{height:8px;background:#e8e4de;border-radius:20px;overflow:hidden;margin:12px 0 6px}
+.progress span{display:block;height:100%;width:0;background:var(--green);transition:width .15s}
+.hidden{display:none!important}
+.footer{border-top:1px solid var(--line);padding-top:17px;margin-top:36px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+@media(max-width:650px){.wrap{padding:14px 16px 42px}.top{align-items:flex-start}.hero{padding-top:34px}.grid,.status-grid{grid-template-columns:1fr}.panel{padding:17px}.footer{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <a class="brand" href="/">CódigoClaro</a>
+    <a class="back" href="/">Volver a la plataforma</a>
+  </header>
+
+  <section class="hero" aria-labelledby="title">
+    <span class="pill">Prototipo · Premium</span>
+    <h1 id="title">Estamos probando un proyecto guiado, paso a paso.</h1>
+    <p class="lead">La demo propone diseñar una pequeña API de tareas de estudio. Sirve para valorar el formato y las entregas; todavía no define una oferta Premium final.</p>
+    <div class="notice" role="note">
+      <strong>Prototipo gratuito · sin pagos activos</strong>
+      No hay precio publicado, checkout ni suscripciones. No pedimos tarjeta ni generamos cargos. La prueba no se conecta a servicios externos; las funciones gratuitas siguen disponibles.
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="startButton" type="button" onclick="startPilot()">Activar demo local · sin pago</button>
+      <a class="btn" href="/">Volver a CódigoClaro</a>
+    </div>
+  </section>
+
+  <section class="status-grid" aria-label="Estado de las funciones Premium">
+    <article class="status-card">
+      <div class="eyebrow">Disponible en el prototipo local</div>
+      <h2>Un proyecto con cuatro entregas</h2>
+      <p>La API de tareas de estudio se divide en objetivos y comprobaciones para que puedas avanzar por etapas.</p>
+      <ul>
+        <li>Marcar las entregas que ya completaste.</li>
+        <li>Guardar el avance únicamente en este navegador.</li>
+      </ul>
+    </article>
+    <article class="status-card evaluation">
+      <div class="eyebrow">En evaluación · no disponible</div>
+      <h2>El alcance de una oferta futura</h2>
+      <p>El contenido definitivo, otros formatos y cualquier modalidad de acceso siguen por decidir. Esta demo no confirma ni promete funciones futuras.</p>
+      <p class="status-footnote">No hay plan Premium activo ni fecha de lanzamiento anunciada.</p>
+    </article>
+  </section>
+
+  <section class="grid" aria-label="Descripción del proyecto">
+    <article class="panel">
+      <div class="eyebrow">Proyecto de muestra</div>
+      <h2>API de tareas de estudio</h2>
+      <p>Diseña un servicio pequeño que permita crear, consultar, completar y borrar tareas. El objetivo del prototipo es probar una ruta de trabajo guiada, no ofrecer código listo para producción.</p>
+      <p class="small">Tecnologías sugeridas: Node.js, HTTP y SQLite. Puedes hacer primero el diseño en papel o en tu editor local.</p>
+    </article>
+    <article class="panel">
+      <div class="eyebrow">Al terminar podrás</div>
+      <h2>Practicar un flujo completo</h2>
+      <ul class="objectives">
+        <li>Definir un recurso y sus reglas de validación.</li>
+        <li>Diseñar operaciones CRUD con respuestas HTTP coherentes.</li>
+        <li>Probar casos correctos, datos inválidos y tareas inexistentes.</li>
+      </ul>
+    </article>
+  </section>
+
+  <section id="projectSection" class="panel hidden" aria-labelledby="milestonesTitle">
+    <div class="eyebrow">Tu recorrido · se guarda en este navegador</div>
+    <h2 id="milestonesTitle">Entregas del proyecto</h2>
+    <p id="progressText" class="small" aria-live="polite"></p>
+    <div class="progress" role="progressbar" aria-label="Progreso del proyecto" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progressBar"></span></div>
+    <div id="milestones" class="milestones"></div>
+    <div class="actions">
+      <button class="btn" type="button" onclick="resetPilot()">Borrar mi avance local</button>
+      <a class="btn" href="/">Volver a CódigoClaro</a>
+    </div>
+    <p class="small">El avance se almacena únicamente en el almacenamiento local del navegador. No se asocia a una cuenta ni se envía al servidor.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="feedbackTitle">
+    <div class="eyebrow">Qué queremos aprender</div>
+    <h2 id="feedbackTitle">¿Te ayuda este formato?</h2>
+    <p>Al probarlo, fíjate si las entregas te ayudan a saber qué hacer después y si las comprobaciones te permiten avanzar sin una solución completa. Para dejar comentarios, abre la plataforma y entra en «Más» → «Feedback».</p>
+    <a class="btn" href="/index.html">Volver a la versión básica</a>
+  </section>
+
+  <footer class="footer">
+    <span>Esto es una prueba de producto, no una compra ni una suscripción.</span>
+    <span><a href="/privacidad">Privacidad</a> · <a href="/condiciones">Condiciones</a></span>
+  </footer>
+</main>
+<script>
+'use strict';
+const storageKey='codigoclaro.premiumPilot.project.v1';
+const steps=[
+  {id:'model',title:'01 · Modela las tareas',body:'Define los campos de una tarea (por ejemplo: id, título, estado y fecha de creación). Escribe qué datos son obligatorios y qué longitud máxima tendrá el título.',check:'Una tarea inválida se puede distinguir de una válida antes de guardarla.'},
+  {id:'read-create',title:'02 · Consulta y crea',body:'Diseña GET /tasks para listar tareas y POST /tasks para crear una. Decide qué códigos HTTP, cabeceras y cuerpo JSON devuelve cada operación.',check:'La creación acepta un título válido y rechaza uno vacío; la consulta devuelve una lista JSON.'},
+  {id:'update-delete',title:'03 · Completa y elimina',body:'Añade PATCH /tasks/:id para cambiar el estado y DELETE /tasks/:id para borrar. Define cómo responde el servicio cuando el identificador no existe.',check:'La tarea cambia solo con un estado válido y una petición a un id inexistente responde como recurso no encontrado.'},
+  {id:'verify',title:'04 · Verifica y documenta',body:'Prepara una lista de pruebas para crear, consultar, actualizar, borrar, validar datos y manejar errores. Documenta cómo iniciar el proyecto y probar sus rutas.',check:'Otra persona puede seguir los pasos y repetir las comprobaciones sin adivinar la configuración.'}
+];
+let state={started:false,completed:[]};
+function loadState(){try{const saved=JSON.parse(localStorage.getItem(storageKey)||'null');if(saved&&typeof saved==='object'){state={started:saved.started===true,completed:Array.isArray(saved.completed)?saved.completed.filter(id=>steps.some(step=>step.id===id)):[]}}}catch{state={started:false,completed:[]}}}
+function saveState(){try{localStorage.setItem(storageKey,JSON.stringify(state));return true}catch{return false}}
+function startPilot(){state.started=true;saveState();renderProject();document.getElementById('projectSection').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
+function toggleStep(id,checked){if(!steps.some(step=>step.id===id))return;state.completed=checked?[...new Set([...state.completed,id])]:state.completed.filter(item=>item!==id);const saved=saveState();renderProject();if(!saved)document.getElementById('progressText').textContent+=' No se pudo guardar en este navegador; el avance se conserva solo hasta cerrar la página.'}
+function renderProject(){const section=document.getElementById('projectSection');const start=document.getElementById('startButton');section.classList.toggle('hidden',!state.started);start.textContent=state.started?'Continuar demo local':'Activar demo local · sin pago';if(!state.started)return;const done=state.completed.length,pct=Math.round(done/steps.length*100);document.getElementById('progressText').textContent=`${done} de ${steps.length} entregas marcadas como completadas.`;const bar=document.getElementById('progressBar');bar.style.width=pct+'%';bar.parentElement.setAttribute('aria-valuenow',String(pct));document.getElementById('milestones').innerHTML=steps.map(step=>`<article class="milestone"><div class="milestone-top"><input id="step-${step.id}" type="checkbox" ${state.completed.includes(step.id)?'checked':''} onchange="toggleStep('${step.id}',this.checked)"><div><label for="step-${step.id}"><strong>${step.title}</strong></label><p>${step.body}</p><p><strong>Comprobación:</strong> ${step.check}</p></div></div></article>`).join('')}
+function resetPilot(){if(!confirm('¿Borrar el avance de este proyecto guardado en este navegador?'))return;state={started:false,completed:[]};try{localStorage.removeItem(storageKey)}catch{}renderProject();document.getElementById('startButton').focus()}
+loadState();renderProject();
+</script>
+</body>
+</html>

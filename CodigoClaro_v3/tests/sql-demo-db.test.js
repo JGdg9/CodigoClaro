@@ -9,7 +9,7 @@ const {DatabaseSync} = require("node:sqlite");
 
 const aula = fs.readFileSync(path.join(__dirname, "../public/aula.html"), "utf8").replace(/\r\n/g, "\n");
 const start = aula.indexOf("async function ideLoadSql(){");
-const end = aula.indexOf("\n}\n// ideRenderSqlResults", start) + 2;
+const end = aula.indexOf("\n}\nfunction ideSqlitePersistDatabase", start) + 2;
 assert.ok(start >= 0 && end > start, "se encuentra la inicialización SQLite del IDE");
 const initializer = aula.slice(start, end);
 

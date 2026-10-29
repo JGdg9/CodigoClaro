@@ -69,9 +69,9 @@ h3{font-size:20px;font-weight:400;letter-spacing:-.2px}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}#main>.hero,#main>.section:first-child{animation:none}}
 
 </style></head><!-- Contenido visible de la página. -->
-<body><div class="wrap"><header class="top"><div class="brand">〈/〉 CódigoClaro <small> · aprender haciendo</small></div><button class="btn primary" onclick="page('practice')">Practicar</button></header><div id="ccAccountBar" class="cc-account"><div><b>Sincronización de progreso</b><br><small id="ccAccountStatus" role="status" aria-live="polite" aria-atomic="true">Los temas y prácticas completados pueden sincronizarse; el XP y los intentos solo se guardan en este navegador.</small></div><div style="display:flex;gap:7px;flex-wrap:wrap"><a href="/index.html">Panel del piloto</a><button class="primary" id="ccAccountAction" type="button">Iniciar sesión</button></div></div><nav class="nav" id="nav"></nav><main id="main"></main><footer class="footer">CódigoClaro v1.1.5 · IDE web: JavaScript local aislado, vista previa HTML/CSS, SQLite en el navegador y simuladores locales de MongoDB/Firestore. Java, Kotlin, Node.js, Python y TypeScript se ejecutan en un endpoint remoto solo con consentimiento. React/JSX se ejecuta localmente en un iframe aislado; PostgreSQL usa PGlite local; Oracle y PL/SQL requieren FreeSQL. Los temas y prácticas completados pueden sincronizarse con tu cuenta. El XP y los intentos de esta aula solo se guardan en este navegador; no se envían a la cuenta ni se sincronizan entre dispositivos. · <a href="diagnostico.html" style="color:var(--b)">Diagnóstico y ayuda</a></footer></div><nav class="bottom"><button onclick="page('home')">⌂<br>Inicio</button><button onclick="page('syllabus')">▤<br>Temarios</button><button onclick="page('practice')">⌘<br>Ejercicios</button><button onclick="page('assignments')">▣<br>Prácticas</button><button onclick="page('tests')">✓<br>Tests</button><button onclick="page('ide')">⌨<br>IDE</button></nav><script src="./api-client.js"></script>
+<body><div class="wrap"><header class="top"><div class="brand">〈/〉 CódigoClaro <small> · aprender haciendo</small></div><button class="btn primary" onclick="page('practice')">Practicar</button></header><div id="ccAccountBar" class="cc-account"><div><b>Sincronización de progreso</b><br><small id="ccAccountStatus" role="status" aria-live="polite" aria-atomic="true">Los temas y prácticas completados pueden sincronizarse; el XP y los intentos solo se guardan en este navegador.</small></div><div style="display:flex;gap:7px;flex-wrap:wrap"><a href="/index.html">Panel del piloto</a><button class="primary" id="ccAccountAction" type="button">Iniciar sesión</button></div></div><nav class="nav" id="nav"></nav><main id="main"></main><footer class="footer">CódigoClaro v1.1.5 · IDE web: JavaScript local aislado, vista previa HTML/CSS, SQLite en el navegador y simuladores locales de MongoDB/Firestore. Java, Kotlin, Node.js, Python y TypeScript se ejecutan en un endpoint remoto solo con consentimiento. React/JSX ofrece vista previa estática en un worker local; los eventos, efectos y scripts no se ejecutan; PostgreSQL usa PGlite local; Oracle y PL/SQL requieren FreeSQL. Los temas y prácticas completados pueden sincronizarse con tu cuenta. El XP y los intentos de esta aula solo se guardan en este navegador; no se envían a la cuenta ni se sincronizan entre dispositivos. · <a href="diagnostico.html" style="color:var(--b)">Diagnóstico y ayuda</a></footer></div><nav class="bottom"><button onclick="page('home')">⌂<br>Inicio</button><button onclick="page('syllabus')">▤<br>Temarios</button><button onclick="page('practice')">⌘<br>Ejercicios</button><button onclick="page('assignments')">▣<br>Prácticas</button><button onclick="page('tests')">✓<br>Tests</button><button onclick="page('ide')">⌨<br>IDE</button></nav><script src="./api-client.js"></script>
 <script src="./sandbox-runner.js"></script>
-<script src="./ide-sandbox.js"></script>
+<script src="./ide-sandbox.js"></script><script src="./react-preview-client.js"></script>
 <script src="./practice-grader.js"></script>
 <script src="./quiz-bank-expanded.js"></script>
 <script>
@@ -161,13 +161,13 @@ function lesson(){let c=C.find(x=>x[0]===courseId),t=c[4][topicId],key=c[0]+':'+
 // setTopic: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function setTopic(i){topicId=i;page('lesson')}function complete(k){if(!s.done.includes(k)){s.done.push(k);s.xp+=15;save()}page('lesson')}
 // practice: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function practice(){return `<section class="section"><h2>Ejercicios interactivos</h2><p class="muted">Escribe tu solución, corrige por criterios, pide una pista o consulta la solución de referencia. Hay retos de Java, SQL, XPath, PL/SQL, JavaScript y Python. El corrector comprueba patrones: no compila ni ejecuta código arbitrario.</p><div class="toolbar"><select id="efilter" onchange="filterE()"><option value="all">Todas las tecnologías</option>${C.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join('')}</select></div><div id="elist">${ecards(E)}</div></section>`}
+function practice(){return `<section class="section"><h2>Ejercicios interactivos</h2><p class="muted">Escribe tu solución, corrige por criterios, pide una pista o consulta la solución de referencia. Hay retos de Java, SQL, XPath, PL/SQL, JavaScript y Python. El corrector ejecuta las prácticas JavaScript compatibles en un worker local y consultas SQL limitadas sobre SQLite temporal; aplica criterios textuales al resto. No envía el código.</p><div class="toolbar"><select id="efilter" onchange="filterE()"><option value="all">Todas las tecnologías</option>${C.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join('')}</select></div><div id="elist">${ecards(E)}</div></section>`}
 // ecards: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ecards(arr){return arr.map((e,i)=>`<article class="exercise"><span class="chip">${e[1].split(' · ')[0]}</span><h3>${e[1]}</h3><p>${e[2]}</p><textarea id="ans-${E.indexOf(e)}" spellcheck="false">${e[3].replace(/\\\\n/g,'\n')}</textarea><div class="toolbar"><button class="btn primary" onclick="checkE(${E.indexOf(e)})">Corregir</button><button class="btn" onclick="hintE(${E.indexOf(e)})">Pista</button><button class="btn" onclick="solE(${E.indexOf(e)})">Solución</button></div><div id="fb-${E.indexOf(e)}" aria-live="polite"></div></article>`).join('')}
 // filterE: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function filterE(){let id=document.getElementById('efilter').value;document.getElementById('elist').innerHTML=ecards(E.filter(e=>id==='all'||e[0]===id))}
 // checkE: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function checkE(i){const e=E[i],input=document.getElementById('ans-'+i),fb=document.getElementById('fb-'+i);if(!input||!fb)return;const ans=input.value;fb.className='feedback';fb.textContent='Comprobando la solución…';let report;try{report=await CCPracticeGrader.grade(e,ans)}catch(error){report={mode:'structural-only',executed:false,percent:0,checks:[],message:'No se pudo iniciar la comprobación local.'}}if(input.value!==ans)return;const p=Number(report.percent)||0,mastered=report.executed===true&&p===100,lines=report.mode==='behavioral'?report.cases.map((item,index)=>(item.passed?'✓ ':'✗ ')+'Caso '+(index+1)+': esperado '+JSON.stringify(item.expected)+', obtenido '+(item.error?item.error:JSON.stringify(item.actual))).join('\n'):(report.checks||[]).map(item=>(item.passed?'✓ ':'✗ ')+item.label).join('\n');fb.className='feedback '+(mastered?'ok':p===0?'bad':'');fb.textContent=(report.mode==='behavioral'?'Comprobación de comportamiento: ':'Comprobación estructural (no ejecuta código): ')+p+'%\n'+report.message+(lines?'\n'+lines:'');let changed=false;const completion='exercise:'+i;if(mastered&&!s.done.includes(completion)){s.done.push(completion);s.xp+=10;changed=true}if(!s.attempts.some(a=>a.id===i)){s.attempts.unshift({id:i,p,date:new Date().toLocaleDateString('es-ES')});changed=true}if(changed)save()}
+async function checkE(i){const e=E[i],input=document.getElementById('ans-'+i),fb=document.getElementById('fb-'+i);if(!input||!fb)return;const ans=input.value;fb.className='feedback';fb.textContent='Comprobando la solución…';let report;try{const options={};if(CCPracticeGrader.requiresSqlDatabase(e)){await ideLoadSql();options.createDatabase=()=>new ccSqlDb.constructor()}report=await CCPracticeGrader.grade(e,ans,options)}catch(error){report={mode:'structural-only',executed:false,percent:0,checks:[],message:'No se pudo iniciar la comprobación local.'}}if(input.value!==ans)return;const p=Number(report.percent)||0,mastered=report.executed===true&&p===100,lines=report.mode==='behavioral'?report.cases.map((item,index)=>(item.passed?'✓ ':'✗ ')+'Caso '+(index+1)+': esperado '+JSON.stringify(item.expected)+', obtenido '+(item.error?item.error:JSON.stringify(item.actual))).join('\n'):(report.checks||[]).map(item=>(item.passed?'✓ ':'✗ ')+item.label).join('\n');fb.className='feedback '+(mastered?'ok':p===0?'bad':'');fb.textContent=(report.mode==='behavioral'?'Comprobación de comportamiento: ':'Comprobación estructural (no ejecuta código): ')+p+'%\n'+report.message+(lines?'\n'+lines:'');let changed=false;const completion='exercise:'+i;if(mastered&&!s.done.includes(completion)){s.done.push(completion);s.xp+=10;changed=true}if(!s.attempts.some(a=>a.id===i)){s.attempts.unshift({id:i,p,date:new Date().toLocaleDateString('es-ES')});changed=true}if(changed)save()}
 // hintE: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function hintE(i){let e=E[i],f=document.getElementById('fb-'+i);f.className='feedback';f.textContent='Pista: '+e[6]}
 // solE: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
@@ -219,15 +219,11 @@ const IDE_LANGS=[
  {id:'db',label:'Gestión de bases de datos',group:'Conceptos DAM',ext:'sql',code:'CREATE TABLE alumnos (\n  id INTEGER PRIMARY KEY,\n  nombre VARCHAR(100) NOT NULL,\n  nota DECIMAL(4,2) CHECK (nota BETWEEN 0 AND 10)\n);',tips:['La sintaxis exacta varía entre Oracle, MySQL y PostgreSQL.','Usa claves primarias, foráneas y restricciones.','Diseña transacciones y copias de seguridad según el caso.']},
  {id:'plsql',label:'PL/SQL · Oracle',group:'SQL avanzado',ext:'sql',code:'DECLARE\n  v_total NUMBER := 0;\nBEGIN\n  SELECT COUNT(*) INTO v_total FROM empleados;\n  DBMS_OUTPUT.PUT_LINE(\'Empleados: \' || v_total);\nEND;\n/',tips:['PL/SQL se ejecuta en Oracle Database; no en SQLite.','SELECT ... INTO asigna una fila a variables.','Practica cursores, procedimientos, paquetes y triggers en Oracle SQL Developer.']}
 ];
-let ideEditor=null,ccReactRunCleanup=null,ccReactFrame=null,ccPgWorker=null,ccPgRequestId=0;
+let ideEditor=null,ccPgWorker=null,ccPgRequestId=0;
 const ccPgPending=new Map();
-let ccSqlDb=null, ccSqlPromise=null, ccSqlGeneration=0, ccJudgeLanguages=null, ccJudgeLanguagesEndpoint=null, ccJudgeRunController=null, ccJudgeCheckController=null;
+let ccSqlDb=null,ccSqlPromise=null,ccSqlWorker=null,ccSqlWorkerReady=null,ccSqlWorkerPending=new Map(),ccSqlRequestId=0,ccSqlActiveRequest=null,ccSqlGeneration=0,ccJudgeLanguages=null,ccJudgeLanguagesEndpoint=null,ccJudgeRunController=null,ccJudgeCheckController=null;
 const CC_SQLJS='https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.13.0/';
 const CC_CODEMIRROR='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/';
-const CC_REACT_CDN='https://cdnjs.cloudflare.com';
-const CC_REACT_BABEL='https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js';
-const CC_REACT_JS='https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js';
-const CC_REACT_DOM='https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js';
 // ideGetCode: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideGetCode(){const t=document.getElementById('ideCode');return ideEditor?ideEditor.getValue():(t?t.value:'')}
 // ideSetCode: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
@@ -251,11 +247,11 @@ function ideBindShortcuts(){const root=document.documentElement;if(root.dataset.
 function ideInitUI(){const sel=document.getElementById('ideLang');if(!sel)return;try{const last=ccStorageGet('cc_ide_last_lang');if(last&&IDE_LANGS.some(x=>x.id===last))sel.value=last}catch(e){}ideLoadTemplate(false);ideBindShortcuts();ideEnsureEditor();ideSetRuntimeText();if(document.getElementById('judgeEndpoint'))document.getElementById('judgeEndpoint').value=ccStorageGet('cc_judge_endpoint')||'https://ce.judge0.com';if(document.getElementById('judgeToken'))document.getElementById('judgeToken').value='';const runButton=document.querySelector('button[onclick="ideRun()"]');if(runButton&&!document.getElementById('ideCancelRemoteRun')){const cancelButton=document.createElement('button');cancelButton.id='ideCancelRemoteRun';cancelButton.className='btn hide';cancelButton.type='button';cancelButton.textContent='Cancelar ejecución remota';cancelButton.addEventListener('click',ideCancelJudgeRun);runButton.after(cancelButton)}const saveButton=document.querySelector('button[onclick="ideSaveJudgeSettings()"]');if(saveButton&&!document.getElementById('ideJudgeCheckButton')){const checkButton=document.createElement('button');checkButton.id='ideJudgeCheckButton';checkButton.className=saveButton.className;checkButton.type='button';checkButton.textContent='Comprobar conexión';checkButton.addEventListener('click',ideCheckJudge);saveButton.before(checkButton)}}
 
 // idePage: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function idePage(){return `<section class="section"><div class="eyebrow">Laboratorio de programación</div><h2>IDE interno de CódigoClaro</h2><p class="muted">Editor con autoguardado, retos guiados, análisis y motores para los lenguajes compatibles. Usa <strong>Ctrl/Cmd + Enter</strong> para ejecutar y <strong>Ctrl/Cmd + S</strong> para descargar.</p><div class="panel"><div class="idebar"><select id="ideLang" aria-label="Lenguaje de programación" onchange="ideSwitchLanguage()">${IDE_LANGS.map(l=>`<option value="${l.id}">${l.group} · ${l.label}</option>`).join('')}</select><select id="ideChallengeSelect" aria-label="Reto guiado"><option value="">Elegir reto guiado…</option>${E.map((e,i)=>`<option value="${i}">${e[1]}</option>`).join('')}</select><button class="btn" onclick="ideLoadChallenge()">Cargar reto</button><button class="btn" onclick="ideLoadTemplate(true)">Restaurar ejemplo</button><button class="btn" onclick="ideOpenFile()">Abrir archivo</button><button class="btn" onclick="ideSaveFile()">Descargar código</button><input id="ideFile" type="file" class="hide" onchange="ideReadFile(event)"></div><div class="idebar"><span class="runtime-badge" id="runtimeBadge">Motor: cargando…</span><span class="status" id="ideStatus">Preparando editor</span><span class="status" id="ideLines">Líneas: 1</span></div></div><div class="idegrid"><div class="panel"><label for="ideCode"><strong>Editor</strong></label><textarea id="ideCode" class="editor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" oninput="ideUpdateCount();ideSaveDraft()" aria-label="Editor de código"></textarea><div id="stdinPanel" class="hide"><label for="ideStdin"><strong>Entrada estándar (stdin)</strong></label><textarea id="ideStdin" class="field" rows="3" placeholder="Texto que leería input() o Scanner…"></textarea></div><div class="ide-actions"><button class="btn primary" onclick="ideRun()">▶ Ejecutar</button><button class="btn" onclick="ideAnalyze()">Analizar / revisar</button><button class="btn" onclick="ideClearOutput()">Limpiar salida</button><button class="btn" onclick="ideTestSample()">Probar ejemplo</button></div><div class="callout" id="runDescription">Elige una tecnología para ver el motor de ejecución disponible.</div><div id="ideSqlOracleHelp" class="callout hide"><strong>Oracle SQL y PL/SQL fuera de CódigoClaro</strong><br>Abre <a href="https://freesql.com/" target="_blank" rel="noopener noreferrer">Oracle FreeSQL</a> y pega el código manualmente. Al ejecutarlo, Oracle recibe ese código; CódigoClaro no lo copia ni lo envía.</div><div id="ideSqlMysqlHelp" class="callout hide"><strong>Prueba de compatibilidad MySQL</strong><br>Abre <a href="https://play.tidbcloud.com/" target="_blank" rel="noopener noreferrer">TiDB Playground</a> y pega el código manualmente. Es TiDB compatible con MySQL, no un servidor MySQL; no admite todos sus procedimientos, funciones y triggers.</div><details class="panel"><summary><strong>Motores y privacidad</strong></summary><p class="muted tiny">JavaScript, HTML/CSS, SQLite y los simuladores MongoDB/Firestore funcionan en el navegador; la ejecución de JavaScript usa un worker sin acceso de red. Python, Java, Kotlin, Node.js y TypeScript usan el endpoint remoto solo si ofrece ese lenguaje y das consentimiento; el código y stdin salen del navegador. React compila JSX localmente en un iframe restringido. PostgreSQL usa PGlite/WASM local. Oracle y PL/SQL abren una herramienta externa con tu acción; MySQL ofrece TiDB Playground, que no es MySQL.</p><div class="settings-grid"><label>Endpoint remoto de ejecución<input id="judgeEndpoint" class="field" type="url" value="https://ce.judge0.com" autocomplete="off" oninput="ideCancelJudgeRun()"></label><label>Token opcional<input id="judgeToken" class="field" type="password" autocomplete="new-password" placeholder="Solo para instancias que lo requieran" oninput="ideCancelJudgeRun()"></label><label>Persistencia del código<input class="field" value="Almacenamiento local del navegador" readonly></label><label>Compiladores remotos<input class="field" value="Java, Kotlin, Node.js, Python y TypeScript con consentimiento por sesión" readonly></label></div><div class="tiny muted">El endpoint puede limitar o rechazar peticiones. Al comprobar la conexión se consulta qué lenguajes ofrece; si has escrito un token, también se envía para autenticar esa petición. No se envían el código ni stdin. El token no se guarda en la aplicación.</div><div class="toolbar"><button class="btn" type="button" onclick="ideSaveJudgeSettings()">Guardar endpoint</button><label class="tiny"><input id="ideRemoteConsent" type="checkbox" onchange="this.dataset.endpoint=this.checked?ideJudgeConfig().base:'';if(!this.checked)ideCancelJudgeRun()"> Al pulsar Ejecutar, acepto enviar el código del lenguaje seleccionado y el contenido de stdin al endpoint HTTPS mostrado. Si he escrito un token, también se enviará para autenticar la petición. Esta autorización dura solo mientras esta página esté abierta.</label></div><div class="tiny muted" id="judgeSettingsStatus" role="status" aria-live="polite" aria-atomic="true">El código no se envía hasta marcar el consentimiento y pulsar Ejecutar; solo se envía al endpoint y lenguaje indicados.</div></details></div><div class="panel"><h3>Analizador y errores</h3><p class="muted tiny">El análisis estático orienta; solo el motor de ejecución puede confirmar resultados de los lenguajes que soporta.</p><div id="ideAnalysis" class="ideout feedback">Selecciona una tecnología y pulsa Analizar / revisar.</div><h3>Salida / compilación</h3><div id="ideOutput" class="ideout feedback" role="status">La salida aparecerá aquí.</div><h3>Consejos del lenguaje</h3><div id="ideTips" class="feedback"></div><div id="codePreviewBox" class="hide"><h3>Vista previa HTML/CSS</h3><p class="tiny muted">HTML/CSS en un iframe aislado. No ejecuta scripts ni carga recursos externos.</p><iframe id="codePreview" class="preview-frame" sandbox title="Vista previa HTML o CSS"></iframe></div><div id="reactPreviewBox" class="hide"><h3>Vista previa React</h3><p class="tiny muted">Compila y ejecuta componentes y eventos en un iframe restringido. El código no se envía; React y Babel se cargan desde cdnjs.</p><iframe id="reactPreview" class="preview-frame" sandbox="allow-scripts" title="Vista previa React"></iframe></div></div></div><section class="section"><h2>Laboratorio de bases de datos</h2><div class="panel"><p>El modo de gestión ejecuta SQLite local. PostgreSQL usa un motor PostgreSQL real en WebAssembly y guarda su base en este navegador. Oracle SQL y PL/SQL abren FreeSQL; MySQL abre TiDB Playground. Esos enlaces nunca reciben el código automáticamente.</p><div class="toolbar"><button id="ideResetSqlDb" class="btn" onclick="ideResetSqlDb()">Restaurar base SQLite</button><button id="ideDownloadSqlDb" class="btn" onclick="ideDownloadSqlDb()">Descargar SQLite (.sqlite)</button><button id="ideResetPostgres" class="btn hide" type="button" onclick="ideResetPostgres()">Borrar y restaurar PostgreSQL local</button></div><div class="tiny muted">PostgreSQL usa PGlite en un worker. La primera vez carga su motor WASM desde jsDelivr; no requiere instalación ni cuenta y no envía consultas. Oracle FreeSQL y TiDB Playground son servicios externos: solo reciben el código si lo pegas allí.</div></div><div class="grid"><article class="card"><h3>HTML / CSS</h3><p>Vista previa local en un iframe aislado, sin scripts ni conexiones externas.</p></article><article class="card"><h3>Python</h3><p>Se ejecuta en un endpoint HTTPS solo con consentimiento; el código y stdin se envían fuera del navegador.</p></article><article class="card"><h3>Compiladores remotos</h3><p>Java, Kotlin, Node.js, Python y TypeScript pueden ejecutarse en un endpoint remoto si ofrece ese lenguaje y tras tu consentimiento. El código enviado sale del navegador.</p></article><article class="card"><h3>React</h3><p>Compila JSX y ejecuta los componentes y eventos en un iframe aislado. Solo carga React y Babel desde una CDN; el código no sale del navegador.</p></article><article class="card"><h3>MongoDB / Firestore</h3><p>Simuladores didácticos locales para practicar filtros/CRUD sin exponer credenciales. No conectan con servicios cloud.</p></article><article class="card"><h3>JavaScript</h3><p>Ejecución en un worker local sin DOM ni acceso de red; incluye límite de tiempo y de salida.</p></article><article class="card"><h3>PostgreSQL y SQLite</h3><p>PostgreSQL real en un worker local con persistencia en este navegador; SQLite se conserva para gestión de bases. Oracle, PL/SQL y la compatibilidad MySQL abren sus herramientas externas con una acción manual.</p></article></div></section></section>`}
+function idePage(){return `<section class="section"><div class="eyebrow">Laboratorio de programación</div><h2>IDE interno de CódigoClaro</h2><p class="muted">Editor con autoguardado, retos guiados, análisis y motores para los lenguajes compatibles. Usa <strong>Ctrl/Cmd + Enter</strong> para ejecutar y <strong>Ctrl/Cmd + S</strong> para descargar.</p><div class="panel"><div class="idebar"><select id="ideLang" aria-label="Lenguaje de programación" onchange="ideSwitchLanguage()">${IDE_LANGS.map(l=>`<option value="${l.id}">${l.group} · ${l.label}</option>`).join('')}</select><select id="ideChallengeSelect" aria-label="Reto guiado"><option value="">Elegir reto guiado…</option>${E.map((e,i)=>`<option value="${i}">${e[1]}</option>`).join('')}</select><button class="btn" onclick="ideLoadChallenge()">Cargar reto</button><button class="btn" onclick="ideLoadTemplate(true)">Restaurar ejemplo</button><button class="btn" onclick="ideOpenFile()">Abrir archivo</button><button class="btn" onclick="ideSaveFile()">Descargar código</button><input id="ideFile" type="file" class="hide" onchange="ideReadFile(event)"></div><div class="idebar"><span class="runtime-badge" id="runtimeBadge">Motor: cargando…</span><span class="status" id="ideStatus">Preparando editor</span><span class="status" id="ideLines">Líneas: 1</span></div></div><div class="idegrid"><div class="panel"><label for="ideCode"><strong>Editor</strong></label><textarea id="ideCode" class="editor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" oninput="ideUpdateCount();ideSaveDraft()" aria-label="Editor de código"></textarea><div id="stdinPanel" class="hide"><label for="ideStdin"><strong>Entrada estándar (stdin)</strong></label><textarea id="ideStdin" class="field" rows="3" placeholder="Texto que leería input() o Scanner…"></textarea></div><div class="ide-actions"><button id="ideRunButton" class="btn primary" onclick="ideRun()">▶ Ejecutar</button><span id="ideRunNotice" class="tiny muted hide" role="status" aria-live="polite" aria-atomic="true">Vista previa React estática local; los eventos, efectos y scripts no se ejecutan.</span><button class="btn" onclick="ideAnalyze()">Analizar / revisar</button><button class="btn" onclick="ideClearOutput()">Limpiar salida</button><button class="btn" onclick="ideTestSample()">Probar ejemplo</button></div><div class="callout" id="runDescription">Elige una tecnología para ver el motor de ejecución disponible.</div><div id="ideSqlOracleHelp" class="callout hide"><strong>Oracle SQL y PL/SQL fuera de CódigoClaro</strong><br>Abre <a href="https://freesql.com/" target="_blank" rel="noopener noreferrer">Oracle FreeSQL</a> y pega el código manualmente. Al ejecutarlo, Oracle recibe ese código; CódigoClaro no lo copia ni lo envía.</div><div id="ideSqlMysqlHelp" class="callout hide"><strong>Prueba de compatibilidad MySQL</strong><br>Abre <a href="https://play.tidbcloud.com/" target="_blank" rel="noopener noreferrer">TiDB Playground</a> y pega el código manualmente. Es TiDB compatible con MySQL, no un servidor MySQL; no admite todos sus procedimientos, funciones y triggers.</div><details class="panel"><summary><strong>Motores y privacidad</strong></summary><p class="muted tiny">JavaScript, HTML/CSS, SQLite y los simuladores MongoDB/Firestore funcionan en el navegador; la ejecución de JavaScript usa un worker sin acceso de red. Python, Java, Kotlin, Node.js y TypeScript usan el endpoint remoto solo si ofrece ese lenguaje y das consentimiento; el código y stdin salen del navegador. React/JSX genera HTML estático en un worker local y terminable; el código no se envía fuera del navegador. No ejecuta eventos, efectos ni scripts. PostgreSQL usa PGlite/WASM local. Oracle y PL/SQL abren una herramienta externa con tu acción; MySQL ofrece TiDB Playground, que no es MySQL.</p><div class="settings-grid"><label>Endpoint remoto de ejecución<input id="judgeEndpoint" class="field" type="url" value="https://ce.judge0.com" autocomplete="off" oninput="ideCancelJudgeRun()"></label><label>Token opcional<input id="judgeToken" class="field" type="password" autocomplete="new-password" placeholder="Solo para instancias que lo requieran" oninput="ideCancelJudgeRun()"></label><label>Persistencia del código<input class="field" value="Almacenamiento local del navegador" readonly></label><label>Compiladores remotos<input class="field" value="Java, Kotlin, Node.js, Python y TypeScript con consentimiento por sesión" readonly></label></div><div class="tiny muted">El endpoint puede limitar o rechazar peticiones. Al comprobar la conexión se consulta qué lenguajes ofrece; si has escrito un token, también se envía para autenticar esa petición. No se envían el código ni stdin. El token no se guarda en la aplicación.</div><div class="toolbar"><button class="btn" type="button" onclick="ideSaveJudgeSettings()">Guardar endpoint</button><label class="tiny"><input id="ideRemoteConsent" type="checkbox" onchange="this.dataset.endpoint=this.checked?ideJudgeConfig().base:'';if(!this.checked)ideCancelJudgeRun()"> Al pulsar Ejecutar, acepto enviar el código del lenguaje seleccionado y el contenido de stdin al endpoint HTTPS mostrado. Si he escrito un token, también se enviará para autenticar la petición. Esta autorización dura solo mientras esta página esté abierta.</label></div><div class="tiny muted" id="judgeSettingsStatus" role="status" aria-live="polite" aria-atomic="true">El código no se envía hasta marcar el consentimiento y pulsar Ejecutar; solo se envía al endpoint y lenguaje indicados.</div></details></div><div class="panel"><h3>Analizador y errores</h3><p class="muted tiny">El análisis estático orienta; solo el motor de ejecución puede confirmar resultados de los lenguajes que soporta.</p><div id="ideAnalysis" class="ideout feedback">Selecciona una tecnología y pulsa Analizar / revisar.</div><h3>Salida / compilación</h3><div id="ideOutput" class="ideout feedback" role="status">La salida aparecerá aquí.</div><h3>Consejos del lenguaje</h3><div id="ideTips" class="feedback"></div><div id="codePreviewBox" class="hide"><h3>Vista previa HTML/CSS</h3><p class="tiny muted">HTML/CSS en un iframe aislado. No ejecuta scripts ni carga recursos externos.</p><iframe id="codePreview" class="preview-frame" sandbox title="Vista previa HTML o CSS"></iframe></div><div id="reactPreviewBox" class="hide"><h3>Vista previa React estática</h3><p class="tiny muted">Vista previa local sin eventos, efectos, scripts ni recursos externos.</p><iframe id="reactPreview" class="preview-frame" sandbox title="Vista previa React estática"></iframe></div></div></div><section class="section"><h2>Laboratorio de bases de datos</h2><div class="panel"><p>El modo de gestión ejecuta SQLite local. PostgreSQL usa un motor PostgreSQL real en WebAssembly y guarda su base en este navegador. Oracle SQL y PL/SQL abren FreeSQL; MySQL abre TiDB Playground. Esos enlaces nunca reciben el código automáticamente.</p><div class="toolbar"><button id="ideResetSqlDb" class="btn" onclick="ideResetSqlDb()">Restaurar base SQLite</button><button id="ideDownloadSqlDb" class="btn" onclick="ideDownloadSqlDb()">Descargar SQLite (.sqlite)</button><button id="ideResetPostgres" class="btn hide" type="button" onclick="ideResetPostgres()">Borrar y restaurar PostgreSQL local</button></div><div class="tiny muted">PostgreSQL usa PGlite en un worker. La primera vez carga su motor WASM desde jsDelivr; no requiere instalación ni cuenta y no envía consultas. Oracle FreeSQL y TiDB Playground son servicios externos: solo reciben el código si lo pegas allí.</div></div><div class="grid"><article class="card"><h3>HTML / CSS</h3><p>Vista previa local en un iframe aislado, sin scripts ni conexiones externas.</p></article><article class="card"><h3>Python</h3><p>Se ejecuta en un endpoint HTTPS solo con consentimiento; el código y stdin se envían fuera del navegador.</p></article><article class="card"><h3>Compiladores remotos</h3><p>Java, Kotlin, Node.js, Python y TypeScript pueden ejecutarse en un endpoint remoto si ofrece ese lenguaje y tras tu consentimiento. El código enviado sale del navegador.</p></article><article class="card"><h3>React</h3><p>Renderiza componentes como HTML estático en un worker terminable. Los eventos y efectos no se ejecutan; no se envían scripts ni recursos externos.</p></article><article class="card"><h3>MongoDB / Firestore</h3><p>Simuladores didácticos locales para practicar filtros/CRUD sin exponer credenciales. No conectan con servicios cloud.</p></article><article class="card"><h3>JavaScript</h3><p>Ejecución en un worker local sin DOM ni acceso de red; incluye límite de tiempo y de salida.</p></article><article class="card"><h3>PostgreSQL y SQLite</h3><p>PostgreSQL real en un worker local con persistencia en este navegador; SQLite se conserva para gestión de bases. Oracle, PL/SQL y la compatibilidad MySQL abren sus herramientas externas con una acción manual.</p></article></div></section></section>`}
 // ideLang: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideLang(){return IDE_LANGS.find(l=>l.id===document.getElementById('ideLang')?.value)||IDE_LANGS[0]}
 // ideSwitchLanguage: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ideSwitchLanguage(){const l=ideLang();ideStopReactPreview();try{ccStorageSet('cc_ide_last_lang',l.id)}catch(e){}ideLoadTemplate(false);if(ideEditor){ideLoadMode(l).then(()=>{if(ideEditor)ideEditor.setOption('mode',ideMode(ideLang()))}).catch(()=>ideStatus('Editor listo; resaltado de este lenguaje no disponible'))}document.getElementById('codePreviewBox')?.classList.add('hide');document.getElementById('reactPreviewBox')?.classList.add('hide');ideSetRuntimeText()}
+function ideSwitchLanguage(){const l=ideLang();try{ccStorageSet('cc_ide_last_lang',l.id)}catch(e){}ideLoadTemplate(false);if(ideEditor){ideLoadMode(l).then(()=>{if(ideEditor)ideEditor.setOption('mode',ideMode(ideLang()))}).catch(()=>ideStatus('Editor listo; resaltado de este lenguaje no disponible'))}document.getElementById('codePreviewBox')?.classList.add('hide');document.getElementById('reactPreviewBox')?.classList.add('hide');ideSetRuntimeText()}
 // ideLoadTemplate: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideLoadTemplate(reset=false){const l=ideLang();let code=l.code.replace(/\\n/g,'\n');if(!reset){try{const saved=ccStorageGet('cc_ide_code_'+l.id);if(saved!==null)code=saved}catch(e){}}ideSetCode(code);const tips=document.getElementById('ideTips');if(tips)tips.textContent=l.tips.map((t,i)=>`${i+1}. ${t}`).join('\n');ideStatus((reset?'Ejemplo restaurado: ':'Código cargado: ')+l.label);const a=document.getElementById('ideAnalysis');if(a)a.textContent='Pulsa «Analizar / revisar» para recibir observaciones estáticas.';ideClearOutput();ideSetRuntimeText();try{ccStorageSet('cc_ide_last_lang',l.id);ccStorageSet('cc_ide_code_'+l.id,code)}catch(e){}}
 // ideSaveDraft: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
@@ -276,7 +272,7 @@ function ideSetRuntimeText(){
     kotlin:['Kotlin · ejecución remota opcional','Se ejecuta en el endpoint HTTPS si anuncia Kotlin y confirmas el envío.'],
     node:['Node.js · ejecución remota opcional','Se ejecuta en el endpoint HTTPS después de tu consentimiento; el código y stdin salen del navegador.'],
     typescript:['TypeScript · ejecución remota opcional','Se compila en el endpoint HTTPS si anuncia TypeScript y confirmas el envío del código.'],
-    react:['React/JSX · compilación local aislada','Babel compila JSX y React monta el componente en un iframe aislado. La primera carga trae librerías fijadas desde cdnjs; el código no se envía.'],
+    react:['React/JSX · vista previa estática local','Un worker terminable compila y renderiza el componente sin DOM ni red. La salida se limita y sanitiza antes de mostrarla; los eventos y efectos no funcionan.'],
     xml:['XML · validador local','Comprueba que el documento esté bien formado sin cargar DTD ni entidades externas.'],
     xpath:['XPath · consulta local','Evalúa la expresión contra un XML didáctico fijo usando XPath del navegador.'],
     'sql-oracle':['Oracle SQL · herramienta externa','El editor no ejecuta Oracle. Usa FreeSQL desde el enlace inferior y pega allí el código manualmente.'],
@@ -290,6 +286,9 @@ function ideSetRuntimeText(){
   };
   const selected=modes[l.id]||['Análisis estático local','El editor y el análisis básico funcionan en este navegador.'];
   badge.textContent='Motor: '+selected[0];description.textContent=selected[1];
+  const runButton=document.getElementById('ideRunButton'),runNotice=document.getElementById('ideRunNotice'),isReact=l.id==='react',reactReady=!!(window.CCReactPreview&&typeof window.CCReactPreview.render==='function');
+  if(runNotice){runNotice.textContent='Vista previa estática: los eventos y efectos no se ejecutan; no se cargan scripts ni recursos externos.';runNotice.classList.toggle('hide',!isReact)}
+  if(runButton){runButton.disabled=isReact&&!reactReady;runButton.textContent=isReact?(reactReady?'▶ Vista previa':'React no disponible'):'▶ Ejecutar';if(isReact){runButton.setAttribute('aria-label',reactReady?'Vista previa estática de React':'Vista previa React no disponible');runButton.setAttribute('aria-describedby','ideRunNotice')}else{runButton.removeAttribute('aria-label');runButton.removeAttribute('aria-describedby')}}
   if(stdin)stdin.classList.toggle('hide',!['java','oop','kotlin','node','python','typescript'].includes(l.id));
   for(const id of ['ideResetSqlDb','ideDownloadSqlDb'])document.getElementById(id)?.classList.toggle('hide',l.id!=='db');
   document.getElementById('ideResetPostgres')?.classList.toggle('hide',l.id!=='sql-postgres');
@@ -311,7 +310,7 @@ function ideAnalyze(){const l=ideLang(),code=ideGetCode(),issues=[],notes=[];if(
 function ideSanitizePreview(parsed){parsed.querySelectorAll('script,iframe,frame,object,embed,form,base,link,meta,video,audio,source,track').forEach(node=>node.remove());parsed.querySelectorAll('*').forEach(node=>{for(const attr of [...node.attributes]){const name=attr.name.toLowerCase(),value=attr.value.trim();if(name.startsWith('on')||['srcdoc','action','formaction','ping','target','srcset','poster','href','xlink:href'].includes(name)){node.removeAttribute(attr.name);continue}if(name==='src'&&!/^data:image\/(?:png|gif|jpeg|webp|avif);base64,/i.test(value))node.removeAttribute(attr.name);if(name==='style'&&/url\s*\(/i.test(value))node.removeAttribute(attr.name)}});return parsed}
 function idePreviewPolicy(){return "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'none'; img-src data:; style-src 'unsafe-inline'; font-src data:; media-src data:; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'\">"}
 function ideRunMarkup(){const lang=ideLang(),box=document.getElementById('codePreviewBox'),frame=document.getElementById('codePreview'),code=ideGetCode();if(!box||!frame)return ideShowOutput('No se encontró la vista previa HTML/CSS.','bad');let head='',body='';if(lang.id==='html'){const parsed=ideSanitizePreview(new DOMParser().parseFromString(code,'text/html'));head=parsed.head.innerHTML;body=parsed.body.innerHTML}else{const safeCss=code.replace(/<\/style/gi,'');head='<style>'+safeCss+'</style>';body='<main><h1>Vista previa CSS</h1><p>Modifica el ejemplo y pulsa Ejecutar para ver el cambio.</p><section class="tarjetas"><article>Tarjeta de ejemplo</article><article>Otra tarjeta</article></section></main>'}frame.setAttribute('sandbox','');frame.srcdoc='<!doctype html><html lang="es"><head><meta charset="utf-8">'+idePreviewPolicy()+head+'</head><body>'+body+'</body></html>';box.classList.remove('hide');ideShowOutput('Vista previa local actualizada. Se bloquean scripts, navegación, formularios y recursos de red.','ok');ideStatus('Vista previa HTML/CSS actualizada')}
-function ideStopReactPreview(){if(ccReactRunCleanup)ccReactRunCleanup();if(ccReactFrame){ccReactFrame.srcdoc='<!doctype html><html lang="es"><body></body></html>';ccReactFrame=null}}
+
 function idePostgresDataDir(){
   let id='';
   try { id=ccStorageGet('cc_postgres_local_id')||''; } catch {}
@@ -386,7 +385,7 @@ function ideRun(){const l=ideLang();if(!ideGetCode().trim()){ideShowOutput('El e
 // ideShowOutput: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideShowOutput(text,cls=''){const o=document.getElementById('ideOutput');if(!o)return;o.textContent=text;o.className='ideout feedback '+cls}
 // ideClearOutput: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ideClearOutput(){ideStopReactPreview();ideShowOutput('La salida aparecerá aquí.');document.getElementById('reactPreviewBox')?.classList.add('hide');document.getElementById('codePreviewBox')?.classList.add('hide')}
+function ideClearOutput(){ideShowOutput('La salida aparecerá aquí.');document.getElementById('codePreviewBox')?.classList.add('hide')}
 // ideRunJS: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideRunJS(){return ideRunSandbox('javascript')}
 // ideRunSandbox: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
@@ -563,7 +562,8 @@ async function ideRunJudge0(){
   ideShowOutput('No se pudo ejecutar '+target.label+' en el endpoint remoto.\n'+errorMessage+'\n\nComprueba el endpoint HTTPS, que anuncie ese runtime, y sus límites o permisos. Si la solicitud llegó al servidor, el código se procesó allí; no se ejecutó localmente.','bad');
   ideStatus(timedOut?'Tiempo límite remoto':cancelled?'Ejecución cancelada':'Runtime remoto no disponible');
  }finally{if(runTimeout!==undefined)clearTimeout(runTimeout);if(cancelButton)cancelButton.classList.add('hide');if(ccJudgeRunController===runController)ccJudgeRunController=null}
-}// ideLoadSql: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
+}// Solo los correctores de ejercicios usan esta instancia; las consultas del IDE van al worker.
+// ideLoadSql: inicializa y recupera la base local SQLite del aula.
 async function ideLoadSql(){
  if(ccSqlDb)return ccSqlDb;
  if(!ccSqlPromise){
@@ -572,170 +572,121 @@ async function ideLoadSql(){
    await ccLoadScript(CC_SQLJS+'sql-wasm.js','cc-sqljs');
    if(generation!==ccSqlGeneration)throw new Error('La carga de SQLite se canceló al restaurar la base.');
    if(!window.initSqlJs)throw new Error('No se ha cargado SQL.js');
-   const SQL=await window.initSqlJs({locateFile:f=>CC_SQLJS+f});
-   if(generation!==ccSqlGeneration)throw new Error('La carga de SQLite se canceló al restaurar la base.');
-   let db;
-   const saved=ccStorageGet('cc_sqlite_demo_db');
-   if(saved){try{const raw=atob(saved),arr=Uint8Array.from(raw,c=>c.charCodeAt(0));db=new SQL.Database(arr)}catch(e){ccStorageRemove('cc_sqlite_demo_db')}}
+   const SQL=await window.initSqlJs({locateFile:file=>CC_SQLJS+file});
+   let db;const saved=ccStorageGet('cc_sqlite_demo_db');
+   if(saved){try{const raw=atob(saved);db=new SQL.Database(Uint8Array.from(raw,character=>character.charCodeAt(0)))}catch(error){ccStorageRemove('cc_sqlite_demo_db')}}
    if(!db)db=new SQL.Database();
    db.run('PRAGMA foreign_keys=ON');
-    db.run('CREATE TABLE IF NOT EXISTS departamentos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL)');
-    db.run('CREATE TABLE IF NOT EXISTS cursos (id INTEGER PRIMARY KEY, titulo TEXT NOT NULL, nivel TEXT)');
-    db.run('CREATE TABLE IF NOT EXISTS empleados (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, departamento_id INTEGER, salario REAL, FOREIGN KEY(departamento_id) REFERENCES departamentos(id))');
-    db.run('CREATE TABLE IF NOT EXISTS alumnos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, nota REAL CHECK(nota >= 0 AND nota <= 10), curso_id INTEGER REFERENCES cursos(id))');
-    db.run('CREATE TABLE IF NOT EXISTS cuentas (id INTEGER PRIMARY KEY, titular TEXT NOT NULL, saldo REAL NOT NULL CHECK(saldo >= 0))');
-    const alumnoColumns=db.exec('PRAGMA table_info(alumnos)')[0]?.values||[];
-    const needsCourseMigration=!alumnoColumns.some(column=>column[1]==='curso_id');
-    if(needsCourseMigration)db.run('ALTER TABLE alumnos ADD COLUMN curso_id INTEGER');
+   db.run('CREATE TABLE IF NOT EXISTS departamentos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL)');
+   db.run('CREATE TABLE IF NOT EXISTS cursos (id INTEGER PRIMARY KEY, titulo TEXT NOT NULL, nivel TEXT)');
+   db.run('CREATE TABLE IF NOT EXISTS empleados (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, departamento_id INTEGER, salario REAL, FOREIGN KEY(departamento_id) REFERENCES departamentos(id))');
+   db.run('CREATE TABLE IF NOT EXISTS alumnos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, nota REAL CHECK(nota >= 0 AND nota <= 10), curso_id INTEGER REFERENCES cursos(id))');
+   db.run('CREATE TABLE IF NOT EXISTS cuentas (id INTEGER PRIMARY KEY, titular TEXT NOT NULL, saldo REAL NOT NULL CHECK(saldo >= 0))');
+   const alumnoColumns=db.exec('PRAGMA table_info(alumnos)')[0]?.values||[],needsCourseMigration=!alumnoColumns.some(column=>column[1]==='curso_id');
+   if(needsCourseMigration)db.run('ALTER TABLE alumnos ADD COLUMN curso_id INTEGER');
    db.run("INSERT OR IGNORE INTO departamentos VALUES (1,'Desarrollo'),(2,'Sistemas'),(3,'Datos')");
    db.run("INSERT OR IGNORE INTO empleados VALUES (1,'Ana',1,1800),(2,'Luis',2,1650),(3,'Marta',1,2200),(4,'Pablo',3,1950)");
    db.run("INSERT OR IGNORE INTO cursos VALUES (1,'Java','inicial'),(2,'SQL','medio'),(3,'Python','inicial')");
-    if(!needsCourseMigration){
-     db.run("INSERT OR IGNORE INTO alumnos (id,nombre,nota,curso_id) VALUES (1,'Lucía',8.5,1),(2,'Mario',4.2,2),(3,'Inés',9.1,3),(4,'Pablo',6.7,2)");
-    }else{
-     db.run("INSERT OR IGNORE INTO alumnos (id,nombre,nota) VALUES (1,'Lucía',8.5),(2,'Mario',4.2),(3,'Inés',9.1),(4,'Pablo',6.7)");
-     db.run("UPDATE alumnos SET curso_id=CASE id WHEN 1 THEN 1 WHEN 2 THEN 2 WHEN 3 THEN 3 WHEN 4 THEN 2 END WHERE curso_id IS NULL AND ((id=1 AND nombre='Lucía') OR (id=2 AND nombre='Mario') OR (id=3 AND nombre='Inés') OR (id=4 AND nombre='Pablo'))");
-    }
-    const accountColumns=db.exec('PRAGMA table_info(cuentas)')[0]?.values||[];
-    if(accountColumns.length===3&&accountColumns.some(column=>column[1]==='titular')&&accountColumns.some(column=>column[1]==='saldo'))db.run("INSERT OR IGNORE INTO cuentas (id,titular,saldo) VALUES (1,'Ana',100),(2,'Luis',50)");
+   if(!needsCourseMigration)db.run("INSERT OR IGNORE INTO alumnos (id,nombre,nota,curso_id) VALUES (1,'Lucía',8.5,1),(2,'Mario',4.2,2),(3,'Inés',9.1,3),(4,'Pablo',6.7,2)");
+   else{db.run("INSERT OR IGNORE INTO alumnos (id,nombre,nota) VALUES (1,'Lucía',8.5),(2,'Mario',4.2),(3,'Inés',9.1),(4,'Pablo',6.7)");db.run("UPDATE alumnos SET curso_id=CASE id WHEN 1 THEN 1 WHEN 2 THEN 2 WHEN 3 THEN 3 WHEN 4 THEN 2 END WHERE curso_id IS NULL AND ((id=1 AND nombre='Lucía') OR (id=2 AND nombre='Mario') OR (id=3 AND nombre='Inés') OR (id=4 AND nombre='Pablo'))")}
+   const accountColumns=db.exec('PRAGMA table_info(cuentas)')[0]?.values||[];
+   if(accountColumns.length===3&&accountColumns.some(column=>column[1]==='titular')&&accountColumns.some(column=>column[1]==='saldo'))db.run("INSERT OR IGNORE INTO cuentas (id,titular,saldo) VALUES (1,'Ana',100),(2,'Luis',50)");
    if(generation!==ccSqlGeneration){db.close();throw new Error('La carga de SQLite se canceló al restaurar la base.')}
-   ccSqlDb=db;
-   return db;
+   ccSqlDb=db;return db;
   })().catch(error=>{if(generation===ccSqlGeneration)ccSqlPromise=null;throw error});
  }
  return ccSqlPromise;
 }
-// ideRenderSqlResults: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ideSqlStructureIsSafe(query){
- const withoutComments=query.replace(/--[^\r\n]*/g,' ').replace(/\/\*[\s\S]*?\*\//g,' ');
- if(/\bWITH\s+RECURSIVE\b|\b(?:ATTACH|DETACH|PRAGMA|VACUUM|ANALYZE|REINDEX|LOAD_EXTENSION|RANDOMBLOB|ZEROBLOB)\b/i.test(withoutComments))return false;
- if((withoutComments.match(/\bSELECT\b/gi)||[]).length>12||(withoutComments.match(/\bJOIN\b/gi)||[]).length>8)return false;
- let depth=0,quote='';
- for(let i=0;i<query.length;i++){
-  const c=query[i];
-  if(quote){if(c===quote){if(query[i+1]===quote)i++;else quote=''}continue}
-  if(c==="'"||c==='"'||c===String.fromCharCode(96))quote=c;
-  else if(c==='[')quote=']';
-  else if(c==='('&&++depth>12)return false;
-  else if(c===')'&&--depth<0)return false;
- }
- return depth===0;
-}
-function ideRenderSqlResults(db,query){
- const source=String(query||'');
- if(!source.trim())throw new Error('Escribe una consulta SQL antes de ejecutarla.');
- if(source.length>20000)throw new Error('La consulta supera el límite local de 20 KB.');
- if(!ideSqlStructureIsSafe(source))throw new Error('La consulta supera los límites locales de complejidad o contiene una operación no permitida.');
- const out=[],maxRows=200,maxChars=20000;
- let iterator=null,statementCount=0,totalRows=0,totalChars=0,truncated=false;
- const push=line=>{if(totalChars+line.length+1>maxChars){truncated=true;return false}out.push(line);totalChars+=line.length+1;return true};
+function ideSqlitePersistDatabase(database){
  try{
-  iterator=db.iterateStatements(source);
-  for(const statement of iterator){
-   statementCount++;
-   if(statementCount>20)throw new Error('La consulta supera el máximo de 20 sentencias.');
-   const columns=statement.getColumnNames();
-   if(columns.length&&(!push(columns.join(' | '))||!push(columns.map(()=>'-'.repeat(12)).join(' | '))))break;
-   let rows=0;
-   while(statement.step()){
-    if(totalRows>=maxRows){truncated=true;break}
-    const values=statement.get().map(value=>{
-     if(value===null)return 'NULL';
-     if(value&&typeof value==='object'&&Number.isInteger(value.byteLength))return '[BLOB '+value.byteLength+' bytes]';
-     const cell=String(value);
-     return cell.length>1000?cell.slice(0,1000)+'…':cell;
-    });
-    if(!push(values.join(' | ')))break;
-    rows++;totalRows++;
-   }
-   if(columns.length&&!push(rows+' fila(s)'))truncated=true;
-   if(truncated)break;
-  }
- }finally{
-  if(iterator){
-   try{if(iterator.activeStatement){iterator.activeStatement.free();iterator.activeStatement=null}}
-   finally{if(iterator.sqlPtr!==null&&typeof iterator.finalize==='function')iterator.finalize()}
-  }
- }
- if(!out.length)out.push('Sentencia ejecutada correctamente. (DDL/DML sin conjunto de resultados)');
- if(truncated)out.push('La salida se detuvo al alcanzar 200 filas o 20 KB. Ejecuta una consulta más concreta.');
- return out.join('\n');
+  const data=database instanceof ArrayBuffer?new Uint8Array(database):ArrayBuffer.isView(database)?new Uint8Array(database.buffer,database.byteOffset,database.byteLength):null;
+  if(!data)return;
+  let binary='';
+  for(let i=0;i<data.length;i+=0x8000)binary+=String.fromCharCode(...data.subarray(i,Math.min(i+0x8000,data.length)));
+  ccStorageSet('cc_sqlite_demo_db',btoa(binary));
+ }catch(e){}
 }
-// ideRunSQL: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function ideRunSQL(){ideShowOutput('Inicializando SQLite WebAssembly…');try{const db=await ideLoadSql(),code=ideGetCode();const result=ideRenderSqlResults(db,code);try{const data=db.export();let binary='';for(let i=0;i<data.length;i+=0x8000)binary+=String.fromCharCode(...data.subarray(i,Math.min(i+0x8000,data.length)));ccStorageSet('cc_sqlite_demo_db',btoa(binary))}catch(e){}ideShowOutput('Motor: SQLite real en el navegador\nNota: no es Oracle/MySQL/PostgreSQL aunque la consulta use sintaxis SQL básica.\n\n'+result,'ok');ideStatus('SQL ejecutado correctamente')}catch(e){ideShowOutput('Error SQL / inicialización del motor:\n'+(e.message||String(e))+'\n\nAlgunas extensiones o sintaxis PL/SQL/MySQL/PostgreSQL no están disponibles en SQLite.','bad');ideStatus('Error SQL')}}
+function ideSqliteTerminate(error){
+ const worker=ccSqlWorker,pending=[...ccSqlWorkerPending.values()];
+ ccSqlWorker=null;ccSqlWorkerReady=null;ccSqlActiveRequest=null;ccSqlWorkerPending.clear();
+ if(worker)worker.terminate();
+ const reason=error||new Error('El worker SQLite local se ha detenido.');
+ for(const request of pending){clearTimeout(request.timeout);request.reject(reason)}
+}
+function ideSqliteWorker(){
+ if(ccSqlWorker)return ccSqlWorker;
+ const worker=new Worker(new URL('./sqlite-ide-worker.js',document.baseURI),{name:'codigoclaro-sqlite-local'});
+ ccSqlWorker=worker;
+ worker.addEventListener('message',event=>{
+  const message=event.data||{},pending=ccSqlWorkerPending.get(message.id);
+  if(!pending)return;
+  clearTimeout(pending.timeout);ccSqlWorkerPending.delete(message.id);
+  if(pending.kind==='operation'&&ccSqlActiveRequest===message.id)ccSqlActiveRequest=null;
+  if(message.clearSaved)ccStorageRemove('cc_sqlite_demo_db');
+  if(message.ok&&message.database)ideSqlitePersistDatabase(message.database);
+  if(message.ok)pending.resolve(message);
+  else pending.reject(new Error(message.error||'SQLite no pudo procesar la consulta.'));
+ });
+ worker.addEventListener('error',()=>ideSqliteTerminate(new Error('No se pudo iniciar o ejecutar el motor SQLite local.')));
+ return worker;
+}
+function ideSqlitePost(worker,action,details,timeoutMs,timeoutMessage,kind){
+ const id=++ccSqlRequestId;
+ if(kind==='operation')ccSqlActiveRequest=id;
+ return new Promise((resolve,reject)=>{
+  const timeout=setTimeout(()=>{
+   const error=new Error(timeoutMessage);
+   if(ccSqlWorker===worker)ideSqliteTerminate(error);
+   else{ccSqlWorkerPending.delete(id);reject(error)}
+  },timeoutMs);
+  ccSqlWorkerPending.set(id,{resolve,reject,timeout,kind});
+  try{worker.postMessage({id,action,...details})}
+  catch(error){clearTimeout(timeout);ccSqlWorkerPending.delete(id);if(ccSqlActiveRequest===id)ccSqlActiveRequest=null;reject(error)}
+ });
+}
+function ideSqliteEnsureReady(worker){
+ if(ccSqlWorkerReady)return ccSqlWorkerReady;
+ let saved='';
+ try{saved=ccStorageGet('cc_sqlite_demo_db')||''}catch(e){}
+ const ready=ideSqlitePost(worker,'init',{saved},30000,'No se pudo inicializar SQLite local en 30 segundos. Comprueba tu conexión y vuelve a intentarlo.','init')
+  .then(message=>{if(!message.ready)throw new Error('SQLite no confirmó la inicialización del motor.');return message})
+  .catch(error=>{if(ccSqlWorker===worker)ideSqliteTerminate(error);throw error});
+ ccSqlWorkerReady=ready;
+ return ready;
+}
+async function ideSqliteRequest(action,details={},timeoutMs=5000){
+ const worker=ideSqliteWorker();
+ await ideSqliteEnsureReady(worker);
+ if(ccSqlWorker!==worker)throw new Error('La base SQLite se reinició. Vuelve a ejecutar la consulta.');
+ if(ccSqlActiveRequest!==null)throw new Error('Ya hay una operación SQLite en curso. Espera a que termine.');
+ return ideSqlitePost(worker,action,details,timeoutMs,'La operación SQLite superó el límite de '+Math.round(timeoutMs/1000)+' segundos. El worker se detuvo y se conserva el último estado guardado.','operation');
+}
+async function ideRunSQL(){
+ const generation=ccSqlGeneration,code=ideGetCode();
+ ideShowOutput('Inicializando SQLite WebAssembly en un worker local…');
+ try{
+  const result=await ideSqliteRequest('run',{sql:code},5000);
+  if(generation!==ccSqlGeneration)return;
+  ideShowOutput('Motor: SQLite real en el navegador\nNota: no es Oracle/MySQL/PostgreSQL aunque la consulta use sintaxis SQL básica.\n\n'+result.output,'ok');
+  ideStatus('SQL ejecutado correctamente');
+ }catch(error){
+  if(generation!==ccSqlGeneration)return;
+  ideShowOutput('Error SQL / inicialización del motor:\n'+(error.message||String(error))+'\n\nAlgunas extensiones o sintaxis PL/SQL/MySQL/PostgreSQL no están disponibles en SQLite.','bad');
+  ideStatus(String(error.message||'').includes('superó el límite')?'Tiempo límite SQLite':'Error SQL');
+ }
+}
 // ideResetSqlDb: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 async function ideResetSqlDb(){
  if(!confirm('¿Restaurar la base de ejemplo SQLite? Se perderán los cambios locales de esa base.'))return;
- ccSqlGeneration++;
- try{if(ccSqlDb)ccSqlDb.close()}catch(e){}
- ccSqlDb=null;ccSqlPromise=null;ccStorageRemove('cc_sqlite_demo_db');
- try{await ideLoadSql();ideShowOutput('Base SQLite restaurada con alumnos, cursos, empleados y departamentos.','ok')}
- catch(e){ideShowOutput('No se pudo reiniciar SQLite: '+e.message,'bad')}
+ const generation=++ccSqlGeneration;
+ ideSqliteTerminate(new Error('La consulta se canceló para restaurar la base SQLite.'));
+ ccStorageRemove('cc_sqlite_demo_db');
+ try{await ideSqliteRequest('export',{},5000);if(generation===ccSqlGeneration)ideShowOutput('Base SQLite restaurada con alumnos, cursos, empleados y departamentos.','ok')}
+ catch(error){if(generation===ccSqlGeneration)ideShowOutput('No se pudo reiniciar SQLite: '+(error.message||String(error)),'bad')}
 }
 // ideDownloadSqlDb: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function ideDownloadSqlDb(){try{const db=await ideLoadSql(),data=db.export(),blob=new Blob([data],{type:'application/x-sqlite3'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='codigoclaro-practicas.sqlite';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);ideStatus('Base SQLite descargada')}catch(e){ideShowOutput('No se pudo exportar SQLite: '+e.message,'bad')}}
-// ideRunReact: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ideReactPreviewDocument(code, runId) {
-  const bytes = new TextEncoder().encode(code);
-  let binary = '';
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-  }
-  const encoded = btoa(binary);
-  const runner = `
-    (async function () {
-      const runId = ${JSON.stringify(String(runId))};
-      const encoded = ${JSON.stringify(encoded)};
-      const send = (status, message) => parent.postMessage({
-        source: 'cc-react-preview', runId, status,
-        message: String(message || '').slice(0, 1200)
-      }, '*');
-      window.addEventListener('error', event => send('error', event.message || 'Error de ejecución'));
-      window.addEventListener('unhandledrejection', event => send('error', event.reason?.message || event.reason || 'Error asíncrono'));
-      try {
-        const source = new TextDecoder().decode(Uint8Array.from(atob(encoded), char => char.charCodeAt(0)));
-        const compiled = Babel.transform(source, { presets: [['env', { modules: 'commonjs' }], 'react'] }).code;
-        const module = { exports: {} };
-        const require = name => {
-          if (name === 'react') return React;
-          if (name === 'react-dom') return ReactDOM;
-          if (name === 'react-dom/client') return { createRoot: ReactDOM.createRoot.bind(ReactDOM), default: ReactDOM };
-          throw new Error('Paquete no disponible en esta vista: ' + name);
-        };
-        const wrapped = [
-          '(function(module, exports, require) {',
-          compiled,
-          'if (typeof App !== "undefined") module.exports.default = App;',
-          '})(window.__ccModule, window.__ccModule.exports, window.__ccRequire);'
-        ].join('\\n');
-        window.__ccModule = module;
-        window.__ccRequire = require;
-        const script = document.createElement('script');
-        script.textContent = wrapped;
-        document.head.appendChild(script);
-        const Component = module.exports.default || module.exports.App || (typeof module.exports === 'function' ? module.exports : null);
-        if (typeof Component !== 'function') {
-          throw new Error('Exporta un componente por defecto, por ejemplo: export default function App() { ... }');
-        }
-        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(Component));
-        send('ready', 'El componente React está montado y sus eventos están activos.');
-      } catch (error) {
-        send('error', error && error.message || 'No se pudo compilar el JSX');
-      }
-    })();`;
-  const csp = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' ${CC_REACT_CDN}; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">`;
-  const closeScript = '</scr' + 'ipt>';
-  return [
-    '<!doctype html><html lang="es"><head><meta charset="utf-8">', csp,
-    '<style>body{font:16px system-ui,sans-serif;padding:16px;color:#172033}button{padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#f1f5f9}input,textarea{font:inherit;padding:8px;border:1px solid #94a3b8;border-radius:6px}</style>',
-    '<script src="' + CC_REACT_BABEL + '" crossorigin="anonymous">' + closeScript,
-    '<script src="' + CC_REACT_JS + '" crossorigin="anonymous">' + closeScript,
-    '<script src="' + CC_REACT_DOM + '" crossorigin="anonymous">' + closeScript,
-    '</head><body><main id="root">Cargando React…</main><script>', runner, closeScript, '</body></html>'
-  ].join('');
-}
-// ideRunReact: compila JSX y ejecuta el componente dentro de un iframe aislado.
-function ideRunReact(){const code=ideGetCode(),box=document.getElementById('reactPreviewBox'),frame=document.getElementById('reactPreview');if(!box||!frame)return ideShowOutput('No se encontró la vista previa React.','bad');if(new TextEncoder().encode(code).byteLength>50000)return ideShowOutput('El código supera el límite local de 50 KB.','bad');if(!code.trim())return ideShowOutput('El editor está vacío.','bad');ideStopReactPreview();const runId='cc-react-'+Date.now()+'-'+Math.random().toString(36).slice(2),finish=()=>{clearTimeout(timeout);window.removeEventListener('message',onMessage);if(ccReactRunCleanup===finish)ccReactRunCleanup=null},onMessage=event=>{const data=event.data;if(event.source!==frame.contentWindow||!data||data.source!=='cc-react-preview'||data.runId!==runId)return;finish();if(data.status==='ready'){ideShowOutput(data.message,'ok');ideStatus('Vista previa React lista')}else{ideShowOutput('Error en el componente React: '+data.message,'bad');ideStatus('Revisar componente React')}};let timeout=setTimeout(()=>{finish();frame.srcdoc='<!doctype html><html lang="es"><body></body></html>';if(ccReactFrame===frame)ccReactFrame=null;ideShowOutput('La vista previa no respondió en 15 segundos. Se ha detenido el iframe.','bad');ideStatus('Tiempo límite de React')},15000);ccReactRunCleanup=finish;window.addEventListener('message',onMessage);frame.setAttribute('sandbox','allow-scripts');ccReactFrame=frame;frame.srcdoc=ideReactPreviewDocument(code,runId);box.classList.remove('hide');ideShowOutput('Compilando JSX en una vista previa aislada…');ideStatus('Compilando React localmente')}
+async function ideDownloadSqlDb(){try{const result=await ideSqliteRequest('export',{},5000),blob=new Blob([result.database],{type:'application/x-sqlite3'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='codigoclaro-practicas.sqlite';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);ideStatus('Base SQLite descargada')}catch(error){ideShowOutput('No se pudo exportar SQLite: '+(error.message||String(error)),'bad')}}// React se renderiza como HTML estático dentro de un worker terminable; el iframe de salida no ejecuta scripts.
+async function ideRunReact(){const code=ideGetCode(),box=document.getElementById('reactPreviewBox'),frame=document.getElementById('reactPreview');if(!code.trim()){ideShowOutput('El editor está vacío.','bad');return}if(!box||!frame||!window.CCReactPreview||typeof window.CCReactPreview.render!=='function'){ideShowOutput('No se ha cargado el preview React local. Recarga esta página e inténtalo de nuevo.','bad');ideStatus('Preview React no disponible');return}const runId=window.ccReactPreviewRunId=(window.ccReactPreviewRunId||0)+1,button=document.getElementById('ideRunButton');if(button)button.disabled=true;box.classList.remove('hide');frame.setAttribute('sandbox','');frame.srcdoc='<!doctype html><meta charset="utf-8"><p>Generando vista previa…</p>';ideShowOutput('Renderizando React localmente en un worker; los eventos y efectos no se ejecutan.','ok');ideStatus('Render React local en curso');try{const result=await window.CCReactPreview.render(code);if(runId!==window.ccReactPreviewRunId||ideLang().id!=='react'||ideGetCode()!==code)return;frame.srcdoc=result.document;ideShowOutput('Vista previa React estática lista. No ejecuta eventos, efectos ni scripts.','ok');ideStatus('Vista previa React lista')}catch(error){if(runId!==window.ccReactPreviewRunId)return;ideShowOutput('No se pudo generar la vista previa React local.\n'+String(error&&error.message||error),'bad');ideStatus('Error en la vista previa React')}finally{if(runId===window.ccReactPreviewRunId)ideSetRuntimeText()}}
 function ideTestSample(){const l=ideLang();if(l.id==='sql-oracle'||l.id==='sql-mysql'||l.id==='sql-postgres'||l.id==='db')return ideSetCode("SELECT departamento_id, COUNT(*) AS total\nFROM empleados\nGROUP BY departamento_id\nHAVING COUNT(*) > 1\nORDER BY total DESC;");if(l.id==='python')return ideSetCode('notas = [4, 7, 9, 3]\naprobadas = [nota for nota in notas if nota >= 5]\nprint(aprobadas)');if(l.id==='xml')return ideSetCode(IDE_LANGS.find(x=>x.id==='xml').code);if(l.id==='xpath')return ideSetCode('//alumno[number(nota) >= 5]/nombre');if(l.id==='java')return ideSetCode('public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hola desde CódigoClaro");\n  }\n}');if(l.id==='kotlin')return ideSetCode('fun main() {\n    println("Hola desde CódigoClaro")\n}');if(l.id==='js')return ideSetCode('const notas = [4, 7, 9, 3];\nconsole.log(notas.filter(n => n >= 5));');if(l.id==='typescript')return ideSetCode('type Nota = { modulo: string; valor: number };\nconst notas: Nota[] = [{ modulo: "Programación", valor: 8 }, { modulo: "Bases de datos", valor: 4 }];\nconsole.log(notas.filter(nota => nota.valor >= 5));');if(l.id==='react')return ideSetCode("import React from 'react';\nexport default function App() {\n  const [n, setN] = React.useState(0);\n  return <main><h2>Hola, React</h2><button onClick={() => setN(n + 1)}>Pulsaciones: {n}</button></main>;\n}");if(l.id==='mongo')return ideSetCode('console.log(db.alumnos.find({ nota: { $gte: 5 } }, { nombre: 1, nota: 1, _id: 0 }).sort({ nota: -1 }).toArray());');if(l.id==='firebase')return ideSetCode('const db = firestoreDemo();\nasync function main() {\n  const id = await db.add("cursos", { titulo: "Java", nivel: "inicial" });\n  console.log("ID creado:", id);\n  console.log("Cursos:", await db.get("cursos"));\n}\nmain();');if(l.id==='plsql')return ideSetCode('DECLARE\n  v_total NUMBER := 0;\nBEGIN\n  SELECT COUNT(*) INTO v_total FROM empleados;\n  DBMS_OUTPUT.PUT_LINE(\'Empleados: \' || v_total);\nEND;\n/');return ideLoadTemplate(true)}
 // ideLoadChallenge: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideLoadChallenge(){

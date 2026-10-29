@@ -5,8 +5,8 @@
     "title": "Instalación y primer programa",
     "file": "Java_Tema_01.pdf",
     "description": "JDK, JRE, JVM, compilación y ejecución.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -14,8 +14,8 @@
     "title": "Variables y tipos",
     "file": "Java_Tema_02.pdf",
     "description": "Tipos primitivos, referencias, constantes y conversión de tipos.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -23,8 +23,8 @@
     "title": "Operadores y expresiones",
     "file": "Java_Tema_03.pdf",
     "description": "Aritméticos, relacionales, lógicos, precedencia y cortocircuito.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -32,8 +32,8 @@
     "title": "Condicionales",
     "file": "Java_Tema_04.pdf",
     "description": "if/else, switch y expresiones switch.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -41,8 +41,8 @@
     "title": "Bucles",
     "file": "Java_Tema_05.pdf",
     "description": "for, while, do-while, break y continue.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -50,8 +50,8 @@
     "title": "Arrays",
     "file": "Java_Tema_06.pdf",
     "description": "Declaración, índices, recorrido y Arrays utilidades.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -59,8 +59,8 @@
     "title": "Métodos",
     "file": "Java_Tema_07.pdf",
     "description": "Parámetros, retorno, ámbito y sobrecarga.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -68,8 +68,8 @@
     "title": "Clases y objetos",
     "file": "Java_Tema_08.pdf",
     "description": "Estado, comportamiento, instancias y encapsulación.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -77,8 +77,8 @@
     "title": "Constructores y this",
     "file": "Java_Tema_09.pdf",
     "description": "Inicialización, constructores sobrecargados y encadenamiento.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -86,8 +86,8 @@
     "title": "Herencia y polimorfismo",
     "file": "Java_Tema_10.pdf",
     "description": "extends, super, sobrescritura y despacho dinámico.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -95,8 +95,8 @@
     "title": "Interfaces y abstractas",
     "file": "Java_Tema_11.pdf",
     "description": "Contratos, clases abstractas, default methods y composición.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -104,8 +104,8 @@
     "title": "Excepciones",
     "file": "Java_Tema_12.pdf",
     "description": "try/catch/finally, throw, throws y excepciones propias.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -113,8 +113,8 @@
     "title": "Colecciones",
     "file": "Java_Tema_13.pdf",
     "description": "List, Set, Map, ArrayList, HashSet y HashMap.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -122,8 +122,8 @@
     "title": "Genéricos y lambdas",
     "file": "Java_Tema_14.pdf",
     "description": "Tipos parametrizados, Comparator, streams y expresiones lambda.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Java",
@@ -131,8 +131,8 @@
     "title": "Ficheros y pruebas",
     "file": "Java_Tema_15.pdf",
     "description": "Path, Files, try-with-resources y pruebas unitarias.",
-    "pages": 2,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -140,8 +140,8 @@
     "title": "Sintaxis y consola",
     "file": "JavaScript_Tema_01.pdf",
     "description": "let, const, tipos dinámicos, console y strict mode.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -149,8 +149,8 @@
     "title": "Tipos y coerción",
     "file": "JavaScript_Tema_02.pdf",
     "description": "Primitivos, typeof, conversión explícita, NaN y null.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -158,8 +158,8 @@
     "title": "Operadores y condiciones",
     "file": "JavaScript_Tema_03.pdf",
     "description": "===, &&, ||, ??, ternario y truthiness.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -167,8 +167,8 @@
     "title": "Bucles e iteración",
     "file": "JavaScript_Tema_04.pdf",
     "description": "for, while, for...of, for...in y métodos de arrays.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -176,8 +176,8 @@
     "title": "Funciones",
     "file": "JavaScript_Tema_05.pdf",
     "description": "Declaración, expresión, arrow functions, parámetros y closures.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -185,8 +185,8 @@
     "title": "Arrays y objetos",
     "file": "JavaScript_Tema_06.pdf",
     "description": "Map, filter, find, reduce, spread y destructuring.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -194,8 +194,8 @@
     "title": "DOM y eventos",
     "file": "JavaScript_Tema_07.pdf",
     "description": "querySelector, textContent, classList y addEventListener.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -203,8 +203,8 @@
     "title": "Módulos",
     "file": "JavaScript_Tema_08.pdf",
     "description": "export, import, módulos ESM y organización.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -212,8 +212,8 @@
     "title": "Promesas y async/await",
     "file": "JavaScript_Tema_09.pdf",
     "description": "Promise, then/catch, async, await y errores.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -221,8 +221,8 @@
     "title": "JSON y APIs",
     "file": "JavaScript_Tema_10.pdf",
     "description": "JSON.parse/stringify, fetch, códigos HTTP y cabeceras.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -230,8 +230,8 @@
     "title": "Clases y POO",
     "file": "JavaScript_Tema_11.pdf",
     "description": "class, constructor, métodos, herencia y composición.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -239,8 +239,8 @@
     "title": "Errores y depuración",
     "file": "JavaScript_Tema_12.pdf",
     "description": "Error, throw, stack trace, breakpoints y console.table.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -248,8 +248,8 @@
     "title": "Node.js y backend",
     "file": "JavaScript_Tema_13.pdf",
     "description": "process, módulos, variables de entorno y servidor HTTP.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -257,8 +257,8 @@
     "title": "Pruebas y calidad",
     "file": "JavaScript_Tema_14.pdf",
     "description": "Pruebas unitarias, casos límite, lint y funciones puras.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "JavaScript",
@@ -266,8 +266,8 @@
     "title": "Seguridad web",
     "file": "JavaScript_Tema_15.pdf",
     "description": "XSS, sanitización, CORS, cookies y validación.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -275,8 +275,8 @@
     "title": "Instalación y primer programa",
     "file": "Python_Tema_01.pdf",
     "description": "Intérprete, scripts, REPL, pip y entornos virtuales.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -284,8 +284,8 @@
     "title": "Variables y tipos",
     "file": "Python_Tema_02.pdf",
     "description": "int, float, str, bool, None y tipado dinámico.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -293,8 +293,8 @@
     "title": "Operadores y condiciones",
     "file": "Python_Tema_03.pdf",
     "description": "Comparaciones, and/or/not, pertenencia e identidad.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -302,8 +302,8 @@
     "title": "Bucles",
     "file": "Python_Tema_04.pdf",
     "description": "for, while, range, break, continue y enumerate.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -311,8 +311,8 @@
     "title": "Listas y tuplas",
     "file": "Python_Tema_05.pdf",
     "description": "Índices, slices, mutabilidad y desempaquetado.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -320,8 +320,8 @@
     "title": "Diccionarios y conjuntos",
     "file": "Python_Tema_06.pdf",
     "description": "dict, set, get, items y operaciones de conjuntos.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -329,8 +329,8 @@
     "title": "Funciones",
     "file": "Python_Tema_07.pdf",
     "description": "def, return, parámetros por defecto, *args y **kwargs.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -338,8 +338,8 @@
     "title": "Comprensiones y generadores",
     "file": "Python_Tema_08.pdf",
     "description": "Comprensiones, yield, iteradores y evaluación perezosa.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -347,8 +347,8 @@
     "title": "Módulos y paquetes",
     "file": "Python_Tema_09.pdf",
     "description": "import, __name__, paquetes y organización.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -356,8 +356,8 @@
     "title": "Excepciones",
     "file": "Python_Tema_10.pdf",
     "description": "try, except, else, finally y excepciones propias.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -365,8 +365,8 @@
     "title": "Ficheros y JSON",
     "file": "Python_Tema_11.pdf",
     "description": "with, pathlib, encoding UTF-8, json y CSV.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -374,8 +374,8 @@
     "title": "POO y dataclasses",
     "file": "Python_Tema_12.pdf",
     "description": "Clases, self, propiedades, herencia y composición.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -383,8 +383,8 @@
     "title": "Librerías y entornos",
     "file": "Python_Tema_13.pdf",
     "description": "pip, venv, requirements y aislamiento de dependencias.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -392,8 +392,8 @@
     "title": "Pruebas y depuración",
     "file": "Python_Tema_14.pdf",
     "description": "assert, unittest/pytest, logging y debugger.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Python",
@@ -401,8 +401,8 @@
     "title": "APIs y seguridad",
     "file": "Python_Tema_15.pdf",
     "description": "requests, HTTP, validación, secretos y manejo de errores.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -410,8 +410,8 @@
     "title": "Primer programa Kotlin",
     "file": "Kotlin_Tema_01.pdf",
     "description": "Kotlin/JVM, main, compilación y sintaxis concisa.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -419,8 +419,8 @@
     "title": "val, var y tipos",
     "file": "Kotlin_Tema_02.pdf",
     "description": "Inferencia, tipos numéricos, String y conversión.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -428,8 +428,8 @@
     "title": "Null safety",
     "file": "Kotlin_Tema_03.pdf",
     "description": "Tipos nullable, ?, ?:, !! y safe calls.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -437,8 +437,8 @@
     "title": "Condiciones y when",
     "file": "Kotlin_Tema_04.pdf",
     "description": "if como expresión, when, rangos y smart casts.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -446,8 +446,8 @@
     "title": "Bucles y rangos",
     "file": "Kotlin_Tema_05.pdf",
     "description": "for, while, until, downTo, step y repeat.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -455,8 +455,8 @@
     "title": "Funciones",
     "file": "Kotlin_Tema_06.pdf",
     "description": "fun, parámetros nombrados, defaults y expresiones.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -464,8 +464,8 @@
     "title": "Colecciones",
     "file": "Kotlin_Tema_07.pdf",
     "description": "List, MutableList, Set, Map y operaciones.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -473,8 +473,8 @@
     "title": "Clases y data class",
     "file": "Kotlin_Tema_08.pdf",
     "description": "Constructores, propiedades, init, data class y copy.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -482,8 +482,8 @@
     "title": "Herencia e interfaces",
     "file": "Kotlin_Tema_09.pdf",
     "description": "open, override, abstract, interface y sealed class.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -491,8 +491,8 @@
     "title": "Lambdas y funciones de orden superior",
     "file": "Kotlin_Tema_10.pdf",
     "description": "it, map, filter, let, apply y run.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -500,8 +500,8 @@
     "title": "Excepciones",
     "file": "Kotlin_Tema_11.pdf",
     "description": "try como expresión, throw, require y check.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -509,8 +509,8 @@
     "title": "Genéricos",
     "file": "Kotlin_Tema_12.pdf",
     "description": "Tipos parametrizados, variance y restricciones.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -518,8 +518,8 @@
     "title": "Coroutines",
     "file": "Kotlin_Tema_13.pdf",
     "description": "suspend, launch, async, scopes y cancelación.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -527,8 +527,8 @@
     "title": "Ficheros y serialización",
     "file": "Kotlin_Tema_14.pdf",
     "description": "java.nio.file, streams y manejo de recursos.",
-    "pages": 2,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "Kotlin",
@@ -536,8 +536,8 @@
     "title": "Pruebas y arquitectura",
     "file": "Kotlin_Tema_15.pdf",
     "description": "JUnit, pruebas unitarias, capas y separación de responsabilidades.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -545,8 +545,8 @@
     "title": "Componentes y JSX",
     "file": "React_Tema_01.pdf",
     "description": "Componentes función, JSX y renderizado.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -554,8 +554,8 @@
     "title": "Props",
     "file": "React_Tema_02.pdf",
     "description": "Datos de entrada, destructuring y composición.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -563,8 +563,8 @@
     "title": "Estado con useState",
     "file": "React_Tema_03.pdf",
     "description": "Estado local y actualizaciones funcionales.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -572,8 +572,8 @@
     "title": "Eventos y formularios",
     "file": "React_Tema_04.pdf",
     "description": "Handlers, controlled inputs y submit.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -581,8 +581,8 @@
     "title": "Renderizado condicional",
     "file": "React_Tema_05.pdf",
     "description": "&&, ternarios, estados de carga y error.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -590,8 +590,8 @@
     "title": "Listas y keys",
     "file": "React_Tema_06.pdf",
     "description": "map, keys estables y renderizado de colecciones.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -599,8 +599,8 @@
     "title": "useEffect",
     "file": "React_Tema_07.pdf",
     "description": "Efectos, dependencias y limpieza.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -608,8 +608,8 @@
     "title": "Hooks personalizados",
     "file": "React_Tema_08.pdf",
     "description": "Reutilizar lógica con useX y reglas de hooks.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -617,8 +617,8 @@
     "title": "Context",
     "file": "React_Tema_09.pdf",
     "description": "Context API, Provider y consumo.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -626,8 +626,8 @@
     "title": "React Router",
     "file": "React_Tema_10.pdf",
     "description": "Rutas, navegación, parámetros y páginas 404.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -635,8 +635,8 @@
     "title": "Peticiones a APIs",
     "file": "React_Tema_11.pdf",
     "description": "fetch, estados de carga, errores y cancelación.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -644,8 +644,8 @@
     "title": "Validación de formularios",
     "file": "React_Tema_12.pdf",
     "description": "Validación, mensajes accesibles y envío.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -653,8 +653,8 @@
     "title": "Rendimiento",
     "file": "React_Tema_13.pdf",
     "description": "memo, useMemo, useCallback y medición.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -662,8 +662,8 @@
     "title": "Pruebas de componentes",
     "file": "React_Tema_14.pdf",
     "description": "Testing Library, interacción y accesibilidad.",
-    "pages": 2,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   },
   {
     "track": "React",
@@ -671,7 +671,7 @@
     "title": "Seguridad y despliegue",
     "file": "React_Tema_15.pdf",
     "description": "XSS, secretos, variables de entorno y build.",
-    "pages": 1,
-    "version": "2.0"
+    "pages": 11,
+    "version": "3.0"
   }
 ]
