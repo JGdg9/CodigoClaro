@@ -187,8 +187,8 @@
   function runReadOnlySql(database, source) {
     const query = sourceText(source).trim();
     if (!query || query.length > MAX_SQL_QUERY_CHARS) throw new Error('Escribe una consulta de hasta 4 KB.');
-    if (!/^select\b/i.test(query) || /;|--|\/\*|\*\/|\b(?:with|recursive|pragma|attach|detach|insert|update|delete|drop|alter|create|vacuum|load_extension|randomblob|zeroblob)\b/i.test(query)) {
-      throw new Error('Para proteger la prueba local, usa una sola consulta SELECT sin comentarios, CTE ni cambios de datos.');
+    if (!/^(?:select\b|with\b(?!\s+recursive\b))/i.test(query) || /;|--|\/\*|\*\/|\b(?:recursive|pragma|attach|detach|insert|update|delete|drop|alter|create|vacuum|load_extension|randomblob|zeroblob)\b/i.test(query)) {
+      throw new Error('Para proteger la prueba local, usa una consulta SELECT o un CTE no recursivo, sin comentarios ni cambios de datos.');
     }
     if (!sqlHasBoundedStructure(query)) {
       throw new Error('La consulta supera el límite de anidamiento o de subconsultas permitido en esta práctica.');
@@ -202,8 +202,9 @@
       return clause.includes(',');
     })) throw new Error('Usa JOIN explícito en lugar de listas de tablas separadas por comas.');
     const calls = Array.from(query.matchAll(/\b([a-z_][a-z0-9_]*)\s*\(/gi), function (match) { return match[1].toLowerCase(); });
-    if (calls.some(function (name) { return !['count','exists','in'].includes(name); })) {
-      throw new Error('La práctica permite COUNT y subconsultas EXISTS; otras funciones SQL no están habilitadas en esta prueba.');
+    const safeFunctions=['as','count','avg','sum','min','max','exists','in','coalesce','ifnull','lower','upper','trim','length','round','abs'];
+    if (calls.some(function (name) { return !safeFunctions.includes(name); })) {
+      throw new Error('La práctica permite agregaciones y funciones escalares comunes; otras funciones SQL no están habilitadas en esta prueba.');
     }
     const results = database.exec(query);
     if (!Array.isArray(results) || results.length !== 1 || !Array.isArray(results[0].columns) || !Array.isArray(results[0].values)) {

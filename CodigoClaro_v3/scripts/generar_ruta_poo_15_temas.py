@@ -12,6 +12,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph
+from pdf_flow import build_route_pdf_bytes
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -585,15 +586,15 @@ def draw_page(c, lesson, number):
 def make_pdf():
     if len(LESSONS) != 15:
         raise ValueError(f"Se esperaban 15 temas; hay {len(LESSONS)}")
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4, pageCompression=1)
-    c.setTitle("Ruta POO en Java · Principios y diseño · 15 temas")
-    c.setAuthor("CódigoClaro · materiales didácticos con documentación enlazada")
-    c.setSubject("Programación orientada a objetos en Java SE 17+")
-    for number, lesson in enumerate(LESSONS, start=1):
-        draw_page(c, lesson, number)
-    c.save()
-    return buffer.getvalue()
+    return build_route_pdf_bytes(
+        route_name="POO en Java",
+        title="Ruta POO en Java · Principios y diseño",
+        subtitle="15 temas · Java SE 17+ · ejemplos y prácticas con documentación enlazada",
+        lessons=LESSONS,
+        author="CódigoClaro · síntesis basada en Dev.java y Oracle",
+        subject="Programación orientada a objetos en Java SE 17+",
+        editorial_note="Las explicaciones se apoyan en documentación primaria; los ejemplos y prácticas se identifican como material didáctico del curso.",
+    )
 
 
 def main():

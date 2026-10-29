@@ -299,6 +299,31 @@ test('el IDE permite cargar retos guiados de los ejercicios en el editor', () =>
   assert.match(aula, /function ideLoadChallenge\(\)/);
 });
 
+test('un reto XPath abre el perfil XPath y conserva su expresión', () => {
+  const start = aula.indexOf('function ideLoadChallenge(){');
+  const end = aula.indexOf('\n}\n', start) + 2;
+  assert.ok(start >= 0 && end > start);
+  const code = '//libro[@id="2"]';
+  const exercise = ['xml', 'XPath · libro con id 2', 'Selecciona el libro.', code];
+  const challengeSelect = {value:'0'};
+  const languageSelect = {value:'xml'};
+  let loadedCode = '';
+  let analyzed = false;
+  const loadChallenge = vm.runInNewContext(`${aula.slice(start, end)}\nideLoadChallenge`, {
+    E:[exercise],
+    document:{getElementById(id){return id === 'ideChallengeSelect' ? challengeSelect : languageSelect;}},
+    ideSwitchLanguage(){},
+    ideSetCode(value){loadedCode = value;},
+    ideAnalyze(){analyzed = true;},
+    ideStatus(){},
+    ideShowOutput(){}
+  });
+  loadChallenge();
+  assert.equal(languageSelect.value, 'xpath');
+  assert.equal(loadedCode, code);
+  assert.equal(analyzed, true);
+});
+
 test('tests respetan 25 preguntas, corrigen al seleccionar y muestran nota final', () => {
   assert.match(panel, /filterFallback:data\.filterFallback/);
   assert.match(panel, /checkQuizAnswer\(i,Number\(input\.value\)\)/);

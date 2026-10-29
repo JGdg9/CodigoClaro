@@ -106,7 +106,7 @@ const E=[
 ,['java','Java · contar vocales','Escribe un método contarVocales(String texto) que devuelva cuántas vocales contiene, sin distinguir mayúsculas.','static int contarVocales(String texto) {\n    // tu código\n}',[['declara el método',/contarVocales\s*\(\s*String\s+\w+\s*\)/],['recorre el texto',/for\s*\(|toCharArray\s*\(/],['comprueba vocales',/aeiou|contains\s*\(/i],['devuelve contador',/return\s+\w+\s*;/]],'static int contarVocales(String texto) {\n    int total = 0;\n    for (char c : texto.toLowerCase().toCharArray()) {\n        if ("aeiouáéíóú".indexOf(c) >= 0) total++;\n    }\n    return total;\n}','Normaliza a minúsculas y recorre cada carácter. Decide qué hacer con texto null si el enunciado lo exige.'],
 ['java','Java · eliminar duplicados','Dada una lista de enteros, crea una colección sin duplicados conservando el orden de aparición.','List<Integer> numeros = List.of(3,1,3,2,1);\n// crea sinDuplicados', [['crea colección sinDuplicados',/sinDuplicados\s*=/],['usa LinkedHashSet',/LinkedHashSet/],['mantiene orden',/LinkedHashSet/]],'List<Integer> sinDuplicados = new ArrayList<>(new LinkedHashSet<>(numeros));','LinkedHashSet combina unicidad con orden de inserción.'],
 ['sql','SQL · detectar registros sin relación','Con tablas clientes(id,nombre) y pedidos(id,cliente_id), encuentra clientes que nunca han hecho pedidos.','SELECT ...', [['consulta clientes',/FROM\s+clientes/i],['LEFT JOIN o NOT EXISTS',/LEFT\s+JOIN|NOT\s+EXISTS/i],['detecta ausencia',/IS\s+NULL|NOT\s+EXISTS/i]],'SELECT c.id, c.nombre FROM clientes c LEFT JOIN pedidos p ON p.cliente_id = c.id WHERE p.id IS NULL;','También puedes resolverlo con NOT EXISTS; LEFT JOIN y comprobación IS NULL es una técnica habitual.'],
-['sql','SQL · actualizar con transacción','Escribe una transacción que reste 20 a la cuenta origen y sume 20 a la cuenta destino.','START TRANSACTION;\n-- operaciones\nCOMMIT;', [['inicia transacción',/START\s+TRANSACTION|BEGIN/i],['resta al origen',/UPDATE\s+cuentas[\s\S]*saldo\s*=\s*saldo\s*-\s*20/i],['suma al destino',/UPDATE\s+cuentas[\s\S]*saldo\s*=\s*saldo\s*\+\s*20/i],['confirma o revierte',/COMMIT|ROLLBACK/i]],'START TRANSACTION;\nUPDATE cuentas SET saldo = saldo - 20 WHERE id = 1;\nUPDATE cuentas SET saldo = saldo + 20 WHERE id = 2;\nCOMMIT;','En una aplicación real comprueba saldo suficiente, filas afectadas y revierte ante errores.'],
+['sql','SQL · actualizar con transacción','Escribe una transacción que reste 20 a la cuenta origen y sume 20 a la cuenta destino.','BEGIN TRANSACTION;\n-- operaciones\nCOMMIT;', [['inicia transacción',/START\s+TRANSACTION|BEGIN/i],['resta al origen',/UPDATE\s+cuentas[\s\S]*saldo\s*=\s*saldo\s*-\s*20/i],['suma al destino',/UPDATE\s+cuentas[\s\S]*saldo\s*=\s*saldo\s*\+\s*20/i],['confirma o revierte',/COMMIT|ROLLBACK/i]],'BEGIN TRANSACTION;\nUPDATE cuentas SET saldo = saldo - 20 WHERE id = 1;\nUPDATE cuentas SET saldo = saldo + 20 WHERE id = 2;\nCOMMIT;','En una aplicación real comprueba saldo suficiente, filas afectadas y revierte ante errores.'],
 ['xml','XPath · localizar alumnos aprobados','En XML con elementos alumno/nota, selecciona alumnos cuya nota sea mayor o igual que 5.','//alumno[...]', [['selecciona alumno',/\/\/alumno/],['usa nota',/nota/],['compara >= 5',/>=\s*5/]],'//alumno[nota >= 5]','El predicado filtra los nodos alumno según el valor de su elemento nota.'],
 ['plsql','PL/SQL · cursor con departamento','Recorre empleados del departamento 10 e imprime su apellido. Usa un cursor FOR.','BEGIN\n  -- cursor FOR\nEND;\n/', [['usa FOR y LOOP',/FOR[\s\S]*LOOP/i],['consulta empleados',/SELECT[\s\S]*FROM\s+empleados/i],['filtra departamento 10',/WHERE[\s\S]*departamento_id\s*=\s*10/i],['imprime apellido',/DBMS_OUTPUT\.PUT_LINE/i]],'BEGIN\n  FOR r IN (SELECT apellido FROM empleados WHERE departamento_id = 10) LOOP\n    DBMS_OUTPUT.PUT_LINE(r.apellido);\n  END LOOP;\nEND;\n/','El cursor FOR administra automáticamente apertura, lectura y cierre. Ajusta nombres de columnas a tu esquema.'],
 ['js','JavaScript · contar frecuencias','Crea un objeto frecuencia que cuente cuántas veces aparece cada palabra en el array palabras.','const palabras = ["sol", "luna", "sol"];\n// crea frecuencia', [['crea frecuencia',/frecuencia\s*=/],['recorre palabras',/for\s*(?:\(|\w+\s+of\s+)/],['incrementa contador',/frecuencia\[[^\]]+\]\s*=|\+\+/],['usa valor inicial',/\|\|\s*0|hasOwnProperty|Object\.hasOwn/i]],'const frecuencia = {};\nfor (const palabra of palabras) {\n  frecuencia[palabra] = (frecuencia[palabra] || 0) + 1;\n}','Inicializa cada palabra en cero cuando todavía no existe y después incrementa.'],
@@ -472,14 +472,25 @@ async function ideLoadSql(){
    if(saved){try{const raw=atob(saved),arr=Uint8Array.from(raw,c=>c.charCodeAt(0));db=new SQL.Database(arr)}catch(e){ccStorageRemove('cc_sqlite_demo_db')}}
    if(!db)db=new SQL.Database();
    db.run('PRAGMA foreign_keys=ON');
-   db.run('CREATE TABLE IF NOT EXISTS departamentos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL)');
-   db.run('CREATE TABLE IF NOT EXISTS empleados (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, departamento_id INTEGER, salario REAL, FOREIGN KEY(departamento_id) REFERENCES departamentos(id))');
-   db.run('CREATE TABLE IF NOT EXISTS alumnos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, nota REAL CHECK(nota >= 0 AND nota <= 10))');
-   db.run('CREATE TABLE IF NOT EXISTS cursos (id INTEGER PRIMARY KEY, titulo TEXT NOT NULL, nivel TEXT)');
+    db.run('CREATE TABLE IF NOT EXISTS departamentos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL)');
+    db.run('CREATE TABLE IF NOT EXISTS cursos (id INTEGER PRIMARY KEY, titulo TEXT NOT NULL, nivel TEXT)');
+    db.run('CREATE TABLE IF NOT EXISTS empleados (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, departamento_id INTEGER, salario REAL, FOREIGN KEY(departamento_id) REFERENCES departamentos(id))');
+    db.run('CREATE TABLE IF NOT EXISTS alumnos (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, nota REAL CHECK(nota >= 0 AND nota <= 10), curso_id INTEGER REFERENCES cursos(id))');
+    db.run('CREATE TABLE IF NOT EXISTS cuentas (id INTEGER PRIMARY KEY, titular TEXT NOT NULL, saldo REAL NOT NULL CHECK(saldo >= 0))');
+    const alumnoColumns=db.exec('PRAGMA table_info(alumnos)')[0]?.values||[];
+    const needsCourseMigration=!alumnoColumns.some(column=>column[1]==='curso_id');
+    if(needsCourseMigration)db.run('ALTER TABLE alumnos ADD COLUMN curso_id INTEGER');
    db.run("INSERT OR IGNORE INTO departamentos VALUES (1,'Desarrollo'),(2,'Sistemas'),(3,'Datos')");
    db.run("INSERT OR IGNORE INTO empleados VALUES (1,'Ana',1,1800),(2,'Luis',2,1650),(3,'Marta',1,2200),(4,'Pablo',3,1950)");
-   db.run("INSERT OR IGNORE INTO alumnos VALUES (1,'Lucía',8.5),(2,'Mario',4.2),(3,'Inés',9.1),(4,'Pablo',6.7)");
    db.run("INSERT OR IGNORE INTO cursos VALUES (1,'Java','inicial'),(2,'SQL','medio'),(3,'Python','inicial')");
+    if(!needsCourseMigration){
+     db.run("INSERT OR IGNORE INTO alumnos (id,nombre,nota,curso_id) VALUES (1,'Lucía',8.5,1),(2,'Mario',4.2,2),(3,'Inés',9.1,3),(4,'Pablo',6.7,2)");
+    }else{
+     db.run("INSERT OR IGNORE INTO alumnos (id,nombre,nota) VALUES (1,'Lucía',8.5),(2,'Mario',4.2),(3,'Inés',9.1),(4,'Pablo',6.7)");
+     db.run("UPDATE alumnos SET curso_id=CASE id WHEN 1 THEN 1 WHEN 2 THEN 2 WHEN 3 THEN 3 WHEN 4 THEN 2 END WHERE curso_id IS NULL AND ((id=1 AND nombre='Lucía') OR (id=2 AND nombre='Mario') OR (id=3 AND nombre='Inés') OR (id=4 AND nombre='Pablo'))");
+    }
+    const accountColumns=db.exec('PRAGMA table_info(cuentas)')[0]?.values||[];
+    if(accountColumns.length===3&&accountColumns.some(column=>column[1]==='titular')&&accountColumns.some(column=>column[1]==='saldo'))db.run("INSERT OR IGNORE INTO cuentas (id,titular,saldo) VALUES (1,'Ana',100),(2,'Luis',50)");
    if(generation!==ccSqlGeneration){db.close();throw new Error('La carga de SQLite se canceló al restaurar la base.')}
    ccSqlDb=db;
    return db;
@@ -561,7 +572,20 @@ function ideRunReact(){const code=ideGetCode(),box=document.getElementById('reac
 // ideTestSample: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideTestSample(){const l=ideLang();if(l.id==='sql-oracle'||l.id==='sql-mysql'||l.id==='sql-postgres'||l.id==='db')return ideSetCode("SELECT departamento_id, COUNT(*) AS total\nFROM empleados\nGROUP BY departamento_id\nHAVING COUNT(*) > 1\nORDER BY total DESC;");if(l.id==='python')return ideSetCode('notas = [4, 7, 9, 3]\naprobadas = [nota for nota in notas if nota >= 5]\nprint(aprobadas)');if(l.id==='xml')return ideSetCode(IDE_LANGS.find(x=>x.id==='xml').code);if(l.id==='xpath')return ideSetCode('//alumno[number(nota) >= 5]/nombre');if(l.id==='java')return ideSetCode('public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hola desde CódigoClaro");\n  }\n}');if(l.id==='kotlin')return ideSetCode('fun main() {\n    println("Hola desde CódigoClaro")\n}');if(l.id==='js')return ideSetCode('const notas = [4, 7, 9, 3];\nconsole.log(notas.filter(n => n >= 5));');if(l.id==='react')return ideSetCode("import React from 'react';\nexport default function App() {\n  const [n, setN] = React.useState(0);\n  return <main><h2>Hola, React</h2><button onClick={() => setN(n + 1)}>Pulsaciones: {n}</button></main>;\n}");if(l.id==='mongo')return ideSetCode('console.log(db.alumnos.find({ nota: { $gte: 5 } }, { nombre: 1, nota: 1, _id: 0 }).sort({ nota: -1 }).toArray());');if(l.id==='firebase')return ideSetCode('const db = firestoreDemo();\nasync function main() {\n  const id = await db.add("cursos", { titulo: "Java", nivel: "inicial" });\n  console.log("ID creado:", id);\n  console.log("Cursos:", await db.get("cursos"));\n}\nmain();');if(l.id==='plsql')return ideSetCode('DECLARE\n  v_total NUMBER := 0;\nBEGIN\n  SELECT COUNT(*) INTO v_total FROM empleados;\n  DBMS_OUTPUT.PUT_LINE(\'Empleados: \' || v_total);\nEND;\n/');return ideLoadTemplate(true)}
 // ideLoadChallenge: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function ideLoadChallenge(){const select=document.getElementById('ideChallengeSelect'),index=Number(select?.value);if(!select||select.value===''||!Number.isInteger(index)||!E[index]){ideStatus('Elige un reto guiado primero');return}const e=E[index],map={java:'java',oop:'oop',python:'python',js:'js',node:'node',react:'react',sql:'sql-mysql',database:'db',plsql:'plsql',xpath:'xpath',xml:'xml',html:'html',css:'css',mongo:'mongo',firebase:'firebase',firestore:'firebase',backend:'backend',api:'backend'};const lang=map[e[0]],languageSelect=document.getElementById('ideLang');if(!lang){ideStatus('Este reto todavía no tiene un editor asignado.');return}if(languageSelect){languageSelect.value=lang;ideSwitchLanguage()}ideSetCode(e[3].replace(/\\n/g,'\n'));ideAnalyze();ideStatus('Reto cargado: '+e[1]);ideShowOutput('Reto cargado. Lee el enunciado en la sección de Ejercicios de código; el analizador solo comprueba patrones y no sustituye al compilador.')}
+function ideLoadChallenge(){
+ const select=document.getElementById('ideChallengeSelect'),index=Number(select?.value);
+ if(!select||select.value===''||!Number.isInteger(index)||!E[index]){ideStatus('Elige un reto guiado primero');return}
+ const exercise=E[index];
+ const challengeLanguage=exercise[1].startsWith('XPath ·')?'xpath':exercise[0];
+ const map={java:'java',oop:'oop',python:'python',js:'js',node:'node',react:'react',sql:'sql-mysql',database:'db',plsql:'plsql',xpath:'xpath',xml:'xml',html:'html',css:'css',mongo:'mongo',firebase:'firebase',firestore:'firebase',backend:'backend',api:'backend'};
+ const language=map[challengeLanguage],languageSelect=document.getElementById('ideLang');
+ if(!language){ideStatus('Este reto todavía no tiene un editor asignado.');return}
+ if(languageSelect){languageSelect.value=language;ideSwitchLanguage()}
+ ideSetCode(exercise[3].replace(/\\n/g,'\n'));
+ ideAnalyze();
+ ideStatus('Reto cargado: '+exercise[1]);
+ ideShowOutput('Reto cargado. Lee el enunciado en la sección de Ejercicios de código; el analizador solo comprueba patrones y no sustituye al compilador.')
+}
 // ideOpenFile: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function ideOpenFile(){document.getElementById('ideFile').click()}
 // ideReadFile: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.

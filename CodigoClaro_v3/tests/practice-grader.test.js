@@ -39,7 +39,7 @@ function createSqlFixture(results) {
     close() {},
     exec(query) {
       if (/count\s*\(/i.test(query)) return results.counts;
-      if (/not\s+exists/i.test(query)) return results.unborrowed;
+      if (/not\s+exists|\bwith\b/i.test(query)) return results.unborrowed;
       return results.active;
     }
   };
@@ -100,28 +100,36 @@ test("las consultas SQL de la biblioteca aceptan JOIN, agrupación y NOT EXISTS 
   assert.deepEqual(report.tests.map(item => item.passed), [true,true,true]);
 });
 
-test("el corrector SQL señala resultados incorrectos y no ejecuta CTE o sentencias de escritura", () => {
+test("el corrector SQL acepta CTE no recursivos y bloquea CTE recursivos o escrituras", () => {
   let executed = 0;
   const fixture = {
     run() {}, close() {},
     exec(query) {
       executed++;
-      if (/count\s*\(/i.test(query)) return [{columns:["usuario_id","total"],values:[[1,2],[2,1],[3,0]]}];
-      if (/not\s+exists/i.test(query)) return [{columns:["id"],values:[[4]]}];
-      return [{columns:["libro_id"],values:[[2],[3]]}];
+      if (/count\s*\(/i.test(query)) return [{columns:["nombre","num_prestamos"],values:[["Ana",2],["Luis",2],["Marta",0]]}];
+      if (/not\s+exists|\bwith\b/i.test(query)) return [{columns:["titulo"],values:[["XML"]]}];
+      return [{columns:["prestamo_id","titulo","nombre"],values:[[2,"SQL","Ana"],[3,"Kotlin","Luis"]]}];
     }
   };
   const report = grader.gradeSqlAssignment({
-    active:"SELECT libro_id FROM prestamos WHERE fecha_devolucion IS NULL",
-    counts:"SELECT usuario_id, COUNT(*) AS total FROM prestamos GROUP BY usuario_id",
-    unborrowed:"WITH libros_sin AS (SELECT id FROM libros) SELECT id FROM libros_sin"
+    active:"SELECT p.id AS prestamo_id, l.titulo, u.nombre FROM prestamos p LEFT JOIN libros l ON l.id=p.libro_id LEFT JOIN usuarios u ON u.id=p.usuario_id WHERE p.fecha_devolucion IS NULL",
+    counts:"SELECT u.nombre, COUNT(p.id) AS num_prestamos FROM usuarios u LEFT JOIN prestamos p ON p.usuario_id=u.id GROUP BY u.id",
+    unborrowed:"WITH libros_sin AS (SELECT titulo FROM libros WHERE id=4) SELECT titulo FROM libros_sin"
   }, () => fixture);
-  assert.equal(report.percent, 33);
+  assert.equal(report.percent, 100);
   assert.equal(report.tests[0].passed, true);
-  assert.match(report.tests[1].message, /cantidades correctas|Marta/i);
-  assert.equal(report.tests[2].passed, false);
-  assert.match(report.tests[2].message, /SELECT sin comentarios, CTE/i);
-  assert.equal(executed, 2);
+  assert.equal(report.tests[1].passed, true);
+  assert.equal(report.tests[2].passed, true);
+  assert.equal(executed, 3);
+
+  const recursive = grader.gradeSqlAssignment({
+    active:"WITH RECURSIVE serie(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM serie) SELECT n FROM serie",
+    counts:"UPDATE usuarios SET nombre='modificado'",
+    unborrowed:"SELECT id FROM libros WHERE id=4"
+  }, () => fixture);
+  assert.equal(recursive.tests.every(item => !item.passed), true);
+  assert.match(recursive.tests[0].message, /CTE no recursivo/i);
+  assert.equal(executed, 4, "ni la recursión ni la escritura alcanzan SQLite");
 });
 
 test("las consultas SQL con funciones costosas o demasiadas uniones se rechazan antes de ejecutar", () => {

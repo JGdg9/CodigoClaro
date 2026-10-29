@@ -304,8 +304,7 @@ def build_story():
         story.append(KeepTogether([para(escape(title), "h2"), para(escape(desc), "body")]))
     story += [Spacer(1, 8 * mm), para("Cómo estudiar cada tema", "h2"),
               para("Lee el objetivo, contrasta los conceptos en las fuentes enlazadas y realiza la práctica. Usa el criterio de comprobación para explicar qué funciona y qué caso límite falta. Los enlaces llevan a estándares o documentación mantenidos por sus organismos y proyectos oficiales.", "body"),
-              para("Las recomendaciones de seguridad dependen del contexto del sistema. Esta ruta enseña controles verificables; no fija valores universales de producción.", "small"),
-              PageBreak()]
+              para("Las recomendaciones de seguridad dependen del contexto del sistema. Esta ruta enseña controles verificables; no fija valores universales de producción.", "small")]
     for index, topic in enumerate(TOPICS, 1):
         story.extend([para(f"TEMA {index:02d}  /  15", "eyebrow"), para(escape(topic["title"]), "h1"),
                       callout("Al terminar", topic["objective"]), Spacer(1, 5 * mm),
@@ -317,7 +316,7 @@ def build_story():
                   Spacer(1, 5 * mm), para("Fuentes fiables", "h2")]
         for source in topic["sources"]:
             story.append(source_paragraph(source))
-    story += [PageBreak(), para("Referencias de la ruta", "h1"),
+    story += [para("Referencias de la ruta", "h1"),
               para("Las fuentes de cada tema enlazan a la sección más relevante. Consulta la versión indicada por el organismo cuando cambie el runtime o la norma.", "body"), Spacer(1, 3 * mm)]
     for name, url in SOURCES.items():
         story.append(para(f'<link href="{escape(url)}" color="#6651A5"><u>{escape(name)}</u></link>', "source"))

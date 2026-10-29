@@ -108,6 +108,6 @@ test("el IDE incorpora validación XML y consultas XPath locales", () => {
   assert.match(aula, /id:'xpath',label:'XPath'/);
   assert.match(aula, /if\(l\.id==='xml'\)return ideRunXml\(\)/);
   assert.match(aula, /if\(l\.id==='xpath'\)return ideRunXPath\(\)/);
-  assert.match(aula, /!lang\)\{ideStatus\('Este reto todavía no tiene un editor asignado\.'/);
+  assert.match(aula, /if\s*\(!language\)\s*\{\s*ideStatus\('Este reto todavía no tiene un editor asignado\.'/);
   assert.match(aula, /xpath:'xpath'/);
 });

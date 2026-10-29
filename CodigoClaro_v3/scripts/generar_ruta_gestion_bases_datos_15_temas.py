@@ -12,6 +12,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph
+from pdf_flow import build_route_pdf_bytes
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -536,15 +537,15 @@ def draw_page(c, lesson, number):
 def make_pdf():
     if len(LESSONS) != 15:
         raise ValueError(f"Se esperaban 15 temas; hay {len(LESSONS)}")
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4, pageCompression=1)
-    c.setTitle("Ruta de gestión de bases de datos · PostgreSQL · 15 temas")
-    c.setAuthor("CódigoClaro · material didáctico con documentación oficial")
-    c.setSubject("Modelado, administración y recuperación de bases de datos")
-    for number, lesson in enumerate(LESSONS, start=1):
-        draw_page(c, lesson, number)
-    c.save()
-    return buffer.getvalue()
+    return build_route_pdf_bytes(
+        route_name="Gestión de bases de datos",
+        title="Gestión de bases de datos con PostgreSQL",
+        subtitle="15 temas · modelado, administración, seguridad y recuperación",
+        lessons=LESSONS,
+        author="CódigoClaro · síntesis basada en la documentación oficial de PostgreSQL",
+        subject="Modelado, administración y recuperación de bases de datos",
+        editorial_note="Las prácticas se contrastan con la documentación oficial de PostgreSQL 18; revisa la versión de tu instalación antes de aplicarlas.",
+    )
 
 
 def main():

@@ -15,7 +15,7 @@ from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Preformatted, Table, TableStyle, KeepTogether
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Preformatted, Table, TableStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
@@ -40,13 +40,14 @@ for regular_path, bold_path, code_path in font_sets:
         break
 
 styles = getSampleStyleSheet()
-styles.add(ParagraphStyle(name='CoverTitleCC', fontName=BOLD, fontSize=24, leading=30, textColor=colors.HexColor('#243b80'), spaceAfter=16, alignment=TA_LEFT))
-styles.add(ParagraphStyle(name='SubCC', fontName=FONT, fontSize=11, leading=14, textColor=colors.HexColor('#475467'), spaceAfter=5))
-styles.add(ParagraphStyle(name='H1CC', fontName=BOLD, fontSize=16, leading=19, textColor=colors.HexColor('#243b80'), spaceBefore=4, spaceAfter=7, keepWithNext=True))
-styles.add(ParagraphStyle(name='H2CC', fontName=BOLD, fontSize=10.5, leading=13, textColor=colors.HexColor('#087f8c'), spaceBefore=6, spaceAfter=3, keepWithNext=True))
-styles.add(ParagraphStyle(name='BodyCC', fontName=FONT, fontSize=9, leading=12.2, textColor=colors.HexColor('#263244'), spaceAfter=5))
-styles.add(ParagraphStyle(name='SmallCC', fontName=FONT, fontSize=8, leading=10, textColor=colors.HexColor('#596579'), spaceAfter=3))
-styles.add(ParagraphStyle(name='CodeCC', fontName=CODE, fontSize=7.4, leading=9.2, leftIndent=8, rightIndent=8, backColor=colors.HexColor('#f3f5f9'), borderColor=colors.HexColor('#d8deea'), borderWidth=.5, borderPadding=6, spaceBefore=3, spaceAfter=5))
+styles.add(ParagraphStyle(name='CoverTitleCC', fontName=BOLD, fontSize=24, leading=28, textColor=colors.HexColor('#243b80'), spaceAfter=12, alignment=TA_LEFT))
+styles.add(ParagraphStyle(name='SubCC', fontName=FONT, fontSize=11, leading=13, textColor=colors.HexColor('#475467'), spaceAfter=4))
+styles.add(ParagraphStyle(name='H1CC', fontName=BOLD, fontSize=16, leading=18, textColor=colors.HexColor('#243b80'), spaceBefore=2, spaceAfter=3, keepWithNext=True))
+styles.add(ParagraphStyle(name='H2CC', fontName=BOLD, fontSize=10.5, leading=12, textColor=colors.HexColor('#087f8c'), spaceBefore=2, spaceAfter=1, keepWithNext=True))
+styles.add(ParagraphStyle(name='BodyCC', fontName=FONT, fontSize=8.8, leading=10.9, textColor=colors.HexColor('#263244'), spaceAfter=3))
+styles.add(ParagraphStyle(name='SmallCC', fontName=FONT, fontSize=8, leading=9.7, textColor=colors.HexColor('#596579'), spaceAfter=2))
+styles.add(ParagraphStyle(name='SourcesCC', fontName=FONT, fontSize=7.2, leading=8.5, textColor=colors.HexColor('#596579'), spaceAfter=2))
+styles.add(ParagraphStyle(name='CodeCC', fontName=CODE, fontSize=7.2, leading=8.5, leftIndent=8, rightIndent=8, backColor=colors.HexColor('#f3f5f9'), borderColor=colors.HexColor('#d8deea'), borderWidth=.5, borderPadding=4, spaceBefore=2, spaceAfter=3))
 styles.add(ParagraphStyle(name='BulletCC', parent=styles['BodyCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=2))
 styles.add(ParagraphStyle(name='BodyLastCC', fontName=FONT, fontSize=9.5, leading=13.6, textColor=colors.HexColor('#263244'), spaceAfter=6))
 styles.add(ParagraphStyle(name='BulletLastCC', parent=styles['BodyLastCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=3))
@@ -107,8 +108,8 @@ def case_table(cases):
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('LEFTPADDING', (0, 0), (-1, -1), 6),
             ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ]),
     )
 
@@ -121,11 +122,8 @@ def make_pages(item):
     except KeyError as exc:
         raise ValueError(f'Falta contenido didáctico para {track}: {title}') from exc
 
-    sources = [
-        Paragraph(
-            f'<link href="{esc(source["url"])}" color="#087f8c">{esc(source["label"])}</link>',
-            styles['SmallCC'],
-        )
+    source_links = [
+        f'<link href="{esc(source["url"])}" color="#087f8c">{esc(source["label"])}</link>'
         for source in content['sources']
     ]
     page_one = [
@@ -148,16 +146,14 @@ def make_pages(item):
         para('Casos que debe superar', 'H2CC'),
         case_table(content['exercise']['cases']),
     ]
+    solution_blocks = code_panel(content['exercise']['solution'])
     page_three = [
-        KeepTogether([
-            para('5. Solución explicada', 'H1CC'),
-            *code_panel(content['exercise']['solution']),
-        ]),
+        para('5. Solución explicada', 'H1CC'),
+        *solution_blocks,
         para('Otras soluciones válidas', 'H2CC'),
         *[bullet(approach) for approach in content['exercise']['alternatives']],
-        para('6. Fuentes oficiales', 'H1CC'),
-        para('Esta guía resume conceptos para estudiar. Consulta las fuentes para comprobar detalles de versión y APIs.'),
-        *sources,
+        para('6. Fuentes oficiales', 'H2CC'),
+        Paragraph(' · '.join(source_links), styles['SourcesCC']),
     ]
     return [page_one, page_two, page_three]
 
@@ -220,10 +216,24 @@ def build_pdf(item, workspace):
     story=[]
     pages = make_pages(item)
     for content in pages:
-        # Deja fluir las secciones para no reservar una página casi vacía por apartado.
         story.extend(content)
-    doc=SimpleDocTemplate(str(work_pdf), pagesize=A4, rightMargin=1.8*cm, leftMargin=1.8*cm, topMargin=1.65*cm, bottomMargin=1.8*cm, title=f"{item['track']} · Tema {item['num']:02d}: {item['title']}", author='CódigoClaro · síntesis con fuentes oficiales', subject=f"Temario didáctico de {item['track']} para DAM y DAW")
+
+    def create_doc():
+        return SimpleDocTemplate(
+            str(work_pdf), pagesize=A4, rightMargin=1.7*cm, leftMargin=1.7*cm,
+            topMargin=1.4*cm, bottomMargin=1.6*cm,
+            title=f"{item['track']} · Tema {item['num']:02d}: {item['title']}",
+            author='CódigoClaro · síntesis basada en fuentes oficiales',
+            subject=f"Temario didáctico de {item['track']} para DAM y DAW",
+        )
+
+    doc = create_doc()
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    if doc.page > 1:
+        # Si un tema no cabe, empieza la práctica en otra página para no partir código.
+        story = [*pages[0], PageBreak(), *pages[1], *pages[2]]
+        doc = create_doc()
+        doc.build(story, onFirstPage=footer, onLaterPages=footer)
     shutil.copyfile(work_pdf, dest)
     return dest, doc.page
 
@@ -422,15 +432,13 @@ def build_typescript_route():
                 Paragraph('<b>Documentación:</b> ' + ' · '.join(source_links), styles['SmallCC']),
                 Spacer(1, 4),
             ]
-            story.append(KeepTogether(topic_block))
-            if index in (4, 8, 12):
-                story.append(PageBreak())
+            story.extend(topic_block)
 
-        story.append(KeepTogether([
+        story.extend([
             para('Laboratorio integrador · catálogo de módulos', 'H2CC'),
             para('Organiza una solución en tres piezas: un módulo compartido con el tipo `Modulo` y funciones puras; una entrada Node que importe esas funciones; y un componente React que reciba resultados mediante props y represente estados de petición con una unión discriminada. Antes de aceptar JSON como `Modulo`, valida sus campos en tiempo de ejecución. Entrega los tres módulos, un caso normal, uno vacío y uno inválido, y explica qué garantiza el verificador y qué comprobación protege la frontera de datos.'),
             Paragraph('<b>Documentación:</b> <link href="https://www.typescriptlang.org/docs/handbook/2/modules.html" color="#087f8c">Handbook: módulos</link> · <link href="https://react.dev/learn/typescript" color="#087f8c">React: usar TypeScript</link> · <link href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html" color="#087f8c">Handbook: narrowing</link>', styles['SmallCC']),
-        ]))
+        ])
 
         doc = SimpleDocTemplate(
             str(output_path), pagesize=A4,
