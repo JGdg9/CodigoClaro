@@ -1,0 +1,3277 @@
+{
+  "version": 1,
+  "topics": [
+    {
+      "track": "Python",
+      "title": "Instalación y primer programa",
+      "explanation": "Python ejecuta instrucciones desde el REPL, donde cada línea se evalúa al introducirla, o desde un archivo .py. El intérprete convierte el código en operaciones que puede ejecutar el entorno instalado. pip instala paquetes de terceros; un entorno virtual creado con venv separa las dependencias de un proyecto de las del sistema. Primero se comprueba que Python está disponible y después se ejecuta el archivo desde la carpeta correcta.",
+      "example": "[python]\r\ndef saludar(nombre):\r\n    return \"Hola, \" + nombre\r\n\r\nif __name__ == \"__main__\":\r\n    print(saludar(\"alumnado\"))\r\nContexto: Guarda el código como saludo.py y ejecútalo con python saludo.py. En algunos equipos el comando disponible se llama python3.",
+      "output": "Hola, alumnado",
+      "mistakes": [
+        "Confundir el prompt del REPL con una línea que debe guardarse dentro del archivo.",
+        "Ejecutar desde otra carpeta y creer que el intérprete no encuentra el archivo.",
+        "Instalar paquetes globalmente y mezclar dependencias de proyectos distintos."
+      ],
+      "exercise": {
+        "statement": "Escribe una función que reciba un nombre y devuelva un saludo. Ejecútala como archivo y prueba también la función en el REPL.",
+        "cases": [
+          {
+            "input": "saludar(\"Luz\")",
+            "expected": "\"Hola, Luz\""
+          },
+          {
+            "input": "saludar(\"\")",
+            "expected": "\"Hola, \""
+          },
+          {
+            "input": "saludar(\"equipo\")",
+            "expected": "\"Hola, equipo\""
+          }
+        ],
+        "solution": "[python]\r\ndef saludar(nombre):\r\n    return \"Hola, \" + nombre\r\n\r\nprint(saludar(\"Luz\"))\r\nCriterio de aceptación: El programa se puede ejecutar desde un archivo y la función devuelve el texto acordado para cada entrada.",
+        "alternatives": [
+          "Usar una f-string en lugar de concatenar cadenas.",
+          "Separar saludo en un módulo e importarlo desde un archivo principal."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — The Python Tutorial",
+          "url": "https://docs.python.org/3/tutorial/"
+        },
+        {
+          "label": "Python Software Foundation — Python Setup and Usage",
+          "url": "https://docs.python.org/3/using/index.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Variables y tipos",
+      "explanation": "Una variable enlaza un nombre con un objeto. En Python no se declara de antemano el tipo de cada nombre: el tipo pertenece al valor actual y puede consultarse con type. int representa enteros, float números de coma flotante, str texto, bool verdadero o falso y None la ausencia de valor. Un texto como \"4\" no se suma como número hasta convertirlo; convertir no equivale a validar, porque int(\"x\") produce ValueError.",
+      "example": "[python]\r\ncantidad = 3\r\nprecio = 2.5\r\ntotal = cantidad * precio\r\ndisponible = total > 0\r\nprint(total, type(disponible).__name__)",
+      "output": "7.5 bool",
+      "mistakes": [
+        "Concatenar texto con un número sin convertirlo o formatearlo.",
+        "Suponer que input devuelve un número: input siempre devuelve str.",
+        "Usar float para importes exactos sin considerar Decimal cuando el dominio lo exige."
+      ],
+      "exercise": {
+        "statement": "Implementa una función que convierta una cantidad y un precio en un total numérico. Decide y documenta qué tipos acepta tu función.",
+        "cases": [
+          {
+            "input": "(2, 3)",
+            "expected": "6"
+          },
+          {
+            "input": "(0, 9.5)",
+            "expected": "0"
+          },
+          {
+            "input": "(3, 0.5)",
+            "expected": "1.5"
+          }
+        ],
+        "solution": "[python]\r\ndef total(cantidad, precio):\r\n    return cantidad * precio\r\n\r\nprint(total(3, 0.5))\r\nCriterio de aceptación: La solución conserva el tipo numérico adecuado al dominio y produce los resultados acordados; también es válida una implementación con validación explícita.",
+        "alternatives": [
+          "Calcular cantidad por precio con el operador *.",
+          "Usar math.fsum sobre los importes si se modelan muchas unidades."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — An Informal Introduction to Python",
+          "url": "https://docs.python.org/3/tutorial/introduction.html"
+        },
+        {
+          "label": "Python Software Foundation — Built-in Types",
+          "url": "https://docs.python.org/3/library/stdtypes.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Operadores y condiciones",
+      "explanation": "Las comparaciones producen valores booleanos. and y or aplican cortocircuito: si el resultado ya se conoce, Python no evalúa el operando restante. in comprueba pertenencia a una secuencia o conjunto; is comprueba identidad del objeto y se reserva normalmente para comparar con None. Los paréntesis aclaran el orden cuando se combinan varias reglas; no conviene depender de una precedencia que quien lee deba reconstruir.",
+      "example": "[python]\r\nedad = 20\r\nautorizado = True\r\npuede_entrar = edad >= 18 and autorizado\r\nprint(puede_entrar)\r\nprint(\"admin\" in {\"admin\", \"editor\"})",
+      "output": "True\nTrue",
+      "mistakes": [
+        "Escribir x is 5 en vez de x == 5.",
+        "Usar and/or sin paréntesis en una condición con reglas de negocio distintas.",
+        "Olvidar que and y or pueden devolver uno de sus operandos, no siempre un bool."
+      ],
+      "exercise": {
+        "statement": "Devuelve True solo cuando la edad sea al menos 18 y el rol esté dentro de una colección de roles autorizados.",
+        "cases": [
+          {
+            "input": "(20, \"editor\", {\"editor\"})",
+            "expected": "True"
+          },
+          {
+            "input": "(17, \"editor\", {\"editor\"})",
+            "expected": "False"
+          },
+          {
+            "input": "(20, \"visita\", {\"editor\"})",
+            "expected": "False"
+          }
+        ],
+        "solution": "[python]\r\ndef puede_entrar(edad, rol, autorizados):\r\n    return edad >= 18 and rol in autorizados\r\n\r\nprint(puede_entrar(20, \"editor\", {\"editor\"}))\r\nCriterio de aceptación: La decisión debe satisfacer ambas condiciones; se acepta cambiar la estructura si los tres resultados se mantienen.",
+        "alternatives": [
+          "Guardar cada condición en una variable booleana y combinarlas con and.",
+          "Usar retornos tempranos para rechazar primero edad y luego rol."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — More Control Flow Tools",
+          "url": "https://docs.python.org/3/tutorial/controlflow.html"
+        },
+        {
+          "label": "Python Software Foundation — Expressions",
+          "url": "https://docs.python.org/3/reference/expressions.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Bucles",
+      "explanation": "for recorre los elementos de cualquier iterable; no necesita un contador manual si solo se procesan valores. enumerate añade un índice y range genera una progresión de enteros cuyo límite superior queda excluido. while repite mientras su condición sea verdadera y exige actualizar el estado para poder terminar. break finaliza el bucle y continue salta a la siguiente vuelta; conviene usarlos cuando hacen el flujo más claro.",
+      "example": "[python]\r\nfor indice, valor in enumerate([4, 7, 10], start=1):\r\n    if valor == 7:\r\n        continue\r\n    print(indice, valor)",
+      "output": "1 4\n3 10",
+      "mistakes": [
+        "Esperar que range(1, 4) incluya el 4.",
+        "Crear un while cuya condición nunca cambia y que no puede terminar.",
+        "Usar range(len(lista)) cuando se puede recorrer directamente o con enumerate."
+      ],
+      "exercise": {
+        "statement": "Suma los números pares del 1 al límite incluido. El límite puede ser cero o negativo.",
+        "cases": [
+          {
+            "input": "0",
+            "expected": "0"
+          },
+          {
+            "input": "1",
+            "expected": "0"
+          },
+          {
+            "input": "6",
+            "expected": "12"
+          }
+        ],
+        "solution": "[python]\r\ndef sumar_pares(limite):\r\n    total = 0\r\n    for numero in range(2, limite + 1, 2):\r\n        total += numero\r\n    return total\r\n\r\nprint(sumar_pares(6))\r\nCriterio de aceptación: Se acepta sum, un bucle o una comprensión si el límite se trata correctamente y coinciden los tres casos.",
+        "alternatives": [
+          "Usar sum(range(2, limite + 1, 2)) para una suma directa.",
+          "Usar una comprensión de pares y sum cuando el rango sea explícito."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — More Control Flow Tools",
+          "url": "https://docs.python.org/3/tutorial/controlflow.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Listas y tuplas",
+      "explanation": "list guarda una secuencia ordenada que puede modificarse; tuple también es ordenada, pero sus posiciones no se reasignan. Los índices empiezan en cero y los índices negativos cuentan desde el final. Un slice como datos[inicio:fin] incluye inicio y excluye fin. Desempaquetar asigna posiciones a nombres, pero el número de valores debe coincidir o agruparse con *. Una secuencia vacía no tiene primer ni último elemento.",
+      "example": "[python]\r\nvalores = [10, 20, 30]\r\nprimero, *resto = valores\r\nvalores[1] = 25\r\nprint(primero, resto, valores[-1])",
+      "output": "10 [20, 30] 30",
+      "mistakes": [
+        "Acceder a una posición inexistente y provocar IndexError.",
+        "Creer que el final de un slice está incluido.",
+        "Esperar que una tupla se pueda modificar como una lista."
+      ],
+      "exercise": {
+        "statement": "Devuelve el primer y el último elemento de una secuencia; para la secuencia vacía devuelve None.",
+        "cases": [
+          {
+            "input": "[]",
+            "expected": "None"
+          },
+          {
+            "input": "[8]",
+            "expected": "(8, 8)"
+          },
+          {
+            "input": "[2, 4, 6]",
+            "expected": "(2, 6)"
+          }
+        ],
+        "solution": "[python]\r\ndef extremos(valores):\r\n    if not valores:\r\n        return None\r\n    return valores[0], valores[-1]\r\n\r\nprint(extremos([2, 4, 6]))\r\nCriterio de aceptación: Se aceptan una tupla, un objeto con nombres o dos valores separados si el caso vacío queda definido.",
+        "alternatives": [
+          "Devolver una lista con primero y último en vez de una tupla.",
+          "Usar slices de un elemento con una comprobación especial para la secuencia vacía."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — Data Structures",
+          "url": "https://docs.python.org/3/tutorial/datastructures.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Diccionarios y conjuntos",
+      "explanation": "dict asocia claves con valores y permite búsquedas por clave. get ofrece un valor por defecto cuando la clave falta; items recorre pares clave-valor. set contiene elementos únicos y sirve para pertenencia, unión e intersección. Las claves de diccionario y los elementos de set deben ser hashables. Ambos son mutables, pero no deben confundirse con secuencias indexadas.",
+      "example": "[python]\r\nvotos = [\"azul\", \"rojo\", \"azul\"]\r\nconteo = {}\r\nfor voto in votos:\r\n    conteo[voto] = conteo.get(voto, 0) + 1\r\ncomunes = {\"azul\", \"verde\"} & {\"azul\", \"rojo\"}\r\nprint(conteo, comunes)",
+      "output": "{'azul': 2, 'rojo': 1} {'azul'}",
+      "mistakes": [
+        "Leer una clave inexistente con corchetes sin contemplar KeyError.",
+        "Suponer que un conjunto conserva el orden de inserción como una lista.",
+        "Intentar usar una lista mutable como clave de diccionario."
+      ],
+      "exercise": {
+        "statement": "Cuenta cuántas veces aparece cada palabra y devuelve un diccionario de frecuencias.",
+        "cases": [
+          {
+            "input": "[]",
+            "expected": "{}"
+          },
+          {
+            "input": "[\"sol\"]",
+            "expected": "{\"sol\": 1}"
+          },
+          {
+            "input": "[\"sol\", \"luna\", \"sol\"]",
+            "expected": "{\"sol\": 2, \"luna\": 1}"
+          }
+        ],
+        "solution": "[python]\r\ndef frecuencias(palabras):\r\n    resultado = {}\r\n    for palabra in palabras:\r\n        resultado[palabra] = resultado.get(palabra, 0) + 1\r\n    return resultado\r\nCriterio de aceptación: Se acepta Counter u otra estructura si representa una cuenta por palabra y satisface los tres casos.",
+        "alternatives": [
+          "Usar collections.Counter para contar directamente.",
+          "Recorrer con dict.get como en la solución orientativa."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — Data Structures",
+          "url": "https://docs.python.org/3/tutorial/datastructures.html"
+        },
+        {
+          "label": "Python Software Foundation — Mapping Types",
+          "url": "https://docs.python.org/3/library/stdtypes.html#mapping-types-dict"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Funciones",
+      "explanation": "def crea una función; sus parámetros reciben valores al llamarla y return entrega el resultado al llamador. Si no se ejecuta return, el resultado es None. Los valores por defecto permiten omitir argumentos y se evalúan al definir la función, por eso no debe usarse una lista mutable como valor por defecto. *args agrupa argumentos posicionales sobrantes en una tupla y **kwargs agrupa argumentos con nombre en un diccionario.",
+      "example": "[python]\r\ndef describir(*valores, prefijo=\"Dato\", **opciones):\r\n    texto = \", \".join(str(valor) for valor in valores)\r\n    unidad = opciones.get(\"unidad\", \"\")\r\n    return prefijo + \": \" + texto + unidad\r\n\r\nprint(describir(3, 5, prefijo=\"Notas\", unidad=\" puntos\"))",
+      "output": "Notas: 3, 5 puntos",
+      "mistakes": [
+        "Usar print dentro de una función creyendo que eso devuelve un valor.",
+        "Usar una lista o diccionario como argumento por defecto compartido entre llamadas.",
+        "Pasar un argumento posicional después de uno nombrado de forma incompatible."
+      ],
+      "exercise": {
+        "statement": "Escribe una función que calcule la media de cero o más números y use un valor alternativo cuando no reciba ninguno.",
+        "cases": [
+          {
+            "input": "()",
+            "expected": "None"
+          },
+          {
+            "input": "(4,)",
+            "expected": "4.0"
+          },
+          {
+            "input": "(2, 4, 6)",
+            "expected": "4.0"
+          }
+        ],
+        "solution": "[python]\r\ndef media(*numeros):\r\n    if not numeros:\r\n        return None\r\n    return sum(numeros) / len(numeros)\r\nCriterio de aceptación: Se acepta devolver un valor alternativo distinto si se documenta; los resultados numéricos de los casos no deben cambiar.",
+        "alternatives": [
+          "Acumular suma y cantidad en un bucle.",
+          "Usar math.fsum y dividir por len para mejorar la suma de floats."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — Defining Functions",
+          "url": "https://docs.python.org/3/tutorial/controlflow.html#defining-functions"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Comprensiones y generadores",
+      "explanation": "Una comprensión construye una colección a partir de un iterable y puede incluir una condición. Un generador produce valores gradualmente: una expresión con paréntesis o una función con yield devuelve un iterador, no una lista ya calculada. Esto puede reducir memoria cuando se recorren muchos elementos, pero un generador normalmente se consume una vez. Elige la forma más clara para el tamaño y uso real de los datos.",
+      "example": "[python]\r\ndef cuadrados_pares(numeros):\r\n    for numero in numeros:\r\n        if numero % 2 == 0:\r\n            yield numero * numero\r\n\r\nprint(list(cuadrados_pares([1, 2, 4])))",
+      "output": "[4, 16]",
+      "mistakes": [
+        "Esperar que yield devuelva una lista completa de inmediato.",
+        "Intentar recorrer dos veces un generador ya consumido.",
+        "Escribir una comprensión tan anidada que resulte más difícil de leer que un bucle."
+      ],
+      "exercise": {
+        "statement": "Produce los cuadrados de los números positivos de una secuencia usando un generador.",
+        "cases": [
+          {
+            "input": "[]",
+            "expected": "[]"
+          },
+          {
+            "input": "[-2, 0]",
+            "expected": "[]"
+          },
+          {
+            "input": "[-1, 2, 3]",
+            "expected": "[4, 9]"
+          }
+        ],
+        "solution": "[python]\r\ndef cuadrados_positivos(numeros):\r\n    for numero in numeros:\r\n        if numero > 0:\r\n            yield numero ** 2\r\nCriterio de aceptación: Se acepta una comprensión convertida a iterador si los valores se producen en el orden de entrada.",
+        "alternatives": [
+          "Usar una expresión generadora en vez de una función con yield.",
+          "Usar una comprensión de lista si se necesita guardar todos los resultados."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — Data Structures",
+          "url": "https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions"
+        },
+        {
+          "label": "Python Software Foundation — Generators",
+          "url": "https://docs.python.org/3/tutorial/classes.html#generators"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Módulos y paquetes",
+      "explanation": "Un módulo es normalmente un archivo .py que contiene definiciones importables. import enlaza el módulo o nombres elegidos al espacio actual. Cuando Python ejecuta un archivo directamente, su variable __name__ vale __main__; al importarlo, __name__ toma el nombre del módulo. El bloque de guarda permite ofrecer una acción de demostración sin ejecutarla en cada importación. Un paquete agrupa módulos y su organización debe mantener nombres claros.",
+      "example": "[python]\r\ndef doble(numero):\r\n    return numero * 2\r\n\r\nif __name__ == \"__main__\":\r\n    print(doble(4))\r\nContexto: Guarda el código como operaciones.py. Al importarlo, doble queda disponible y el bloque principal no imprime nada.",
+      "output": "8",
+      "mistakes": [
+        "Llamar al archivo como un módulo de la biblioteca estándar que intenta importar.",
+        "Ejecutar consultas, impresiones o cambios globales al importar un módulo.",
+        "Confundir la ruta del archivo actual con la carpeta desde la que se ejecuta Python."
+      ],
+      "exercise": {
+        "statement": "Divide una operación de conversión en un módulo y un archivo principal que la importe. La importación no debe imprimir ni pedir datos.",
+        "cases": [
+          {
+            "input": "convertir(0)",
+            "expected": "0"
+          },
+          {
+            "input": "convertir(3)",
+            "expected": "6"
+          },
+          {
+            "input": "convertir(-2)",
+            "expected": "-4"
+          }
+        ],
+        "solution": "[python]\r\n# operaciones.py\r\ndef convertir(numero):\r\n    return numero * 2\r\n\r\n# principal.py\r\nfrom operaciones import convertir\r\nprint(convertir(3))\r\nCriterio de aceptación: La función puede residir en cualquier módulo razonable y produce los mismos valores al importarla o llamarla.",
+        "alternatives": [
+          "Importar el módulo y llamar operaciones.convertir.",
+          "Importar solo convertir con from operaciones import convertir."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — Modules",
+          "url": "https://docs.python.org/3/tutorial/modules.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Excepciones",
+      "explanation": "Una excepción señala que una operación no pudo continuar normalmente. try delimita el código susceptible de fallar; except nombra el tipo que se sabe manejar; else se ejecuta si no hubo excepción y finally se ejecuta al salir del bloque. Capturar Exception a ciegas puede ocultar errores de programación. Para entradas convertidas a int, ValueError es un caso concreto; para un error de dominio se puede definir una excepción propia.",
+      "example": "[python]\r\ndef convertir_entero(texto):\r\n    try:\r\n        return int(texto)\r\n    except ValueError:\r\n        return None\r\n\r\nprint(convertir_entero(\"12\"), convertir_entero(\"doce\"))",
+      "output": "12 None",
+      "mistakes": [
+        "Capturar todas las excepciones y continuar con datos incompletos.",
+        "Usar excepciones para reemplazar una condición normal que puede expresarse de forma clara.",
+        "Escribir un except que no registra, transforma ni comunica el fallo."
+      ],
+      "exercise": {
+        "statement": "Convierte un texto en entero positivo. Devuelve None si no se puede convertir o si el número es cero o negativo.",
+        "cases": [
+          {
+            "input": "\"5\"",
+            "expected": "5"
+          },
+          {
+            "input": "\"0\"",
+            "expected": "None"
+          },
+          {
+            "input": "\"x\"",
+            "expected": "None"
+          }
+        ],
+        "solution": "[python]\r\ndef entero_positivo(texto):\r\n    try:\r\n        numero = int(texto)\r\n    except ValueError:\r\n        return None\r\n    return numero if numero > 0 else None\r\nCriterio de aceptación: Se acepta una excepción de dominio o una validación previa si los casos inválidos no se convierten en resultados válidos.",
+        "alternatives": [
+          "Capturar ValueError alrededor de int y devolver None.",
+          "Validar el formato antes de convertir y tratar como inválido cualquier texto no admitido."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — Errors and Exceptions",
+          "url": "https://docs.python.org/3/tutorial/errors.html"
+        },
+        {
+          "label": "Python Software Foundation — Built-in Exceptions",
+          "url": "https://docs.python.org/3/library/exceptions.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Ficheros y JSON",
+      "explanation": "Path representa una ruta sin tener que concatenar separadores manualmente. with abre un recurso y garantiza su cierre al salir del bloque. Para texto, especificar UTF-8 hace explícita la codificación. json.loads convierte texto JSON en objetos Python y json.dumps realiza la conversión inversa; JSON no conserva objetos arbitrarios ni ejecuta código. Para CSV existe el módulo csv, que maneja delimitadores y comillas mejor que dividir líneas a mano.",
+      "example": "[python]\r\nfrom pathlib import Path\r\nimport json\r\nimport tempfile\r\n\r\nwith tempfile.TemporaryDirectory() as carpeta:\r\n    ruta = Path(carpeta) / \"datos.json\"\r\n    ruta.write_text(json.dumps({\"activo\": True}), encoding=\"utf-8\")\r\n    datos = json.loads(ruta.read_text(encoding=\"utf-8\"))\r\n    print(datos[\"activo\"])",
+      "output": "True",
+      "mistakes": [
+        "Abrir texto sin pensar en la codificación y producir errores con tildes.",
+        "Usar json.loads con una ruta en vez de leer primero el contenido del archivo.",
+        "Dejar ficheros abiertos cuando una excepción interrumpe el procesamiento."
+      ],
+      "exercise": {
+        "statement": "Lee una cadena JSON y devuelve el campo nombre solo si el valor raíz es un objeto con un nombre de texto.",
+        "cases": [
+          {
+            "input": "{\"nombre\":\"sol\"}",
+            "expected": "\"sol\""
+          },
+          {
+            "input": "{\"nombre\":7}",
+            "expected": "None"
+          },
+          {
+            "input": "[1,2]",
+            "expected": "None"
+          }
+        ],
+        "solution": "[python]\r\nimport json\r\n\r\ndef leer_nombre(texto):\r\n    try:\r\n        datos = json.loads(texto)\r\n    except json.JSONDecodeError:\r\n        return None\r\n    if isinstance(datos, dict) and isinstance(datos.get(\"nombre\"), str):\r\n        return datos[\"nombre\"]\r\n    return None\r\nCriterio de aceptación: Se aceptan excepciones o validación de esquema equivalentes si texto malformado y tipos inesperados no se presentan como datos correctos.",
+        "alternatives": [
+          "Usar json.load sobre un fichero abierto con with.",
+          "Leer con pathlib y pasar el texto a json.loads."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — Input and Output",
+          "url": "https://docs.python.org/3/tutorial/inputoutput.html"
+        },
+        {
+          "label": "Python Software Foundation — json — JSON encoder and decoder",
+          "url": "https://docs.python.org/3/library/json.html"
+        },
+        {
+          "label": "Python Software Foundation — pathlib",
+          "url": "https://docs.python.org/3/library/pathlib.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "POO y dataclasses",
+      "explanation": "Una clase define cómo crear instancias; cada instancia guarda sus propios atributos. self es la referencia que recibe un método para operar sobre esa instancia. Una dataclass genera métodos habituales como el inicializador y la representación, apropiados para objetos cuyo propósito principal es transportar datos. La encapsulación se consigue diseñando una interfaz estable; un guion bajo indica uso interno por convención, no una barrera de seguridad. La composición suele modelar relaciones parte-todo sin crear jerarquías artificiales.",
+      "example": "[python]\r\nfrom dataclasses import dataclass\r\n\r\n@dataclass\r\nclass Producto:\r\n    nombre: str\r\n    precio: float\r\n\r\n    def con_iva(self):\r\n        return self.precio * 1.21\r\n\r\nprint(Producto(\"cuaderno\", 10).con_iva())",
+      "output": "12.1",
+      "mistakes": [
+        "Olvidar self en la definición de un método de instancia.",
+        "Compartir una lista mutable como valor por defecto entre instancias.",
+        "Crear clases para datos que se representarían mejor con una función o una estructura simple."
+      ],
+      "exercise": {
+        "statement": "Crea una cuenta con saldo inicial y un método ingresar que rechace cantidades negativas sin modificar el saldo.",
+        "cases": [
+          {
+            "input": "(saldo=0, ingresar=5)",
+            "expected": "saldo 5"
+          },
+          {
+            "input": "(saldo=10, ingresar=0)",
+            "expected": "saldo 10"
+          },
+          {
+            "input": "(saldo=10, ingresar=-3)",
+            "expected": "rechazo y saldo 10"
+          }
+        ],
+        "solution": "[python]\r\nclass Cuenta:\r\n    def __init__(self, saldo=0):\r\n        self.saldo = saldo\r\n\r\n    def ingresar(self, cantidad):\r\n        if cantidad < 0:\r\n            raise ValueError(\"La cantidad no puede ser negativa\")\r\n        self.saldo += cantidad\r\nCriterio de aceptación: Se aceptan dataclass o métodos con retorno explícito si el saldo nunca cambia tras un ingreso rechazado.",
+        "alternatives": [
+          "Usar una dataclass si Cuenta se centra en guardar datos.",
+          "Usar una clase tradicional con __init__ cuando el ciclo de vida requiera más control."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — Classes",
+          "url": "https://docs.python.org/3/tutorial/classes.html"
+        },
+        {
+          "label": "Python Software Foundation — dataclasses",
+          "url": "https://docs.python.org/3/library/dataclasses.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Librerías y entornos",
+      "explanation": "La biblioteca estándar viene con Python; los paquetes externos suelen obtenerse desde un índice de paquetes como PyPI. venv crea un entorno con su propio intérprete y directorio de paquetes. Activarlo cambia qué python y pip resuelve el terminal; también se puede llamar directamente al ejecutable del entorno. Usa python -m pip para vincular pip al intérprete seleccionado. Un archivo de requisitos registra dependencias del proyecto; no se debe incluir la carpeta del entorno en el repositorio.",
+      "example": "[shell]\r\npython -m venv .venv\r\npython -m pip --version\r\nContexto: Activa .venv antes de instalar paquetes. La orden de activación depende del sistema y la shell; consulta la guía oficial enlazada.",
+      "output": "La primera orden crea .venv sin salida normal; la segunda muestra la versión de pip y la ruta del intérprete al que pertenece.",
+      "mistakes": [
+        "Ejecutar pip sin comprobar a qué instalación de Python pertenece.",
+        "Subir .venv al repositorio en vez de registrar las dependencias.",
+        "Fijar todas las dependencias a versiones distintas sin revisar compatibilidad."
+      ],
+      "exercise": {
+        "statement": "Crea un entorno para un proyecto, activa el entorno y comprueba que python y pip apuntan a él. Después documenta una dependencia sin subir el entorno.",
+        "cases": [
+          {
+            "input": "Crear .venv y comprobar la carpeta",
+            "expected": "Existe el entorno del proyecto"
+          },
+          {
+            "input": "Activar y consultar python",
+            "expected": "El ejecutable pertenece al entorno"
+          },
+          {
+            "input": "Registrar dependencia",
+            "expected": "El manifiesto no incluye la carpeta .venv"
+          }
+        ],
+        "solution": "[shell]\r\npython -m venv .venv\r\n# Activa .venv con el comando correspondiente a tu shell\r\npython -m pip install requests\r\npython -m pip freeze > requirements.txt\r\nCriterio de aceptación: Se acepta un gestor distinto si deja identificable el intérprete y registra dependencias reproducibles fuera del entorno local.",
+        "alternatives": [
+          "Crear el entorno con el módulo estándar venv.",
+          "Usar virtualenv si el proyecto requiere sus opciones adicionales."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — venv — Creation of virtual environments",
+          "url": "https://docs.python.org/3/library/venv.html"
+        },
+        {
+          "label": "Python Packaging Authority — Installing Packages",
+          "url": "https://packaging.python.org/en/latest/tutorials/installing-packages/"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "Pruebas y depuración",
+      "explanation": "Una prueba unitaria verifica un resultado observable para entradas conocidas. unittest forma parte de la biblioteca estándar y organiza pruebas en métodos de TestCase; pytest es una herramienta externa con su propio modo de ejecución. assert es útil para comprobar invariantes durante desarrollo, pero no sustituye validación de entradas en producción porque Python puede desactivar assertions. El depurador permite detener la ejecución e inspeccionar variables; logging registra sucesos con niveles y contexto.",
+      "example": "[python]\r\nimport unittest\r\n\r\ndef doble(numero):\r\n    return numero * 2\r\n\r\nclass PruebasDoble(unittest.TestCase):\r\n    def test_doble(self):\r\n        self.assertEqual(doble(4), 8)\r\n\r\nif __name__ == \"__main__\":\r\n    unittest.main()",
+      "output": "Al ejecutar el archivo, unittest muestra una prueba correcta.",
+      "mistakes": [
+        "Probar solo el caso habitual y dejar sin definir límites y entradas inválidas.",
+        "Comprobar detalles internos en vez del resultado que usa quien llama.",
+        "Depurar añadiendo prints sin eliminar información sensible ni estructurar los registros."
+      ],
+      "exercise": {
+        "statement": "Escribe una función que cuente vocales minúsculas y mayúsculas y añade pruebas para texto vacío, texto mixto y texto sin vocales.",
+        "cases": [
+          {
+            "input": "\"\"",
+            "expected": "0"
+          },
+          {
+            "input": "\"Hola\"",
+            "expected": "2"
+          },
+          {
+            "input": "\"xyz\"",
+            "expected": "0"
+          }
+        ],
+        "solution": "[python]\r\ndef contar_vocales(texto):\r\n    return sum(letra.lower() in \"aeiou\" for letra in texto)\r\n\r\nimport unittest\r\n\r\nclass PruebasVocales(unittest.TestCase):\r\n    def test_casos(self):\r\n        self.assertEqual(contar_vocales(\"\"), 0)\r\n        self.assertEqual(contar_vocales(\"Hola\"), 2)\r\n        self.assertEqual(contar_vocales(\"xyz\"), 0)\r\nCriterio de aceptación: Se acepta una solución con bucle o contador si cuenta las mismas letras y las pruebas expresan el contrato.",
+        "alternatives": [
+          "Implementar los casos con unittest de la biblioteca estándar.",
+          "Usar pytest si el proyecto ya lo tiene instalado y configurado."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — unittest — Unit testing framework",
+          "url": "https://docs.python.org/3/library/unittest.html"
+        },
+        {
+          "label": "Python Software Foundation — logging — Logging facility for Python",
+          "url": "https://docs.python.org/3/library/logging.html"
+        }
+      ]
+    },
+    {
+      "track": "Python",
+      "title": "APIs y seguridad",
+      "explanation": "Una API HTTP intercambia solicitudes y respuestas. Un cliente debe configurar tiempos de espera, comprobar el estado HTTP y validar forma y tipos del JSON recibido: que llegue JSON no demuestra que cumpla el contrato. Las respuestas, cabeceras y parámetros externos son datos no confiables. Las claves no se escriben en el código ni en registros; se suministran mediante configuración protegida del entorno del servidor. En este ejemplo no se conecta a la red: ensaya cómo validar una respuesta simulada.",
+      "example": "[python]\r\ndef leer_mensaje(estado, datos):\r\n    if estado != 200:\r\n        raise ValueError(\"Respuesta HTTP no válida\")\r\n    if not isinstance(datos, dict) or not isinstance(datos.get(\"message\"), str):\r\n        raise ValueError(\"Formato de respuesta no válido\")\r\n    return datos[\"message\"]\r\n\r\nprint(leer_mensaje(200, {\"message\": \"ok\"}))",
+      "output": "ok",
+      "mistakes": [
+        "Suponer que una respuesta HTTP 404 hará fallar automáticamente todas las bibliotecas cliente.",
+        "No configurar timeout y dejar una operación esperando indefinidamente.",
+        "Guardar claves en el repositorio, compartirlas en ejemplos o incluirlas en logs."
+      ],
+      "exercise": {
+        "statement": "Valida una respuesta que debe contener una lista de elementos con un campo nombre de texto. Devuelve nombres y rechaza estados HTTP o estructuras inválidas.",
+        "cases": [
+          {
+            "input": "(200, [{\"nombre\":\"uno\"}])",
+            "expected": "[\"uno\"]"
+          },
+          {
+            "input": "(200, [{\"nombre\":3}])",
+            "expected": "rechazo por esquema inválido"
+          },
+          {
+            "input": "(503, [])",
+            "expected": "rechazo por estado HTTP"
+          }
+        ],
+        "solution": "[python]\r\ndef extraer_nombres(estado, datos):\r\n    if estado != 200 or not isinstance(datos, list):\r\n        raise ValueError(\"Respuesta no válida\")\r\n    nombres = []\r\n    for item in datos:\r\n        if not isinstance(item, dict) or not isinstance(item.get(\"nombre\"), str):\r\n            raise ValueError(\"Elemento no válido\")\r\n        nombres.append(item[\"nombre\"])\r\n    return nombres\r\nCriterio de aceptación: Se acepta un esquema validado con una biblioteca si rechaza las mismas respuestas; las credenciales nunca forman parte de los casos.",
+        "alternatives": [
+          "Validar manualmente los tipos y campos requeridos.",
+          "Usar una biblioteca de esquemas mantenida para validar estructuras complejas."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Python Software Foundation — urllib.request",
+          "url": "https://docs.python.org/3/library/urllib.request.html"
+        },
+        {
+          "label": "OWASP — Secrets Management Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html"
+        },
+        {
+          "label": "OWASP — REST Security Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Primer programa Kotlin",
+      "explanation": "Kotlin es un lenguaje con tipos comprobados por el compilador y puede compilarse para distintas plataformas. En un proyecto JVM, main suele ser el punto de entrada que inicia el programa; Gradle o un IDE configura versión del compilador y destino. Las llaves delimitan bloques y println escribe una línea. Antes de copiar opciones del compilador, comprueba qué plataforma y versión usa el proyecto.",
+      "example": "[kotlin]\r\nfun main() {\r\n    val mensaje = \"Hola, Kotlin\"\r\n    println(mensaje)\r\n}\r\nContexto: En un proyecto Kotlin/JVM, ejecuta la función main desde el IDE o desde la tarea de ejecución configurada.",
+      "output": "Hola, Kotlin",
+      "mistakes": [
+        "Usar main con una firma que el lanzador del proyecto no reconoce.",
+        "Confundir Kotlin/JVM con los destinos JavaScript o Native.",
+        "Asumir que las opciones del IDE sustituyen la configuración versionada del proyecto."
+      ],
+      "exercise": {
+        "statement": "Escribe una función main que calcule la suma de dos números y la imprima.",
+        "cases": [
+          {
+            "input": "(2, 3)",
+            "expected": "5"
+          },
+          {
+            "input": "(0, 0)",
+            "expected": "0"
+          },
+          {
+            "input": "(-2, 7)",
+            "expected": "5"
+          }
+        ],
+        "solution": "[kotlin]\r\nfun main() {\r\n    println(sumar(2, 3))\r\n}\r\n\r\nfun sumar(a: Int, b: Int): Int = a + b\r\nCriterio de aceptación: Se acepta declarar la operación dentro o fuera de main si la función produce las tres sumas.",
+        "alternatives": [
+          "Declarar main como función de nivel superior.",
+          "Usar un objeto con un método main anotado para el lanzador JVM."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Basic syntax overview",
+          "url": "https://kotlinlang.org/docs/basic-syntax.html"
+        },
+        {
+          "label": "JetBrains / Kotlin — Get started with Kotlin",
+          "url": "https://kotlinlang.org/docs/getting-started.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "val, var y tipos",
+      "explanation": "val declara una referencia que no puede reasignarse; var permite asignarle otro valor. val no vuelve inmutable un objeto mutable al que apunta. Kotlin infiere el tipo del valor inicial, aunque puede anotarse para documentar el contrato. Los tipos numéricos no se convierten de forma implícita entre sí: usa funciones como toLong o toDouble y comprueba si la pérdida de precisión es aceptable. String representa texto y Boolean una condición.",
+      "example": "[kotlin]\r\nfun main() {\r\n    val cantidad: Int = 3\r\n    val precio = 2.5\r\n    val total = cantidad.toDouble() * precio\r\n    println(total)\r\n}",
+      "output": "7.5",
+      "mistakes": [
+        "Reasignar una variable val.",
+        "Esperar conversión implícita de Int a Long o Double.",
+        "Confundir val con inmutabilidad profunda del objeto."
+      ],
+      "exercise": {
+        "statement": "Calcula el total de una cantidad entera por un precio decimal y muestra si el total es mayor que cero.",
+        "cases": [
+          {
+            "input": "(2, 3.0)",
+            "expected": "(6.0, true)"
+          },
+          {
+            "input": "(0, 7.5)",
+            "expected": "(0.0, false)"
+          },
+          {
+            "input": "(3, 0.5)",
+            "expected": "(1.5, true)"
+          }
+        ],
+        "solution": "[kotlin]\r\nfun total(cantidad: Int, precio: Double): Pair<Double, Boolean> {\r\n    val importe = cantidad.toDouble() * precio\r\n    return importe to (importe > 0)\r\n}\r\nCriterio de aceptación: Se acepta una clase resultado o dos valores impresos si la conversión numérica es explícita.",
+        "alternatives": [
+          "Dejar que el compilador infiera los tipos cuando la expresión sea clara.",
+          "Anotar Int y Double explícitamente si la firma mejora la lectura."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Basic syntax overview",
+          "url": "https://kotlinlang.org/docs/basic-syntax.html"
+        },
+        {
+          "label": "JetBrains / Kotlin — Basic types",
+          "url": "https://kotlinlang.org/docs/basic-types.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Null safety",
+      "explanation": "Un tipo como String no acepta null; String? sí. El operador ?. llama a una propiedad o función solo si el receptor existe, y elvis ?: permite elegir una alternativa. Después de una comprobación clara, el compilador puede aplicar smart cast a un valor no nulo. !! fuerza una conversión y puede lanzar NullPointerException, por lo que no reemplaza el análisis de qué significa la ausencia. Java y otras fronteras pueden introducir tipos plataforma con garantías menores.",
+      "example": "[kotlin]\r\nfun longitud(texto: String?): Int = texto?.length ?: 0\r\n\r\nfun main() {\r\n    println(longitud(\"Kotlin\"))\r\n    println(longitud(null))\r\n}",
+      "output": "6\n0",
+      "mistakes": [
+        "Usar !! para silenciar el compilador sin definir el caso null.",
+        "Olvidar que una expresión safe-call puede devolver null.",
+        "Suponer que la interoperabilidad con Java siempre preserva null safety."
+      ],
+      "exercise": {
+        "statement": "Convierte un texto nullable a entero. Devuelve -1 si es null o si no representa un entero.",
+        "cases": [
+          {
+            "input": "\"12\"",
+            "expected": "12"
+          },
+          {
+            "input": "\"x\"",
+            "expected": "-1"
+          },
+          {
+            "input": "null",
+            "expected": "-1"
+          }
+        ],
+        "solution": "[kotlin]\r\nfun convertir(texto: String?): Int = texto?.toIntOrNull() ?: -1\r\nCriterio de aceptación: Se acepta una comprobación explícita con if si evita !! y respeta el valor alternativo especificado.",
+        "alternatives": [
+          "Usar if (texto == null) para tratar la ausencia.",
+          "Usar safe-call con Elvis como en la solución orientativa."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Null safety",
+          "url": "https://kotlinlang.org/docs/null-safety.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Condiciones y when",
+      "explanation": "if puede ser una expresión cuyo resultado se asigna; cuando hay varias ramas, when suele expresar mejor una selección. Una rama else cubre los casos restantes cuando la expresión lo requiere. in permite probar si un valor pertenece a un rango. Tras comprobar el tipo o descartar null en un flujo local seguro, Kotlin puede aplicar smart cast. La condición debe expresar el dominio real, no depender del orden accidental de ramas solapadas.",
+      "example": "[kotlin]\r\nfun clasificar(nota: Int): String = when {\r\n    nota < 0 -> \"inválida\"\r\n    nota < 5 -> \"insuficiente\"\r\n    nota <= 10 -> \"aprobado\"\r\n    else -> \"inválida\"\r\n}\r\n\r\nfun main() = println(clasificar(7))",
+      "output": "aprobado",
+      "mistakes": [
+        "Dejar fuera el límite superior o inferior de un rango.",
+        "Cambiar el orden de condiciones que se solapan.",
+        "Olvidar else en un when usado como expresión no exhaustiva."
+      ],
+      "exercise": {
+        "statement": "Clasifica una temperatura en frío (<10), templado (10 a 24) o cálido (25 o más).",
+        "cases": [
+          {
+            "input": "9",
+            "expected": "\"frío\""
+          },
+          {
+            "input": "10",
+            "expected": "\"templado\""
+          },
+          {
+            "input": "25",
+            "expected": "\"cálido\""
+          }
+        ],
+        "solution": "[kotlin]\r\nfun clasificarTemperatura(c: Int): String = when {\r\n    c < 10 -> \"frío\"\r\n    c < 25 -> \"templado\"\r\n    else -> \"cálido\"\r\n}\r\nCriterio de aceptación: Se acepta if/else o when si los límites pertenecen exactamente a las categorías descritas.",
+        "alternatives": [
+          "Expresar la clasificación con when.",
+          "Encadenar if/else si hay solo dos ramas."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Control flow",
+          "url": "https://kotlinlang.org/docs/control-flow.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Bucles y rangos",
+      "explanation": "for recorre elementos de una colección o progresión. 1..5 incluye ambos extremos; 1 until 5 excluye 5. downTo cambia el sentido y step define el intervalo entre valores. while resulta útil cuando el número de repeticiones depende de un estado que cambia. repeat(n) ejecuta n veces; su parámetro de índice comienza en cero. Antes de ejecutar, calcula qué valores visitará el rango.",
+      "example": "[kotlin]\r\nfun main() {\r\n    for (numero in 1..5 step 2) print(numero)\r\n    println()\r\n    for (numero in 3 downTo 1) print(numero)\r\n}",
+      "output": "135\n321",
+      "mistakes": [
+        "Usar .. cuando el requisito pide excluir el extremo.",
+        "Crear un while sin cambiar el estado que controla su condición.",
+        "Confundir el índice cero de repeat con una cuenta que empieza en uno."
+      ],
+      "exercise": {
+        "statement": "Devuelve la suma de los enteros del 1 al límite incluido; si el límite es menor que 1, devuelve cero.",
+        "cases": [
+          {
+            "input": "0",
+            "expected": "0"
+          },
+          {
+            "input": "1",
+            "expected": "1"
+          },
+          {
+            "input": "4",
+            "expected": "10"
+          }
+        ],
+        "solution": "[kotlin]\r\nfun sumarHasta(limite: Int): Int {\r\n    var total = 0\r\n    for (numero in 1..limite) total += numero\r\n    return total\r\n}\r\nCriterio de aceptación: Se aceptan sumas cerradas o sumOf si respetan el resultado para límites no positivos.",
+        "alternatives": [
+          "Recorrer un rango y acumular el total.",
+          "Usar una fórmula cerrada para la suma si se documentan los límites."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Control flow",
+          "url": "https://kotlinlang.org/docs/control-flow.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Funciones",
+      "explanation": "fun declara una función; sus parámetros tienen nombre y tipo y el retorno aparece después de dos puntos. Si el cuerpo es una sola expresión, se puede inferir el tipo. Los argumentos nombrados hacen visibles las intenciones y pueden usarse para omitir parámetros con valor predeterminado. Los valores por defecto reducen sobrecargas duplicadas, pero deben mantener un comportamiento predecible.",
+      "example": "[kotlin]\r\nfun saludar(nombre: String, saludo: String = \"Hola\"): String =\r\n    saludo + \", \" + nombre\r\n\r\nfun main() {\r\n    println(saludar(\"equipo\"))\r\n    println(saludar(nombre = \"equipo\", saludo = \"Bienvenido\"))\r\n}",
+      "output": "Hola, equipo\nBienvenido, equipo",
+      "mistakes": [
+        "Omitir el tipo de un parámetro cuando el compilador no puede inferirlo.",
+        "Suponer que la función devuelve el último valor de un bloque con llaves sin return.",
+        "Crear parámetros por defecto que cambian en cada llamada sin documentarlo."
+      ],
+      "exercise": {
+        "statement": "Escribe una función que calcule el precio con una tasa opcional de impuesto cuyo valor por defecto sea 0.21.",
+        "cases": [
+          {
+            "input": "(100.0)",
+            "expected": "121.0"
+          },
+          {
+            "input": "(0.0)",
+            "expected": "0.0"
+          },
+          {
+            "input": "(100.0, 0.1)",
+            "expected": "110.0"
+          }
+        ],
+        "solution": "[kotlin]\r\nfun conImpuesto(base: Double, tasa: Double = 0.21): Double =\r\n    base * (1 + tasa)\r\nCriterio de aceptación: Se acepta un resultado monetario estructurado si mantiene la política de redondeo indicada por el ejercicio.",
+        "alternatives": [
+          "Usar cuerpo de expresión para una función breve.",
+          "Usar bloque con return cuando haya varias operaciones."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Functions",
+          "url": "https://kotlinlang.org/docs/functions.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Colecciones",
+      "explanation": "List representa una secuencia ordenada de elementos y MutableList permite operaciones de modificación. Set modela pertenencia sin duplicados; Map relaciona claves con valores. Las interfaces de solo lectura no garantizan que el objeto subyacente sea profundamente inmutable. filter selecciona elementos, map transforma cada elemento y distinct elimina repetidos preservando el orden de primera aparición en la lista resultante.",
+      "example": "[kotlin]\r\nfun main() {\r\n    val numeros = listOf(1, 2, 2, 3)\r\n    val pares = numeros.filter { it % 2 == 0 }\r\n    println(pares)\r\n    println(pares.toSet())\r\n}",
+      "output": "[2, 2]\n[2]",
+      "mistakes": [
+        "Esperar que listOf devuelva una MutableList.",
+        "Confundir igualdad de conjuntos con igualdad de listas ordenadas.",
+        "Modificar una colección mientras se recorre de una forma que invalida el iterador."
+      ],
+      "exercise": {
+        "statement": "Devuelve, en el orden de primera aparición, los valores únicos mayores que cero.",
+        "cases": [
+          {
+            "input": "[]",
+            "expected": "[]"
+          },
+          {
+            "input": "[-1, 0]",
+            "expected": "[]"
+          },
+          {
+            "input": "[3, 3, 1, -2]",
+            "expected": "[3, 1]"
+          }
+        ],
+        "solution": "[kotlin]\r\nfun unicosPositivos(valores: List<Int>): List<Int> =\r\n    valores.filter { it > 0 }.distinct()\r\nCriterio de aceptación: Se aceptan bucles o una conversión a LinkedHashSet si se conserva el orden acordado.",
+        "alternatives": [
+          "Usar filter y distinct como en la solución orientativa.",
+          "Construir un resultado con bucle y LinkedHashSet para preservar orden."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Collections overview",
+          "url": "https://kotlinlang.org/docs/collections-overview.html"
+        },
+        {
+          "label": "JetBrains / Kotlin — Collection operations",
+          "url": "https://kotlinlang.org/docs/collection-operations.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Clases y data class",
+      "explanation": "Una clase puede declarar propiedades en su constructor principal y validar o derivar estado en init. data class genera funciones habituales de valor como equals, hashCode, toString y copy a partir de las propiedades del constructor principal. copy produce otro objeto; no realiza una copia profunda de objetos mutables anidados. Una clase normal es adecuada cuando la identidad y el comportamiento importan más que la igualdad por datos.",
+      "example": "[kotlin]\r\ndata class Producto(val nombre: String, val precio: Int) {\r\n    init { require(precio >= 0) }\r\n}\r\n\r\nfun main() {\r\n    val original = Producto(\"libro\", 20)\r\n    println(original.copy(precio = 18))\r\n}",
+      "output": "Producto(nombre=libro, precio=18)",
+      "mistakes": [
+        "Esperar que una propiedad declarada fuera del constructor participe en equals o copy.",
+        "Usar copy creyendo que duplica profundamente listas mutables.",
+        "Omitir validaciones del dominio y permitir estados inválidos."
+      ],
+      "exercise": {
+        "statement": "Modela un artículo con nombre y precio no negativo y una función que lo copie con un nuevo precio.",
+        "cases": [
+          {
+            "input": "(\"mapa\", 0, 5)",
+            "expected": "copia con precio 5"
+          },
+          {
+            "input": "(\"mapa\", 5, 3)",
+            "expected": "original 5; copia 3"
+          },
+          {
+            "input": "(\"mapa\", -1, 2)",
+            "expected": "rechazo al construir"
+          }
+        ],
+        "solution": "[kotlin]\r\ndata class Articulo(val nombre: String, val precio: Int) {\r\n    init { require(precio >= 0) }\r\n    fun conPrecio(nuevo: Int) = copy(precio = nuevo)\r\n}\r\nCriterio de aceptación: Se acepta una clase con copia explícita si conserva el objeto original y rechaza precios iniciales negativos.",
+        "alternatives": [
+          "Usar una data class para igualdad por valores.",
+          "Usar una clase normal si la identidad importa y definir solo las operaciones necesarias."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Classes",
+          "url": "https://kotlinlang.org/docs/classes.html"
+        },
+        {
+          "label": "JetBrains / Kotlin — Data classes",
+          "url": "https://kotlinlang.org/docs/data-classes.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Herencia e interfaces",
+      "explanation": "Las clases Kotlin son final por defecto. open permite heredar y override marca la implementación que reemplaza un miembro abierto. Una interface declara capacidades que varias clases pueden implementar, mientras una clase abstracta puede compartir estado y comportamiento. Una jerarquía sealed limita los subtipos directos permitidos y permite que when compruebe casos conocidos. La composición suele ser preferible cuando los objetos solo colaboran, sin ser variantes del mismo tipo.",
+      "example": "[kotlin]\r\ninterface Etiquetable { fun etiqueta(): String }\r\nopen class Documento(val nombre: String) : Etiquetable {\r\n    override fun etiqueta() = nombre\r\n}\r\nclass Informe(nombre: String, val paginas: Int) : Documento(nombre)\r\n\r\nfun main() = println(Informe(\"resumen\", 3).etiqueta())",
+      "output": "resumen",
+      "mistakes": [
+        "Intentar heredar de una clase final sin declararla open.",
+        "Olvidar override al implementar un miembro abierto.",
+        "Crear jerarquías profundas cuando una interfaz o composición bastaría."
+      ],
+      "exercise": {
+        "statement": "Representa un resultado sellado con Éxito(valor) y Fallo(mensaje), y crea una función que describa ambos casos.",
+        "cases": [
+          {
+            "input": "Éxito(3)",
+            "expected": "\"valor 3\""
+          },
+          {
+            "input": "Fallo(\"sin datos\")",
+            "expected": "\"error: sin datos\""
+          },
+          {
+            "input": "Éxito(0)",
+            "expected": "\"valor 0\""
+          }
+        ],
+        "solution": "[kotlin]\r\nsealed interface Resultado\r\ndata class Exito(val valor: Int) : Resultado\r\ndata class Fallo(val mensaje: String) : Resultado\r\n\r\nfun describir(resultado: Resultado): String = when (resultado) {\r\n    is Exito -> \"valor \" + resultado.valor\r\n    is Fallo -> \"error: \" + resultado.mensaje\r\n}\r\nCriterio de aceptación: Se acepta sealed class en lugar de sealed interface si when cubre todos los subtipos definidos.",
+        "alternatives": [
+          "Modelar las variantes con sealed class.",
+          "Usar sealed interface cuando las variantes no necesiten compartir estado."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Inheritance",
+          "url": "https://kotlinlang.org/docs/inheritance.html"
+        },
+        {
+          "label": "JetBrains / Kotlin — Sealed classes and interfaces",
+          "url": "https://kotlinlang.org/docs/sealed-classes.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Lambdas y funciones de orden superior",
+      "explanation": "Una lambda es una función anónima que puede asignarse o pasarse como argumento. Una función de orden superior recibe o devuelve funciones. map transforma cada elemento; filter conserva los que cumplen una condición. Si la lambda tiene un único parámetro, it es su nombre implícito, aunque escribir un nombre mejora la lectura en expresiones complejas. let, apply y run son funciones de ámbito con receptores y resultados diferentes: utilízalas solo si hacen más claro el propósito.",
+      "example": "[kotlin]\r\nfun transformar(valores: List<Int>, operacion: (Int) -> Int) =\r\n    valores.map(operacion)\r\n\r\nfun main() {\r\n    val resultado = transformar(listOf(1, 2, 3)) { numero -> numero * 2 }\r\n    println(resultado)\r\n}",
+      "output": "[2, 4, 6]",
+      "mistakes": [
+        "Encadenar lambdas largas sin dar nombre al parámetro ni separar pasos.",
+        "Confundir it con el receptor this de una función de ámbito.",
+        "Usar forEach cuando se necesita una colección transformada y debería usarse map."
+      ],
+      "exercise": {
+        "statement": "Transforma una lista de palabras a minúsculas y conserva solo las que tengan al menos cuatro letras.",
+        "cases": [
+          {
+            "input": "[]",
+            "expected": "[]"
+          },
+          {
+            "input": "[\"SOL\"]",
+            "expected": "[]"
+          },
+          {
+            "input": "[\"KOTLIN\", \"API\", \"Datos\"]",
+            "expected": "[\"kotlin\", \"datos\"]"
+          }
+        ],
+        "solution": "[kotlin]\r\nfun normalizar(palabras: List<String>): List<String> =\r\n    palabras.map { it.lowercase() }.filter { it.length >= 4 }\r\nCriterio de aceptación: Se acepta un bucle o secuencia si el resultado mantiene el orden de las palabras de entrada.",
+        "alternatives": [
+          "Encadenar map y filter para transformaciones pequeñas.",
+          "Usar un bucle explícito para una secuencia de pasos con nombres."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Lambdas",
+          "url": "https://kotlinlang.org/docs/lambdas.html"
+        },
+        {
+          "label": "JetBrains / Kotlin — Scope functions",
+          "url": "https://kotlinlang.org/docs/scope-functions.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Excepciones",
+      "explanation": "En Kotlin, las excepciones son unchecked: el lenguaje no obliga a declararlas en la firma. try puede ser una expresión con un valor en cada rama. throw interrumpe el flujo actual. require expresa que quien llama debe cumplir una precondición y lanza IllegalArgumentException; check señala una condición de estado que el programa esperaba. No conviene capturar Throwable ni ocultar el fallo con un valor que parezca correcto.",
+      "example": "[kotlin]\r\nfun dividir(a: Int, b: Int): Int {\r\n    require(b != 0) { \"El divisor no puede ser cero\" }\r\n    return a / b\r\n}\r\n\r\nfun main() = println(dividir(8, 2))",
+      "output": "4",
+      "mistakes": [
+        "Capturar una excepción y devolver un resultado indistinguible de una operación correcta.",
+        "Usar require para validar un fallo externo que debe representarse como resultado del dominio.",
+        "Olvidar que el mensaje de una excepción también debe orientar sin exponer datos sensibles."
+      ],
+      "exercise": {
+        "statement": "Parsea un entero y devuelve su doble; si el texto no es entero devuelve null.",
+        "cases": [
+          {
+            "input": "\"4\"",
+            "expected": "8"
+          },
+          {
+            "input": "\"0\"",
+            "expected": "0"
+          },
+          {
+            "input": "\"x\"",
+            "expected": "null"
+          }
+        ],
+        "solution": "[kotlin]\r\nfun dobleSiValido(texto: String): Int? =\r\n    try { texto.toInt() * 2 } catch (_: NumberFormatException) { null }\r\nCriterio de aceptación: Se acepta toIntOrNull si el resultado y los límites numéricos mantienen el contrato.",
+        "alternatives": [
+          "Usar toIntOrNull y decidir sobre null.",
+          "Usar try/catch para traducir NumberFormatException a la respuesta del dominio."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Exception and error handling",
+          "url": "https://kotlinlang.org/docs/exceptions.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Genéricos",
+      "explanation": "Un parámetro de tipo como T permite que una función opere con distintos tipos y conserve el tipo concreto en el retorno. La inferencia evita escribir argumentos de tipo cuando se pueden deducir. Kotlin usa varianza declarada en el tipo: out marca un productor que entrega T y permite una relación covariante; in marca un consumidor que acepta T y permite contravarianza. Las restricciones where acotan qué operaciones puede utilizarse sobre T.",
+      "example": "[kotlin]\r\nfun <T> primeroSeguro(valores: List<T>): T? = valores.firstOrNull()\r\n\r\nfun main() {\r\n    println(primeroSeguro(listOf(\"a\", \"b\")))\r\n    println(primeroSeguro(emptyList<Int>()))\r\n}",
+      "output": "a\nnull",
+      "mistakes": [
+        "Usar Any para evitar el parámetro de tipo y luego forzar casts.",
+        "Confundir nullabilidad T? con el parámetro de tipo T.",
+        "Declarar out en un tipo que también consume valores de T."
+      ],
+      "exercise": {
+        "statement": "Implementa una función genérica que devuelva el último valor o null si la lista está vacía.",
+        "cases": [
+          {
+            "input": "[]",
+            "expected": "null"
+          },
+          {
+            "input": "[7]",
+            "expected": "7"
+          },
+          {
+            "input": "[\"a\", \"b\"]",
+            "expected": "\"b\""
+          }
+        ],
+        "solution": "[kotlin]\r\nfun <T> ultimoSeguro(valores: List<T>): T? = valores.lastOrNull()\r\nCriterio de aceptación: Se acepta una implementación manual si mantiene T sin convertir los valores a Any ni hacer casts inseguros.",
+        "alternatives": [
+          "Usar firstOrNull para obtener el último valor equivalente con lastOrNull.",
+          "Recorrer la lista guardando el último elemento y conservar el tipo T."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Generics: in, out, where",
+          "url": "https://kotlinlang.org/docs/generics.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Coroutines",
+      "explanation": "suspend marca una función que puede ceder y reanudarse mediante operaciones suspendibles; por sí sola no crea un hilo ni inicia concurrencia. kotlinx.coroutines aporta builders como launch, que devuelve Job, y async, que devuelve Deferred con resultado. Ambos necesitan un CoroutineScope que gestione hijos y cancelación. delay suspende una coroutine sin bloquear el hilo. La cancelación es cooperativa y debe propagarse; evita iniciar tareas desligadas del ciclo de vida de la operación.",
+      "example": "[kotlin]\r\nimport kotlinx.coroutines.async\r\nimport kotlinx.coroutines.runBlocking\r\n\r\nfun main() = runBlocking {\r\n    val a = async { 20 }\r\n    val b = async { 22 }\r\n    println(a.await() + b.await())\r\n}\r\nContexto: Requiere la dependencia kotlinx-coroutines-core; async y runBlocking no pertenecen a la biblioteca estándar.",
+      "output": "42",
+      "mistakes": [
+        "Afirmar que suspend mueve automáticamente el trabajo a otro hilo.",
+        "Lanzar tareas en un scope global que no se cancela con quien las necesita.",
+        "Olvidar await y no observar el resultado o el error de una tarea async."
+      ],
+      "exercise": {
+        "statement": "Dentro de un scope, calcula dos valores concurrentes y combina sus resultados. Explica qué debe cancelarse si la operación principal se cancela.",
+        "cases": [
+          {
+            "input": "(10, 5)",
+            "expected": "15"
+          },
+          {
+            "input": "(0, 0)",
+            "expected": "0"
+          },
+          {
+            "input": "(-2, 7)",
+            "expected": "5"
+          }
+        ],
+        "solution": "[kotlin]\r\nimport kotlinx.coroutines.async\r\n\r\nsuspend fun combinar(a: Int, b: Int) = kotlinx.coroutines.coroutineScope {\r\n    val primero = async { a }\r\n    val segundo = async { b }\r\n    primero.await() + segundo.await()\r\n}\r\nCriterio de aceptación: Se acepta secuencial si no se requiere concurrencia; si se usan coroutines, las tareas hijas deben respetar la cancelación del scope.",
+        "alternatives": [
+          "Usar async/await dentro de coroutineScope cuando los resultados puedan ejecutarse concurrentemente.",
+          "Llamar funciones suspend de forma secuencial si la concurrencia no aporta valor."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Coroutines basics",
+          "url": "https://kotlinlang.org/docs/coroutines-basics.html"
+        },
+        {
+          "label": "JetBrains / kotlinx.coroutines — Coroutines guide",
+          "url": "https://kotlinlang.org/docs/coroutines-guide.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Ficheros y serialización",
+      "explanation": "En Kotlin/JVM se pueden usar las APIs Java NIO para rutas y ficheros. Las operaciones de lectura y escritura deben gestionar errores y cerrar recursos; use cierra un recurso Closeable al terminar el bloque. Serializar transforma un objeto a un formato como JSON y deserializar reconstruye un objeto; kotlinx.serialization requiere plugin y dependencias del proyecto, no forma parte de la sintaxis del lenguaje. El ejemplo usa un fichero temporal y lo elimina al terminar.",
+      "example": "[kotlin]\r\nimport java.nio.charset.StandardCharsets.UTF_8\r\nimport java.nio.file.Files\r\nimport kotlinx.serialization.Serializable\r\nimport kotlinx.serialization.encodeToString\r\nimport kotlinx.serialization.decodeFromString\r\nimport kotlinx.serialization.json.Json\r\n\r\n@Serializable data class Nota(val texto: String)\r\n\r\nfun main() {\r\n    val ruta = Files.createTempFile(\"nota\", \".json\")\r\n    try {\r\n        Files.writeString(ruta, Json.encodeToString(Nota(\"hola\")), UTF_8)\r\n        val guardada = Json.decodeFromString<Nota>(Files.readString(ruta, UTF_8))\r\n        println(guardada.texto)\r\n    } finally { Files.deleteIfExists(ruta) }\r\n}\r\nContexto: Requiere configurar el plugin kotlinx.serialization y su módulo JSON, además de un JDK con Files.writeString.",
+      "output": "hola",
+      "mistakes": [
+        "Tratar una ruta como si garantizara que el fichero existe o es legible.",
+        "Leer JSON sin manejar datos malformados o campos incompatibles.",
+        "Suponer que kotlinx.serialization está incluido automáticamente en Kotlin."
+      ],
+      "exercise": {
+        "statement": "Serializa y vuelve a leer una nota con texto. Comprueba que el texto recuperado coincide incluso si incluye comillas o caracteres no ASCII.",
+        "cases": [
+          {
+            "input": "\"hola\"",
+            "expected": "\"hola\""
+          },
+          {
+            "input": "\"acción\"",
+            "expected": "\"acción\""
+          },
+          {
+            "input": "\"dijo: \\\"sí\\\"\"",
+            "expected": "el mismo texto con comillas"
+          }
+        ],
+        "solution": "[kotlin]\r\nimport kotlinx.serialization.Serializable\r\nimport kotlinx.serialization.encodeToString\r\nimport kotlinx.serialization.decodeFromString\r\nimport kotlinx.serialization.json.Json\r\n\r\n@Serializable data class Nota(val texto: String)\r\n\r\nfun copiaJson(texto: String): String {\r\n    val serializado = Json.encodeToString(Nota(texto))\r\n    return Json.decodeFromString<Nota>(serializado).texto\r\n}\r\nCriterio de aceptación: Se acepta otro formato si realiza una ida y vuelta sin perder contenido y el manejo del fichero cierra recursos.",
+        "alternatives": [
+          "Usar Files.readString y writeString para texto pequeño.",
+          "Usar un stream con use cuando el volumen requiera lectura progresiva."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — Serialization",
+          "url": "https://kotlinlang.org/docs/serialization.html"
+        },
+        {
+          "label": "Oracle — Files API",
+          "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Files.html"
+        }
+      ]
+    },
+    {
+      "track": "Kotlin",
+      "title": "Pruebas y arquitectura",
+      "explanation": "Una prueba unitaria compara un resultado observable con el contrato esperado. kotlin.test ofrece anotaciones y assertions comunes que se conectan con un runner como JUnit según la configuración del proyecto. Una función de dominio pura es fácil de probar porque el mismo input produce el mismo resultado. Separar UI, dominio y acceso a datos reduce dependencias cruzadas; no es obligatorio crear capas para un ejercicio pequeño si no mejoran la claridad.",
+      "example": "[kotlin]\r\nimport kotlin.test.Test\r\nimport kotlin.test.assertEquals\r\n\r\nfun doble(numero: Int) = numero * 2\r\n\r\nclass DobleTest {\r\n    @Test fun calculaDoble() {\r\n        assertEquals(8, doble(4))\r\n    }\r\n}",
+      "output": "El runner descubre calculaDoble y la assertion pasa.",
+      "mistakes": [
+        "Probar llamadas privadas internas en vez del contrato visible.",
+        "Hacer que una prueba dependa de red, hora o estado compartido sin controlarlo.",
+        "Crear interfaces y capas sin una razón que reduzca acoplamiento o facilite cambios."
+      ],
+      "exercise": {
+        "statement": "Implementa una función que aplique un porcentaje de descuento y añade tres pruebas. La tasa debe estar entre 0 y 1.",
+        "cases": [
+          {
+            "input": "(100.0, 0.0)",
+            "expected": "100.0"
+          },
+          {
+            "input": "(100.0, 0.25)",
+            "expected": "75.0"
+          },
+          {
+            "input": "(50.0, 1.0)",
+            "expected": "0.0"
+          }
+        ],
+        "solution": "[kotlin]\r\nfun conDescuento(precio: Double, tasa: Double): Double {\r\n    require(tasa in 0.0..1.0)\r\n    return precio * (1 - tasa)\r\n}\r\n\r\n@Test fun descuentoCompleto() {\r\n    assertEquals(0.0, conDescuento(50.0, 1.0))\r\n}\r\nCriterio de aceptación: Se acepta redondeo explícito si el dominio define precisión monetaria; todas las soluciones deben respetar el rango de la tasa.",
+        "alternatives": [
+          "Usar kotlin.test con el runner ya configurado.",
+          "Usar las assertions de JUnit directamente si el proyecto depende de JUnit."
+        ]
+      },
+      "sources": [
+        {
+          "label": "JetBrains / Kotlin — kotlin.test API",
+          "url": "https://kotlinlang.org/api/latest/kotlin.test/"
+        },
+        {
+          "label": "JUnit Team — JUnit 5 User Guide",
+          "url": "https://junit.org/junit5/docs/current/user-guide/"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Componentes y JSX",
+      "explanation": "React construye interfaces a partir de componentes. Un componente función devuelve elementos JSX, una sintaxis similar a HTML que se compila a llamadas de React; JSX no es HTML que el navegador interprete directamente. Los nombres de componente empiezan con mayúscula para distinguirlos de etiquetas HTML. Mantén el render puro: con las mismas props y estado, debe describir la misma interfaz.",
+      "example": "[jsx]\r\nfunction Saludo() {\r\n  return <p>Hola, equipo</p>;\r\n}\r\n\r\nexport default function App() {\r\n  return <main><h1>Inicio</h1><Saludo /></main>;\r\n}\r\nContexto: El ejemplo se ejecuta dentro de un proyecto React con JSX configurado.",
+      "output": "La página muestra el encabezado Inicio y debajo el texto Hola, equipo.",
+      "mistakes": [
+        "Nombrar un componente con minúscula y escribirlo como si fuera una etiqueta HTML.",
+        "Devolver dos elementos hermanos sin un contenedor o fragmento.",
+        "Escribir class en JSX en vez de className para una clase CSS."
+      ],
+      "exercise": {
+        "statement": "Crea una tarjeta con un título y un párrafo, y úsala dos veces dentro de App.",
+        "cases": [
+          {
+            "input": "Tarjeta con título \"A\"",
+            "expected": "Se muestra un encabezado A"
+          },
+          {
+            "input": "Dos tarjetas",
+            "expected": "Se muestran dos artículos separados"
+          },
+          {
+            "input": "Tarjeta con párrafo vacío",
+            "expected": "La estructura sigue siendo válida"
+          }
+        ],
+        "solution": "[jsx]\r\nfunction Tarjeta() {\r\n  return <article><h2>A</h2><p>Contenido</p></article>;\r\n}\r\n\r\nexport default function App() {\r\n  return <main><Tarjeta /><Tarjeta /></main>;\r\n}\r\nCriterio de aceptación: Se acepta cualquier composición semántica equivalente que renderice cada tarjeta como una unidad.",
+        "alternatives": [
+          "Declarar el componente con function.",
+          "Declarar el componente como función flecha si esa convención usa el proyecto."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Quick Start",
+          "url": "https://react.dev/learn"
+        },
+        {
+          "label": "Equipo de React — Your First Component",
+          "url": "https://react.dev/learn/your-first-component"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Props",
+      "explanation": "Las props son entradas que el padre entrega al componente hijo. El hijo las lee, pero no debe modificarlas; si algo cambia con una interacción, el estado debe pertenecer a quien lo controla. La desestructuración facilita seleccionar propiedades. children permite colocar contenido entre la etiqueta de apertura y cierre, útil para componer contenedores sin conocer todos sus detalles internos.",
+      "example": "[jsx]\r\nfunction Mensaje({ nombre, children }) {\r\n  return <section><h2>{nombre}</h2><p>{children}</p></section>;\r\n}\r\n\r\nexport default function App() {\r\n  return <Mensaje nombre=\"Ruta Python\">Tema inicial</Mensaje>;\r\n}",
+      "output": "Se muestra Ruta Python como título y Tema inicial como contenido.",
+      "mistakes": [
+        "Intentar asignar un valor nuevo a una prop recibida.",
+        "Confundir children con un componente global o con estado.",
+        "Pasar booleanos o callbacks sin pensar qué representa cada prop."
+      ],
+      "exercise": {
+        "statement": "Crea una insignia que reciba texto y estado, y cambia su clase CSS según si está activa.",
+        "cases": [
+          {
+            "input": "(\"A\", true)",
+            "expected": "Texto A con clase activa"
+          },
+          {
+            "input": "(\"B\", false)",
+            "expected": "Texto B con clase inactiva"
+          },
+          {
+            "input": "(\"\", false)",
+            "expected": "Texto vacío sin error de renderizado"
+          }
+        ],
+        "solution": "[jsx]\r\nfunction Insignia({ texto, activa }) {\r\n  return <span className={activa ? \"activa\" : \"inactiva\"}>{texto}</span>;\r\n}\r\nCriterio de aceptación: Se acepta usar atributos distintos o estilos si el estado y el texto observables coinciden.",
+        "alternatives": [
+          "Desestructurar nombre y children al recibir props.",
+          "Leer props.nombre directamente y pasar el contenido mediante children."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Passing Props to a Component",
+          "url": "https://react.dev/learn/passing-props-to-a-component"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Estado con useState",
+      "explanation": "useState declara una pieza de estado para un componente y devuelve su valor actual y una función para solicitar un cambio. La llamada al setter programa un renderizado; no cambia la variable de la ejecución actual. Si el siguiente valor depende del anterior, usa la forma funcional setEstado(anterior => nuevoValor) para evitar cálculos con una captura obsoleta. Para objetos y arrays, crea una nueva referencia en vez de mutarlos.",
+      "example": "[jsx]\r\nimport { useState } from \"react\";\r\n\r\nexport default function Contador() {\r\n  const [total, setTotal] = useState(0);\r\n  return <button onClick={() => setTotal(valor => valor + 1)}>\r\n    Pulsaciones: {total}\r\n  </button>;\r\n}",
+      "output": "La interfaz empieza con Pulsaciones: 0 y sube una unidad por clic.",
+      "mistakes": [
+        "Cambiar directamente total o mutar el objeto que guarda el estado.",
+        "Esperar que el valor local cambie inmediatamente después de llamar al setter.",
+        "Usar total + 1 en varias actualizaciones acumuladas cuando dependen de la cola previa."
+      ],
+      "exercise": {
+        "statement": "Implementa un contador con botones para sumar y restar, sin permitir valores menores que cero.",
+        "cases": [
+          {
+            "input": "inicializar",
+            "expected": "0"
+          },
+          {
+            "input": "restar desde 0",
+            "expected": "0"
+          },
+          {
+            "input": "sumar, sumar, restar",
+            "expected": "1"
+          }
+        ],
+        "solution": "[jsx]\r\nconst [valor, setValor] = useState(0);\r\nconst sumar = () => setValor(actual => actual + 1);\r\nconst restar = () => setValor(actual => Math.max(0, actual - 1));\r\nCriterio de aceptación: Se aceptan reducer o dos setters si los eventos dan los mismos valores en secuencias repetidas.",
+        "alternatives": [
+          "Usar actual => actual + 1 para actualizaciones acumuladas.",
+          "Usar useReducer si las transiciones de estado tienen varias reglas."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — State: A Component's Memory",
+          "url": "https://react.dev/learn/state-a-components-memory"
+        },
+        {
+          "label": "Equipo de React — useState",
+          "url": "https://react.dev/reference/react/useState"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Eventos y formularios",
+      "explanation": "React recibe handlers como props de elementos, por ejemplo onClick u onSubmit; se pasa una función, no el resultado de llamarla. Un input controlado obtiene su value del estado y actualiza ese estado en onChange. En un submit se puede llamar preventDefault para evitar la navegación del navegador mientras la aplicación procesa el formulario. Las etiquetas visibles deben asociarse con los controles para permitir navegación accesible.",
+      "example": "[jsx]\r\nimport { useState } from \"react\";\r\n\r\nexport default function Buscador() {\r\n  const [consulta, setConsulta] = useState(\"\");\r\n  return <>\r\n    <label htmlFor=\"consulta\">Buscar</label>\r\n    <input id=\"consulta\" value={consulta} onChange={evento => setConsulta(evento.target.value)} />\r\n    <output aria-live=\"polite\">{consulta}</output>\r\n  </>;\r\n}",
+      "output": "Al escribir texto, el campo y output muestran el mismo valor.",
+      "mistakes": [
+        "Asignar value a un input y no proporcionar onChange.",
+        "Escribir onClick={handler()} y ejecutar la función durante el render.",
+        "Olvidar el label asociado y dejar el control sin nombre accesible."
+      ],
+      "exercise": {
+        "statement": "Crea un formulario con un campo de búsqueda y un botón que muestre el texto enviado sin recargar la página.",
+        "cases": [
+          {
+            "input": "Enviar \"sol\"",
+            "expected": "Se muestra sol"
+          },
+          {
+            "input": "Enviar texto vacío",
+            "expected": "Se muestra vacío o se indica validación según el contrato"
+          },
+          {
+            "input": "Escribir \"luna\" sin enviar",
+            "expected": "El campo conserva luna y no cambia el resultado enviado"
+          }
+        ],
+        "solution": "[jsx]\r\nconst [valor, setValor] = useState(\"\");\r\nconst [enviado, setEnviado] = useState(\"\");\r\nfunction manejarEnvio(evento) {\r\n  evento.preventDefault();\r\n  setEnviado(valor);\r\n}\r\nCriterio de aceptación: Se aceptan eventos o componentes separados si la escritura y el envío siguen siendo acciones distintas.",
+        "alternatives": [
+          "Controlar el input con value y onChange.",
+          "Usar FormData en el submit si no se necesita reflejar cada tecla en estado."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Responding to Events",
+          "url": "https://react.dev/learn/responding-to-events"
+        },
+        {
+          "label": "MDN — Form data validation",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Form_validation"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Renderizado condicional",
+      "explanation": "Un componente puede usar if y return temprano o expresiones ternarias dentro de JSX. && sirve cuando la condición es booleana; si el operando izquierdo puede ser cero, React puede mostrar el 0 en pantalla, así que conviene comparar explícitamente con un booleano. Para una operación asíncrona, define estados visibles de carga, éxito y error en vez de mostrar una zona vacía que no explica qué ocurre.",
+      "example": "[jsx]\r\nfunction Estado({ cargando, error, items }) {\r\n  if (cargando) return <p>Cargando</p>;\r\n  if (error) return <p role=\"alert\">No se pudo cargar</p>;\r\n  return items.length > 0 ? <p>Hay {items.length} elementos</p> : <p>Sin resultados</p>;\r\n}",
+      "output": "El componente muestra una vista de carga, error, lista con resultados o estado vacío según sus props.",
+      "mistakes": [
+        "Usar items.length && ... y mostrar el número 0 cuando la lista está vacía.",
+        "No definir qué ocurre mientras llegan los datos.",
+        "Mostrar éxito y error simultáneamente por mantener banderas incompatibles."
+      ],
+      "exercise": {
+        "statement": "Renderiza un mensaje de carga, una alerta de error o el número de resultados, con prioridad carga, error y éxito.",
+        "cases": [
+          {
+            "input": "(true, false, 2)",
+            "expected": "\"Cargando\""
+          },
+          {
+            "input": "(false, true, 2)",
+            "expected": "alerta de error"
+          },
+          {
+            "input": "(false, false, 0)",
+            "expected": "\"Sin resultados\""
+          }
+        ],
+        "solution": "[jsx]\r\nif (cargando) return <p>Cargando</p>;\r\nif (error) return <p role=\"alert\">Error</p>;\r\nreturn cantidad === 0 ? <p>Sin resultados</p> : <p>{cantidad}</p>;\r\nCriterio de aceptación: Se acepta una unión de estados discriminada en vez de varias banderas si cada entrada produce un estado visible equivalente.",
+        "alternatives": [
+          "Usar retornos tempranos para estados excluyentes.",
+          "Usar una expresión ternaria para una decisión binaria pequeña."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Conditional Rendering",
+          "url": "https://react.dev/learn/conditional-rendering"
+        },
+        {
+          "label": "Equipo de React — Quick Start",
+          "url": "https://react.dev/learn"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Listas y keys",
+      "explanation": "map devuelve una nueva colección y suele usarse para crear elementos JSX por cada dato. key ayuda a React a relacionar cada elemento con su identidad cuando una lista cambia. Debe ser estable y único entre hermanos, normalmente un id de los datos. El índice puede producir errores de estado visual si se insertan, eliminan o reordenan filas; no es automáticamente incorrecto para listas estáticas sin identidad propia, pero no es una solución universal.",
+      "example": "[jsx]\r\nconst temas = [{ id: 1, titulo: \"Tipos\" }, { id: 2, titulo: \"Bucles\" }];\r\n\r\nfunction Lista() {\r\n  return <ul>{temas.map(tema =>\r\n    <li key={tema.id}>{tema.titulo}</li>\r\n  )}</ul>;\r\n}",
+      "output": "Una lista con los elementos Tipos y Bucles.",
+      "mistakes": [
+        "Omitir key y recibir una advertencia que dificulta localizar cambios de identidad.",
+        "Reutilizar la misma key para dos hermanos.",
+        "Usar un índice como identidad cuando se pueden reordenar elementos con estado."
+      ],
+      "exercise": {
+        "statement": "Muestra los nombres de una lista de tareas y conserva una key asociada a cada tarea.",
+        "cases": [
+          {
+            "input": "[]",
+            "expected": "Lista vacía"
+          },
+          {
+            "input": "[{id:1,nombre:\"A\"}]",
+            "expected": "Un elemento A"
+          },
+          {
+            "input": "Añadir una tarea antes de id 1",
+            "expected": "A mantiene su identidad y contenido"
+          }
+        ],
+        "solution": "[jsx]\r\nfunction Tareas({ tareas }) {\r\n  return <ul>{tareas.map(tarea =>\r\n    <li key={tarea.id}>{tarea.nombre}</li>\r\n  )}</ul>;\r\n}\r\nCriterio de aceptación: Se acepta otro identificador estable siempre que sea único entre hermanos y sobreviva a reordenamientos.",
+        "alternatives": [
+          "Crear elementos con map y una key id estable.",
+          "Construir el array de elementos antes del return y renderizarlo después."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Rendering Lists",
+          "url": "https://react.dev/learn/rendering-lists"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "useEffect",
+      "explanation": "useEffect sirve para sincronizar con temporizadores, suscripciones, conexiones u otros sistemas que React no administra. El código del efecto se ejecuta después del render; una función de limpieza deshace la suscripción anterior antes de repetir el efecto y al desmontar. Incluye como dependencias todos los valores reactivos que el efecto utiliza. Si el cálculo es solo una transformación de props o estado, no añadas un efecto para duplicarlo en otro estado.",
+      "example": "[jsx]\r\nimport { useEffect, useState } from \"react\";\r\n\r\nfunction Titulo({ pagina }) {\r\n  useEffect(() => {\r\n    document.title = pagina;\r\n  }, [pagina]);\r\n  return <h1>{pagina}</h1>;\r\n}",
+      "output": "Al cambiar pagina, el encabezado y el título del documento muestran el nuevo valor.",
+      "mistakes": [
+        "Omitir una dependencia reactiva y dejar el efecto con datos obsoletos.",
+        "Usar un efecto para calcular un valor que ya puede derivarse durante el render.",
+        "No limpiar temporizadores o suscripciones que siguen activos tras desmontar."
+      ],
+      "exercise": {
+        "statement": "Sincroniza un temporizador que actualiza el reloj cada segundo y límpialo al desmontar.",
+        "cases": [
+          {
+            "input": "Montar el componente",
+            "expected": "Se crea un único intervalo"
+          },
+          {
+            "input": "Actualizar una dependencia",
+            "expected": "Se limpia el intervalo anterior antes de crear otro"
+          },
+          {
+            "input": "Desmontar",
+            "expected": "El intervalo queda cancelado"
+          }
+        ],
+        "solution": "[jsx]\r\nuseEffect(() => {\r\n  const id = setInterval(() => setAhora(Date.now()), 1000);\r\n  return () => clearInterval(id);\r\n}, []);\r\nCriterio de aceptación: Se acepta una API de temporización equivalente si cada alta tiene una limpieza emparejada.",
+        "alternatives": [
+          "Extraer el efecto con su limpieza a un Hook personalizado.",
+          "Usar useSyncExternalStore para una suscripción a un almacén externo con API de suscripción."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Synchronizing with Effects",
+          "url": "https://react.dev/learn/synchronizing-with-effects"
+        },
+        {
+          "label": "Equipo de React — useEffect",
+          "url": "https://react.dev/reference/react/useEffect"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Hooks personalizados",
+      "explanation": "Un Hook personalizado es una función cuyo nombre comienza por use y que puede llamar a otros Hooks. Puede compartir lógica entre componentes, pero cada llamada conserva estado propio, salvo que se conecte a un estado compartido mediante contexto u otro sistema. Los Hooks se llaman en el nivel superior de componentes o de otros Hooks, no dentro de condiciones, bucles o funciones ordinarias. No hace falta extraer un Hook para cada línea duplicada.",
+      "example": "[jsx]\r\nimport { useState } from \"react\";\r\n\r\nfunction useContador(inicial = 0) {\r\n  const [valor, setValor] = useState(inicial);\r\n  const incrementar = () => setValor(actual => actual + 1);\r\n  return { valor, incrementar };\r\n}\r\n\r\nfunction Panel() {\r\n  const { valor, incrementar } = useContador();\r\n  return <button onClick={incrementar}>Valor: {valor}</button>;\r\n}",
+      "output": "Cada instancia de Panel mantiene su propio contador.",
+      "mistakes": [
+        "Llamar al Hook dentro de un if o dentro de una función manejadora.",
+        "Esperar que dos llamadas al mismo Hook compartan automáticamente el estado.",
+        "Crear un Hook para lógica que no utiliza ningún Hook y solo oculta una función normal."
+      ],
+      "exercise": {
+        "statement": "Extrae un Hook para alternar entre abierto y cerrado y úsalo en dos componentes independientes.",
+        "cases": [
+          {
+            "input": "Primer componente inicial",
+            "expected": "cerrado"
+          },
+          {
+            "input": "Alternar el primero",
+            "expected": "primero abierto; segundo cerrado"
+          },
+          {
+            "input": "Alternar el segundo",
+            "expected": "ambos abiertos"
+          }
+        ],
+        "solution": "[jsx]\r\nfunction useAlternador(inicial = false) {\r\n  const [activo, setActivo] = useState(inicial);\r\n  const alternar = () => setActivo(valor => !valor);\r\n  return [activo, alternar];\r\n}\r\nCriterio de aceptación: Se acepta devolver un objeto en vez de una tupla; las llamadas deben conservar estado independiente.",
+        "alternatives": [
+          "Devolver un objeto con nombres como { valor, incrementar }.",
+          "Devolver una tupla si el orden de los valores es estable y conocido."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Reusing Logic with Custom Hooks",
+          "url": "https://react.dev/learn/reusing-logic-with-custom-hooks"
+        },
+        {
+          "label": "Equipo de React — Rules of Hooks",
+          "url": "https://react.dev/reference/rules/rules-of-hooks"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Context",
+      "explanation": "Context permite que un componente proveedor publique un valor para los componentes descendientes que lo consumen con useContext. Es útil para datos como tema o idioma, pero no sustituye todas las props ni convierte automáticamente el valor en almacenamiento global persistente. Si el valor es un objeto nuevo en cada render, los consumidores pueden volver a renderizar; primero diseña la fuente única de verdad y mide antes de añadir optimización.",
+      "example": "[jsx]\r\nimport { createContext, useContext } from \"react\";\r\n\r\nconst TemaContext = createContext(\"claro\");\r\nfunction Etiqueta() {\r\n  const tema = useContext(TemaContext);\r\n  return <p>Tema: {tema}</p>;\r\n}\r\nfunction App() {\r\n  return <TemaContext.Provider value=\"oscuro\"><Etiqueta /></TemaContext.Provider>;\r\n}",
+      "output": "Etiqueta muestra Tema: oscuro.",
+      "mistakes": [
+        "Consumir un contexto fuera de su proveedor y no contemplar el valor por defecto.",
+        "Usar Context para valores locales que se pasan a un único hijo.",
+        "Duplicar en el estado del consumidor un valor que ya es propiedad del proveedor."
+      ],
+      "exercise": {
+        "statement": "Comparte un idioma por Context y muestra un saludo distinto en dos componentes descendientes.",
+        "cases": [
+          {
+            "input": "idioma es",
+            "expected": "Ambos componentes muestran saludo en español"
+          },
+          {
+            "input": "idioma en",
+            "expected": "Ambos componentes muestran saludo en inglés"
+          },
+          {
+            "input": "Sin Provider",
+            "expected": "Se aplica el valor por defecto documentado"
+          }
+        ],
+        "solution": "[jsx]\r\nconst IdiomaContext = createContext(\"es\");\r\nfunction Saludo() {\r\n  const idioma = useContext(IdiomaContext);\r\n  return <p>{idioma === \"en\" ? \"Hello\" : \"Hola\"}</p>;\r\n}\r\nCriterio de aceptación: Se acepta separar contextos o pasar props si todos los consumidores muestran el mismo valor de idioma.",
+        "alternatives": [
+          "Elevar el estado al ancestro común y pasarlo por props.",
+          "Usar Context cuando el valor se consume a través de muchos niveles."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Passing Data Deeply with Context",
+          "url": "https://react.dev/learn/passing-data-deeply-with-context"
+        },
+        {
+          "label": "Equipo de React — useContext",
+          "url": "https://react.dev/reference/react/useContext"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "React Router",
+      "explanation": "Un router declarativo relaciona la URL actual con componentes Route y ofrece Link para navegar usando el historial del navegador. Los parámetros dinámicos permiten reutilizar una pantalla para distintos identificadores; el componente debe validar si el parámetro existe. Una ruta comodín puede presentar un estado 404. La API y los imports dependen de la versión y el modo de React Router configurados en el proyecto.",
+      "example": "[jsx]\r\nimport { BrowserRouter, Link, Route, Routes } from \"react-router\";\r\n\r\nfunction Inicio() { return <h1>Inicio</h1>; }\r\nfunction NoEncontrada() { return <h1>404</h1>; }\r\n\r\nexport default function App() {\r\n  return <BrowserRouter>\r\n    <nav><Link to=\"/\">Inicio</Link></nav>\r\n    <Routes>\r\n      <Route path=\"/\" element={<Inicio />} />\r\n      <Route path=\"*\" element={<NoEncontrada />} />\r\n    </Routes>\r\n  </BrowserRouter>;\r\n}\r\nContexto: Usa las importaciones y el paquete correspondientes a la versión de React Router instalada.",
+      "output": "La ruta / muestra Inicio y cualquier ruta no declarada muestra 404.",
+      "mistakes": [
+        "Usar un enlace HTML que recarga la página cuando se espera navegación del router.",
+        "Olvidar que el servidor de despliegue debe resolver rutas de cliente al punto de entrada de la SPA.",
+        "Suponer que un parámetro de ruta siempre existe o tiene el formato esperado."
+      ],
+      "exercise": {
+        "statement": "Añade rutas para inicio y detalle de tema con parámetro, además de una página no encontrada.",
+        "cases": [
+          {
+            "input": "/",
+            "expected": "Muestra inicio"
+          },
+          {
+            "input": "/temas/3",
+            "expected": "Muestra el identificador 3"
+          },
+          {
+            "input": "/desconocida",
+            "expected": "Muestra la vista 404"
+          }
+        ],
+        "solution": "[jsx]\r\n<Routes>\r\n  <Route path=\"/\" element={<Inicio />} />\r\n  <Route path=\"/temas/:id\" element={<Detalle />} />\r\n  <Route path=\"*\" element={<NoEncontrada />} />\r\n</Routes>\r\nCriterio de aceptación: Se acepta una ruta de datos o framework si las tres URL muestran estados equivalentes y se validan sus parámetros.",
+        "alternatives": [
+          "Usar el modo declarativo con Routes y Route.",
+          "Usar el modo de datos si la navegación necesita loaders y acciones."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React Router — Picking a Mode",
+          "url": "https://reactrouter.com/start/modes"
+        },
+        {
+          "label": "Equipo de React Router — BrowserRouter",
+          "url": "https://reactrouter.com/api/declarative-routers/BrowserRouter"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Peticiones a APIs",
+      "explanation": "fetch devuelve una promesa y no rechaza solo porque el servidor respondió con un estado HTTP como 404; hay que comprobar response.ok. response.json también es asíncrono y el objeto recibido debe validarse antes de usarlo. Si el componente puede desmontarse o cambiar la URL, AbortController permite cancelar la petición anterior en la limpieza del efecto. En una aplicación con framework o caché de datos, prioriza el mecanismo recomendado por ese entorno.",
+      "example": "[jsx]\r\nimport { useEffect, useState } from \"react\";\r\n\r\nfunction Tarea({ url }) {\r\n  const [resultado, setResultado] = useState(null);\r\n  useEffect(() => {\r\n    const controller = new AbortController();\r\n    fetch(url, { signal: controller.signal })\r\n      .then(respuesta => { if (!respuesta.ok) throw new Error(); return respuesta.json(); })\r\n      .then(datos => { if (typeof datos.title !== \"string\") throw new Error(); setResultado({ url, titulo: datos.title }); })\r\n      .catch(error => { if (error.name !== \"AbortError\") setResultado({ url, error: true }); });\r\n    return () => controller.abort();\r\n  }, [url]);\r\n  if (!resultado || resultado.url !== url) return <p>Cargando</p>;\r\n  if (resultado.error) return <p role=\"alert\">Error</p>;\r\n  return <p>{resultado.titulo}</p>;\r\n}\r\nContexto: El servicio remoto puede cambiar; prueba la lógica de estados con respuestas simuladas.",
+      "output": "Muestra Cargando y luego el título si la respuesta es válida; ante HTTP o JSON inválidos muestra Error.",
+      "mistakes": [
+        "No comprobar response.ok y tratar un 404 como una respuesta correcta.",
+        "Olvidar await o return en una cadena de promesas y dejar fallos fuera del catch.",
+        "No cancelar ni ignorar una respuesta que corresponde a una URL anterior."
+      ],
+      "exercise": {
+        "statement": "Diseña una vista que muestre carga, dato o error, y que ignore una respuesta cancelada.",
+        "cases": [
+          {
+            "input": "Petición pendiente",
+            "expected": "Muestra Cargando"
+          },
+          {
+            "input": "HTTP 200 con title de texto",
+            "expected": "Muestra el título"
+          },
+          {
+            "input": "HTTP 404 o JSON sin title de texto",
+            "expected": "Muestra Error"
+          }
+        ],
+        "solution": "[jsx]\r\nif (estado === \"cargando\") return <p>Cargando</p>;\r\nif (estado === \"error\") return <p role=\"alert\">Error</p>;\r\nreturn <p>{titulo}</p>;\r\nCriterio de aceptación: Se aceptan hooks de datos o una máquina de estados si no se muestran datos antiguos ni se ocultan errores.",
+        "alternatives": [
+          "Usar un loader o caché de datos del framework.",
+          "Usar un Hook de consulta que gestione estados, caché y cancelación."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — useEffect",
+          "url": "https://react.dev/reference/react/useEffect"
+        },
+        {
+          "label": "MDN — Using the Fetch API",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Validación de formularios",
+      "explanation": "La validación en el navegador mejora la experiencia, pero no es un control de seguridad: una petición puede enviarse sin pasar por el formulario. Combina restricciones HTML apropiadas con reglas del dominio. Relaciona cada campo con label y, cuando hay error, con un mensaje visible y una referencia como aria-describedby. No borres el valor sin explicación; conserva la entrada y mueve el foco o anuncia el error cuando corresponda.",
+      "example": "[jsx]\r\nimport { useState } from \"react\";\r\n\r\nfunction Correo() {\r\n  const [correo, setCorreo] = useState(\"\");\r\n  const invalido = correo.length > 0 && !correo.includes(\"@\");\r\n  return <label htmlFor=\"correo\">Correo\r\n    <input id=\"correo\" type=\"email\" value={correo}\r\n      onChange={evento => setCorreo(evento.target.value)}\r\n      aria-describedby={invalido ? \"error-correo\" : undefined} />\r\n    {invalido && <span id=\"error-correo\">Revisa el formato</span>}\r\n  </label>;\r\n}",
+      "output": "Al escribir una dirección con formato no válido se conserva el valor y aparece un mensaje asociado al campo.",
+      "mistakes": [
+        "Confiar solo en validación del cliente para proteger datos o reglas del servidor.",
+        "Mostrar el error solo mediante color o sin asociarlo al campo afectado.",
+        "Usar una expresión regular compleja sin definir qué formatos se aceptan."
+      ],
+      "exercise": {
+        "statement": "Valida un nombre obligatorio y muestra un mensaje accesible cuando solo contenga espacios.",
+        "cases": [
+          {
+            "input": "\"Ada\"",
+            "expected": "Aceptado"
+          },
+          {
+            "input": "\"   \"",
+            "expected": "Error visible asociado al campo"
+          },
+          {
+            "input": "\"\"",
+            "expected": "Error visible asociado al campo"
+          }
+        ],
+        "solution": "[jsx]\r\nconst invalido = nombre.trim().length === 0;\r\n<label htmlFor=\"nombre\">Nombre</label>\r\n<input id=\"nombre\" value={nombre} onChange={e => setNombre(e.target.value)}\r\n  aria-invalid={invalido} aria-describedby={invalido ? \"error-nombre\" : undefined} />\r\n{invalido && <p id=\"error-nombre\">Escribe un nombre</p>}\r\nCriterio de aceptación: Se acepta validación nativa o una librería si la regla también se aplica en servidor y el mensaje es perceptible.",
+        "alternatives": [
+          "Usar restricciones HTML nativas más mensajes personalizados.",
+          "Usar una biblioteca de formularios si centraliza reglas y estados; validar también en servidor."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Responding to Events",
+          "url": "https://react.dev/learn/responding-to-events"
+        },
+        {
+          "label": "MDN — Form data validation",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Form_validation"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Rendimiento",
+      "explanation": "React normalmente vuelve a renderizar descendientes cuando renderiza su padre. memo puede omitir un render si las props no cambiaron; useMemo conserva un resultado calculado y useCallback una función. Son optimizaciones, no garantías de semántica, y requieren dependencias completas. React Compiler puede memoizar automáticamente según su configuración, por lo que no se deben añadir Hooks de memoización por costumbre. Usa el profiler para localizar trabajo perceptible antes de cambiar el código.",
+      "example": "[jsx]\r\nimport { useMemo } from \"react\";\r\n\r\nfunction Filtrados({ temas, consulta }) {\r\n  const visibles = useMemo(\r\n    () => temas.filter(tema => tema.nombre.toLowerCase().includes(consulta.toLowerCase())),\r\n    [temas, consulta]\r\n  );\r\n  return <ul>{visibles.map(tema => <li key={tema.id}>{tema.nombre}</li>)}</ul>;\r\n}",
+      "output": "La lista incluye solo los nombres que contienen la consulta; el valor se recalcula cuando cambia una dependencia.",
+      "mistakes": [
+        "Añadir memoización a cálculos baratos sin medir el problema.",
+        "Omitir una dependencia y obtener un valor calculado con datos antiguos.",
+        "Esperar que memo impida renderizados causados por el estado o contexto propios del componente."
+      ],
+      "exercise": {
+        "statement": "Filtra una lista por texto sin mutarla y documenta qué interacción lenta justificaría una optimización.",
+        "cases": [
+          {
+            "input": "([], \"a\")",
+            "expected": "[]"
+          },
+          {
+            "input": "([\"Ada\"], \"ada\")",
+            "expected": "[\"Ada\"]"
+          },
+          {
+            "input": "([\"Ada\", \"Lin\"], \"i\")",
+            "expected": "[\"Lin\"]"
+          }
+        ],
+        "solution": "[jsx]\r\nconst visibles = nombres.filter(nombre =>\r\n  nombre.toLowerCase().includes(consulta.toLowerCase())\r\n);\r\nCriterio de aceptación: Se acepta useMemo para trabajo medido y costoso; la corrección no debe depender de que la caché exista.",
+        "alternatives": [
+          "Medir primero y no memorizar cálculos baratos.",
+          "Usar useMemo o React Compiler para trabajo costoso después de perfilar."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — useMemo",
+          "url": "https://react.dev/reference/react/useMemo"
+        },
+        {
+          "label": "Equipo de React — memo",
+          "url": "https://react.dev/reference/react/memo"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Pruebas de componentes",
+      "explanation": "React Testing Library consulta el DOM con criterios parecidos a los de una persona, como el nombre accesible de un botón. Las pruebas deben centrarse en comportamiento observable y evitar acoplarse a variables internas o clases de implementación. user-event puede modelar acciones como clics y escritura; las pruebas asíncronas deben esperar el cambio. El runner y el entorno DOM, por ejemplo Vitest o Jest, se configuran en el proyecto.",
+      "example": "[jsx]\r\n// Contador.jsx\r\nimport { useState } from \"react\";\r\nexport function Contador() {\r\n  const [valor, setValor] = useState(0);\r\n  return <button onClick={() => setValor(n => n + 1)}>Añadir: {valor}</button>;\r\n}\r\n\r\n// Contador.test.jsx\r\nimport { expect, test } from \"vitest\";\r\nimport { render, screen } from \"@testing-library/react\";\r\nimport userEvent from \"@testing-library/user-event\";\r\nimport { Contador } from \"./Contador\";\r\ntest(\"el botón incrementa el valor visible\", async () => {\r\n  const usuario = userEvent.setup();\r\n  render(<Contador />);\r\n  await usuario.click(screen.getByRole(\"button\", { name: \"Añadir: 0\" }));\r\n  expect(screen.getByRole(\"button\", { name: \"Añadir: 1\" })).toBeTruthy();\r\n});\r\nContexto: Requiere React Testing Library, user-event, Vitest y un entorno DOM de prueba configurado.",
+      "output": "La prueba pasa después de que el nombre accesible del botón cambia de Añadir: 0 a Añadir: 1.",
+      "mistakes": [
+        "Buscar nodos por clases CSS internas si se puede consultar el nombre accesible.",
+        "No esperar una interacción o resultado asíncrono.",
+        "Probar que se llamó una función interna sin comprobar el resultado que ve la persona."
+      ],
+      "exercise": {
+        "statement": "Añade pruebas para un botón de alternancia cuyo texto visible cambia entre Mostrar y Ocultar.",
+        "cases": [
+          {
+            "input": "Render inicial",
+            "expected": "Existe el botón Mostrar"
+          },
+          {
+            "input": "Un clic",
+            "expected": "Existe el botón Ocultar"
+          },
+          {
+            "input": "Dos clics",
+            "expected": "Vuelve a existir el botón Mostrar"
+          }
+        ],
+        "solution": "[jsx]\r\nimport { expect, test } from \"vitest\";\r\nimport { render, screen } from \"@testing-library/react\";\r\nimport userEvent from \"@testing-library/user-event\";\r\n\r\ntest(\"al alternar, cambia el nombre accesible\", async () => {\r\n  const usuario = userEvent.setup();\r\n  render(<Alternador />);\r\n  await usuario.click(screen.getByRole(\"button\", { name: \"Mostrar\" }));\r\n  expect(screen.getByRole(\"button\", { name: \"Ocultar\" })).toBeTruthy();\r\n});\r\nCriterio de aceptación: Se aceptan consultas equivalentes y pruebas separadas por caso si siguen el flujo que usaría una persona.",
+        "alternatives": [
+          "Consultar por rol y nombre accesible con user-event.",
+          "Consultar por label para controles de formulario y usar fireEvent para eventos específicos."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Testing Library — React Testing Library",
+          "url": "https://testing-library.com/docs/react-testing-library/intro/"
+        },
+        {
+          "label": "Testing Library — User Interactions",
+          "url": "https://testing-library.com/docs/user-event/intro/"
+        }
+      ]
+    },
+    {
+      "track": "React",
+      "title": "Seguridad y despliegue",
+      "explanation": "React escapa texto interpolado en JSX, lo que ayuda a evitar que una cadena se interprete como marcado. dangerouslySetInnerHTML omite esa protección contextual y no debe recibir contenido no confiable sin sanitización adecuada. Todo lo incluido en un bundle de navegador puede inspeccionarse; una variable de entorno del cliente no es un secreto. Mantén credenciales en el servidor, valida allí las operaciones sensibles y sigue el comando de build y despliegue de la herramienta configurada.",
+      "example": "[jsx]\r\nfunction Vista({ mensaje }) {\r\n  return <p>{mensaje}</p>;\r\n}\r\n\r\nexport default function App() {\r\n  return <Vista mensaje=\"<script>no se ejecuta</script>\" />;\r\n}",
+      "output": "El texto se muestra literalmente en el párrafo; no se crea ni ejecuta una etiqueta script.",
+      "mistakes": [
+        "Usar dangerouslySetInnerHTML con HTML aportado por usuario sin una sanitización mantenida.",
+        "Incluir una clave privada en variables del cliente, repositorio o bundle.",
+        "Creer que ocultar un botón en React sustituye autorización en el servidor."
+      ],
+      "exercise": {
+        "statement": "Muestra un comentario aportado como texto y define dónde guardarías una credencial necesaria para una API privada.",
+        "cases": [
+          {
+            "input": "\"Hola\"",
+            "expected": "Se muestra Hola como texto"
+          },
+          {
+            "input": "\"<b>aviso</b>\"",
+            "expected": "Las etiquetas se muestran como texto y no se interpretan como HTML"
+          },
+          {
+            "input": "Credencial de API privada",
+            "expected": "Se conserva en el servidor y no aparece en el bundle cliente"
+          }
+        ],
+        "solution": "[jsx]\r\nfunction Comentario({ texto }) {\r\n  return <p>{texto}</p>;\r\n}\r\n// La credencial privada se usa desde un endpoint de servidor, no desde el bundle React.\r\nCriterio de aceptación: Se acepta una arquitectura distinta si los datos se tratan como texto o se sanitizan según contexto y el secreto no llega al navegador.",
+        "alternatives": [
+          "Renderizar contenido no confiable como texto dentro de JSX.",
+          "Permitir HTML enriquecido solo tras sanitizarlo con una biblioteca mantenida como DOMPurify."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Equipo de React — Common DOM Components: dangerouslySetInnerHTML",
+          "url": "https://react.dev/reference/react-dom/components/common#dangerously-setting-the-inner-html"
+        },
+        {
+          "label": "OWASP — Cross Site Scripting Prevention Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+        },
+        {
+          "label": "OWASP — Secrets Management Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Instalación y primer programa",
+      "explanation": "El JDK incluye herramientas de desarrollo como javac; la JVM carga y ejecuta bytecode. Guarda la clase pública Main en Main.java, compila con javac Main.java y ejecuta con java Main. Comprueba java --version y javac --version.",
+      "example": "[java]\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hola, Java\");\n    }\n}",
+      "output": "Hola, Java",
+      "mistakes": [
+        "Instalar solo un runtime e intentar compilar sin javac.",
+        "Usar un archivo cuyo nombre no coincide con la clase pública.",
+        "Confundir la orden de compilación con la de ejecución."
+      ],
+      "exercise": {
+        "statement": "Implementa saludar(nombre), compila el archivo y comprueba tres entradas.",
+        "cases": [
+          {
+            "input": "\"Ana\"",
+            "expected": "Hola, Ana"
+          },
+          {
+            "input": "\"\"",
+            "expected": "Hola, "
+          },
+          {
+            "input": "\"equipo\"",
+            "expected": "Hola, equipo"
+          }
+        ],
+        "solution": "[java]\npublic class Main {\n    static String saludar(String nombre) { return \"Hola, \" + nombre; }\n    public static void main(String[] args) { System.out.println(saludar(\"Ana\")); }\n}\n// javac Main.java; java Main",
+        "alternatives": [
+          "Explorar instrucciones breves con jshell.",
+          "Crear un proyecto con herramienta de construcción cuando haya varias clases o dependencias."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Oracle — JDK Installation Guide, Java SE 25",
+          "url": "https://docs.oracle.com/en/java/javase/25/install/"
+        },
+        {
+          "label": "Oracle — The javac Command, Java SE 25",
+          "url": "https://docs.oracle.com/en/java/javase/25/docs/specs/man/javac.html"
+        },
+        {
+          "label": "Oracle — The java Command, Java SE 25",
+          "url": "https://docs.oracle.com/en/java/javase/25/docs/specs/man/java.html"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Variables y tipos",
+      "explanation": "Java tiene ocho tipos primitivos: byte, short, int y long para enteros; float y double para decimales binarios; char para una unidad de código UTF-16; y boolean para true o false. String, arrays y objetos son tipos de referencia. Ampliar un tipo numérico suele ser implícito; reducirlo normalmente requiere un cast y puede perder información. Java admite una excepción para algunas constantes enteras representables, por ejemplo byte nivel = 3.",
+      "example": "[java]\npublic class Main {\n    public static void main(String[] args) {\n        byte nivel = 3;\n        int unidades = 3;\n        double precio = 2.5;\n        int precioEntero = (int) precio; // pierde la parte decimal\n        final String moneda = \"EUR\";\n        System.out.println(nivel + \" · \" + (unidades * precio) + \" \" + moneda + \" · \" + precioEntero);\n    }\n}",
+      "output": "3 · 7.5 EUR · 2",
+      "mistakes": [
+        "Asignar double a int sin conversión explícita.",
+        "Suponer que final hace inmutable el objeto referenciado.",
+        "Comparar String con == en vez de equals."
+      ],
+      "exercise": {
+        "statement": "Multiplica cantidad por precio y devuelve un total numérico.",
+        "cases": [
+          {
+            "input": "total(2, 3.0)",
+            "expected": "6.0"
+          },
+          {
+            "input": "total(0, 9.5)",
+            "expected": "0.0"
+          },
+          {
+            "input": "total(3, 0.5)",
+            "expected": "1.5"
+          }
+        ],
+        "solution": "[java]\npublic class Main {\n    static double total(int cantidad, double precio) { return cantidad * precio; }\n    public static void main(String[] args) { System.out.println(total(3, 0.5)); }\n}",
+        "alternatives": [
+          "Usar BigDecimal para cálculos monetarios que requieran decimal exacto.",
+          "Separar el valor numérico de su formato de presentación."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Oracle — JLS, tipos primitivos",
+          "url": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.2"
+        },
+        {
+          "label": "Oracle — JLS, conversiones y asignaciones",
+          "url": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html#jls-5.2"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Operadores y expresiones",
+      "explanation": "Las comparaciones producen boolean. && y || aplican cortocircuito; % obtiene el resto. La división entre enteros descarta decimales. Usa paréntesis cuando expreses reglas combinadas y nombres intermedios si aclaran una condición.",
+      "example": "[java]\npublic class Main {\n    public static void main(String[] args) {\n        int minutos = 135;\n        int horas = minutos / 60;\n        int resto = minutos % 60;\n        System.out.println(horas + \" h \" + resto + \" min\");\n        System.out.println(minutos >= 0 && horas < 24);\n    }\n}",
+      "output": "2 h 15 min\ntrue",
+      "mistakes": [
+        "Usar & pensando que siempre corta la evaluación como &&.",
+        "Comparar cadenas con ==.",
+        "Olvidar que la división entera trunca la fracción."
+      ],
+      "exercise": {
+        "statement": "Determina si un número es positivo y par.",
+        "cases": [
+          {
+            "input": "8",
+            "expected": "true"
+          },
+          {
+            "input": "7",
+            "expected": "false"
+          },
+          {
+            "input": "-4",
+            "expected": "false"
+          }
+        ],
+        "solution": "[java]\npublic class Main {\n    static boolean esPositivoYPar(int n) { return n > 0 && n % 2 == 0; }\n    public static void main(String[] args) { System.out.println(esPositivoYPar(8)); }\n}",
+        "alternatives": [
+          "Separar condiciones en variables booleanas con nombres claros.",
+          "Probar cada límite con pruebas unitarias."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Java Language Basics",
+          "url": "https://dev.java/learn/language-basics/"
+        },
+        {
+          "label": "Oracle — JLS, Java SE 25",
+          "url": "https://docs.oracle.com/javase/specs/jls/se25/html/"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Condicionales",
+      "explanation": "if/else elige ramas con una condición booleana. switch compara un valor con varios casos; las expresiones switch modernas devuelven un valor y la sintaxis de flecha evita caídas entre casos. Todas las ramas deben producir valores compatibles.",
+      "example": "[java]\npublic class Main {\n    static String tipoDia(int n) {\n        return switch (n) {\n            case 1, 7 -> \"fin de semana\";\n            case 2, 3, 4, 5, 6 -> \"laborable\";\n            default -> \"fuera de rango\";\n        };\n    }\n    public static void main(String[] args) { System.out.println(tipoDia(3)); }\n}",
+      "output": "laborable",
+      "mistakes": [
+        "Omitir qué hacer con un valor inesperado.",
+        "Confundir la sintaxis de switch clásico con la expresión switch.",
+        "Combinar demasiadas reglas distintas en una condición difícil de leer."
+      ],
+      "exercise": {
+        "statement": "Clasifica 200 como correcto, 404 como no encontrado y el resto como otro estado.",
+        "cases": [
+          {
+            "input": "200",
+            "expected": "correcto"
+          },
+          {
+            "input": "404",
+            "expected": "no encontrado"
+          },
+          {
+            "input": "500",
+            "expected": "otro estado"
+          }
+        ],
+        "solution": "[java]\npublic class Main {\n    static String clasificar(int codigo) {\n        return switch (codigo) { case 200 -> \"correcto\"; case 404 -> \"no encontrado\"; default -> \"otro estado\"; };\n    }\n    public static void main(String[] args) { System.out.println(clasificar(404)); }\n}",
+        "alternatives": [
+          "Usar enum para un conjunto fijo de estados nombrados.",
+          "Usar if/else si las ramas representan condiciones no equivalentes."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Java Language Basics",
+          "url": "https://dev.java/learn/language-basics/"
+        },
+        {
+          "label": "Oracle — JLS, Java SE 25",
+          "url": "https://docs.oracle.com/javase/specs/jls/se25/html/"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Bucles",
+      "explanation": "for controla un contador; while repite mientras una condición sea verdadera; do-while ejecuta al menos una vez. break termina y continue pasa a la siguiente iteración. La actualización del estado debe acercar el bucle a su condición de salida.",
+      "example": "[java]\npublic class Main {\n    static int sumaHasta(int limite) {\n        int suma = 0;\n        for (int n = 1; n <= limite; n++) suma += n;\n        return suma;\n    }\n    public static void main(String[] args) { System.out.println(sumaHasta(4)); }\n}",
+      "output": "10",
+      "mistakes": [
+        "No avanzar el contador usado por la condición.",
+        "Cambiar < por <= e incluir un elemento extra.",
+        "No definir el resultado para un límite cero o negativo."
+      ],
+      "exercise": {
+        "statement": "Suma los enteros de 1 a n; para n menor que 1, devuelve 0.",
+        "cases": [
+          {
+            "input": "4",
+            "expected": "10"
+          },
+          {
+            "input": "1",
+            "expected": "1"
+          },
+          {
+            "input": "0",
+            "expected": "0"
+          }
+        ],
+        "solution": "[java]\npublic class Main {\n    static int sumaHasta(int n) {\n        int suma = 0;\n        for (int actual = 1; actual <= n; actual++) suma += actual;\n        return suma;\n    }\n    public static void main(String[] args) { System.out.println(sumaHasta(4)); }\n}",
+        "alternatives": [
+          "Usar una fórmula si solo se necesita la suma y se ha considerado el desbordamiento.",
+          "Usar while cuando el número de repeticiones dependa de una condición."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Java Language Basics",
+          "url": "https://dev.java/learn/language-basics/"
+        },
+        {
+          "label": "Oracle — JLS, Java SE 25",
+          "url": "https://docs.oracle.com/javase/specs/jls/se25/html/"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Arrays",
+      "explanation": "Un array tiene longitud fija y elementos del mismo tipo. Los índices comienzan en cero y el último es length - 1; un acceso inválido lanza ArrayIndexOutOfBoundsException. Un recorrido for-each evita errores de índice cuando este no se necesita.",
+      "example": "[java]\nimport java.util.Arrays;\npublic class Main {\n    public static void main(String[] args) {\n        int[] notas = {7, 9, 8};\n        int suma = 0;\n        for (int nota : notas) suma += nota;\n        System.out.println(Arrays.toString(notas));\n        System.out.println(suma / (double) notas.length);\n    }\n}",
+      "output": "[7, 9, 8]\n8.0",
+      "mistakes": [
+        "Usar length() en array: length es campo.",
+        "Esperar que el array se amplíe al añadir elementos.",
+        "Dividir por cero al promediar un array vacío."
+      ],
+      "exercise": {
+        "statement": "Devuelve el mayor elemento de un array no vacío.",
+        "cases": [
+          {
+            "input": "[4, 9, 2]",
+            "expected": "9"
+          },
+          {
+            "input": "[-3, -1, -8]",
+            "expected": "-1"
+          },
+          {
+            "input": "[5]",
+            "expected": "5"
+          }
+        ],
+        "solution": "[java]\npublic class Main {\n    static int maximo(int[] valores) {\n        if (valores.length == 0) throw new IllegalArgumentException(\"Vacío\");\n        int mayor = valores[0];\n        for (int valor : valores) if (valor > mayor) mayor = valor;\n        return mayor;\n    }\n    public static void main(String[] args) { System.out.println(maximo(new int[]{4,9,2})); }\n}",
+        "alternatives": [
+          "Usar una lista cuando la cantidad de elementos debe cambiar.",
+          "Documentar y validar el caso vacío en la frontera del método."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Creating Arrays in Your Programs",
+          "url": "https://dev.java/learn/language-basics/"
+        },
+        {
+          "label": "Oracle — JLS, Arrays",
+          "url": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-10.html"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Métodos",
+      "explanation": "Un método declara nombre, parámetros y tipo de retorno, o void. Parámetros y variables locales tienen ámbito de bloque. Sobrecargar es usar el mismo nombre con listas de parámetros distintas; cambiar solo el retorno no basta. Java pasa argumentos por valor, también si el valor es una referencia.",
+      "example": "[java]\npublic class Main {\n    static int area(int ancho, int alto) { return ancho * alto; }\n    static double area(double lado) { return lado * lado; }\n    public static void main(String[] args) {\n        System.out.println(area(3, 4));\n        System.out.println(area(2.5));\n    }\n}",
+      "output": "12\n6.25",
+      "mistakes": [
+        "Olvidar un return en una rama de un método no void.",
+        "Intentar sobrecargar solo cambiando el tipo de retorno.",
+        "Esperar que reasignar un parámetro referencia la variable original del llamador."
+      ],
+      "exercise": {
+        "statement": "Calcula el área de un rectángulo y la de un cuadrado mediante métodos sobrecargados.",
+        "cases": [
+          {
+            "input": "area(3,4)",
+            "expected": "12"
+          },
+          {
+            "input": "area(2,2)",
+            "expected": "4"
+          },
+          {
+            "input": "area(0,5)",
+            "expected": "0"
+          }
+        ],
+        "solution": "[java]\npublic class Main {\n    static int area(int a, int b) { return a * b; }\n    static int area(int lado) { return area(lado, lado); }\n    public static void main(String[] args) { System.out.println(area(3,4)); }\n}",
+        "alternatives": [
+          "Usar nombres distintos si las operaciones expresan conceptos diferentes.",
+          "Validar dimensiones positivas cuando lo exija el dominio."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Classes and Objects",
+          "url": "https://dev.java/learn/classes-objects/"
+        },
+        {
+          "label": "Dev.java — Objects, Classes, Interfaces, Packages, and Inheritance",
+          "url": "https://dev.java/learn/oop/"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Clases y objetos",
+      "explanation": "Una clase define estado y comportamiento; un objeto es una instancia con sus propios campos. Encapsular limita cómo se cambia ese estado y protege invariantes. Los campos static pertenecen a la clase; los de instancia pertenecen a cada objeto.",
+      "example": "[java]\nclass Contador {\n    private int valor;\n    void incrementar() { valor++; }\n    int obtenerValor() { return valor; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        Contador a = new Contador(), b = new Contador();\n        a.incrementar();\n        System.out.println(a.obtenerValor() + \", \" + b.obtenerValor());\n    }\n}",
+      "output": "1, 0",
+      "mistakes": [
+        "Hacer públicos todos los campos y permitir estados inválidos.",
+        "Confundir la definición de clase con la instancia creada por new.",
+        "Usar static para estado que debe variar por objeto."
+      ],
+      "exercise": {
+        "statement": "Modela una lámpara con estado apagado/encendido y una operación para alternarlo.",
+        "cases": [
+          {
+            "input": "recién creada",
+            "expected": "apagada"
+          },
+          {
+            "input": "alternar()",
+            "expected": "encendida"
+          },
+          {
+            "input": "alternar() de nuevo",
+            "expected": "apagada"
+          }
+        ],
+        "solution": "[java]\nclass Lampara {\n    private boolean encendida;\n    void alternar() { encendida = !encendida; }\n    String estado() { return encendida ? \"encendida\" : \"apagada\"; }\n}\npublic class Main {\n    public static void main(String[] args) { Lampara l = new Lampara(); l.alternar(); System.out.println(l.estado()); }\n}",
+        "alternatives": [
+          "Usar enum para más de dos estados.",
+          "Preferir acciones encender/apagar si alternar puede ser ambiguo."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Classes and Objects",
+          "url": "https://dev.java/learn/classes-objects/"
+        },
+        {
+          "label": "Dev.java — Objects, Classes, Interfaces, Packages, and Inheritance",
+          "url": "https://dev.java/learn/oop/"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Constructores y this",
+      "explanation": "Un constructor inicializa una instancia, tiene el nombre de la clase y no declara retorno. this designa el objeto actual y desambigua campos de parámetros homónimos. Puede haber constructores distintos por parámetros; this(...) encadena constructores y debe ser la primera instrucción.",
+      "example": "[java]\nclass Libro {\n    private final String titulo;\n    private final int paginas;\n    Libro(String titulo) { this(titulo, 0); }\n    Libro(String titulo, int paginas) { this.titulo = titulo; this.paginas = paginas; }\n    String ficha() { return titulo + \" (\" + paginas + \")\"; }\n}\npublic class Main {\n    public static void main(String[] args) { System.out.println(new Libro(\"Cuentos\",80).ficha()); }\n}",
+      "output": "Cuentos (80)",
+      "mistakes": [
+        "Poner void en la declaración y crear un método en lugar de un constructor.",
+        "Olvidar this para distinguir parámetro y campo.",
+        "Colocar this(...) después de otra instrucción."
+      ],
+      "exercise": {
+        "statement": "Crea Producto con nombre y precio y un constructor alternativo con precio cero.",
+        "cases": [
+          {
+            "input": "Producto(\"Lápiz\",1.5)",
+            "expected": "1.5"
+          },
+          {
+            "input": "Producto(\"Papel\")",
+            "expected": "0.0"
+          },
+          {
+            "input": "Producto(\"\",0)",
+            "expected": "nombre vacío"
+          }
+        ],
+        "solution": "[java]\nclass Producto {\n    private final String nombre; private final double precio;\n    Producto(String nombre) { this(nombre, 0.0); }\n    Producto(String nombre, double precio) { this.nombre = nombre; this.precio = precio; }\n    double precio() { return precio; }\n}\npublic class Main {\n    public static void main(String[] args) { System.out.println(new Producto(\"Lápiz\",1.5).precio()); }\n}",
+        "alternatives": [
+          "Usar un factory method estático para una creación compleja.",
+          "Usar record para datos inmutables si encaja con el dominio."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Providing Constructors for Your Classes",
+          "url": "https://dev.java/learn/language/oop/classes-objects/defining-constructors/"
+        },
+        {
+          "label": "Oracle — JLS, Classes",
+          "url": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-8.html"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Herencia y polimorfismo",
+      "explanation": "extends declara una subclase con una sola superclase directa. Una subclase puede sobrescribir métodos de instancia; @Override comprueba la firma pretendida. La llamada a un método sobrescrito depende del tipo real del objeto en ejecución, aunque la variable tenga un tipo más general.",
+      "example": "[java]\nclass Animal { String sonido() { return \"sonido\"; } }\nclass Perro extends Animal { @Override String sonido() { return \"guau\"; } }\npublic class Main {\n    public static void main(String[] args) { Animal mascota = new Perro(); System.out.println(mascota.sonido()); }\n}",
+      "output": "guau",
+      "mistakes": [
+        "Confundir sobrescritura con ocultación de métodos static.",
+        "Olvidar @Override y dejar una firma distinta por error.",
+        "Crear herencia sin que el subtipo pueda sustituir a la clase base."
+      ],
+      "exercise": {
+        "statement": "Crea Figura y Cuadrado; la referencia de tipo Figura debe invocar el área de Cuadrado.",
+        "cases": [
+          {
+            "input": "Cuadrado(2)",
+            "expected": "4"
+          },
+          {
+            "input": "Cuadrado(0)",
+            "expected": "0"
+          },
+          {
+            "input": "Figura f=Cuadrado(3)",
+            "expected": "9"
+          }
+        ],
+        "solution": "[java]\nclass Figura { int area() { return 0; } }\nclass Cuadrado extends Figura {\n    private final int lado; Cuadrado(int lado) { this.lado = lado; }\n    @Override int area() { return lado * lado; }\n}\npublic class Main {\n    public static void main(String[] args) { Figura f = new Cuadrado(3); System.out.println(f.area()); }\n}",
+        "alternatives": [
+          "Usar composición si los objetos colaboran pero no son subtipos.",
+          "Declarar una interfaz cuando tipos no relacionados comparten una operación."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Inheritance",
+          "url": "https://dev.java/learn/language/oop/inheritance/"
+        },
+        {
+          "label": "Dev.java — Polymorphism",
+          "url": "https://dev.java/learn/language/oop/inheritance/polymorphism/"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Interfaces y abstractas",
+      "explanation": "Una interfaz define un contrato y puede ofrecer métodos abstractos o default. Una clase abstracta puede compartir estado y comportamiento además de declarar operaciones abstractas. Ninguna se instancia directamente. Elige interfaz para una capacidad compartida y una base abstracta cuando también haya implementación o estado común.",
+      "example": "[java]\ninterface Exportable { String exportar(); default String formato() { return \"texto\"; } }\nabstract class Documento { abstract String titulo(); }\nclass Nota extends Documento implements Exportable {\n    String titulo() { return \"Plan\"; }\n    public String exportar() { return titulo() + \":\" + formato(); }\n}\npublic class Main {\n    public static void main(String[] args) { System.out.println(new Nota().exportar()); }\n}",
+      "output": "Plan:texto",
+      "mistakes": [
+        "Intentar instanciar una interfaz o clase abstracta.",
+        "Reducir el acceso de un método al implementarlo.",
+        "Añadir abstracción sin una necesidad común real."
+      ],
+      "exercise": {
+        "statement": "Define Reproducible y dos tipos que implementen descripciones distintas.",
+        "cases": [
+          {
+            "input": "Audio.reproducir()",
+            "expected": "audio"
+          },
+          {
+            "input": "Video.reproducir()",
+            "expected": "vídeo"
+          },
+          {
+            "input": "referencia Reproducible a Audio",
+            "expected": "audio"
+          }
+        ],
+        "solution": "[java]\ninterface Reproducible { String reproducir(); }\nclass Audio implements Reproducible { public String reproducir() { return \"audio\"; } }\nclass Video implements Reproducible { public String reproducir() { return \"vídeo\"; } }\npublic class Main {\n    public static void main(String[] args) { Reproducible r = new Video(); System.out.println(r.reproducir()); }\n}",
+        "alternatives": [
+          "Añadir un método default para comportamiento realmente compartido.",
+          "Combinar interfaces con composición en vez de una jerarquía larga."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Objects, Classes, Interfaces, Packages, and Inheritance",
+          "url": "https://dev.java/learn/oop/"
+        },
+        {
+          "label": "Oracle — JLS, Interfaces",
+          "url": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Excepciones",
+      "explanation": "Las excepciones separan el flujo normal del tratamiento de un error. try/catch maneja tipos conocidos; finally se ejecuta al salir. throws propaga una excepción comprobada al llamador. try-with-resources cierra objetos AutoCloseable. Captura errores concretos y no los ocultes.",
+      "example": "[java]\npublic class Main {\n    static int positivo(String texto) {\n        int n = Integer.parseInt(texto);\n        if (n <= 0) throw new IllegalArgumentException(\"Debe ser positivo\");\n        return n;\n    }\n    public static void main(String[] args) {\n        try { System.out.println(positivo(\"7\")); }\n        catch (IllegalArgumentException error) { System.out.println(\"Entrada no válida\"); }\n    }\n}",
+      "output": "7",
+      "mistakes": [
+        "Capturar Exception sin necesidad y perder contexto.",
+        "Cerrar manualmente recursos que pueden gestionarse con try-with-resources.",
+        "Continuar tras un error usando un valor inventado."
+      ],
+      "exercise": {
+        "statement": "Convierte texto en entero positivo; los datos no numéricos y los no positivos deben fallar claramente.",
+        "cases": [
+          {
+            "input": "\"7\"",
+            "expected": "7"
+          },
+          {
+            "input": "\"0\"",
+            "expected": "IllegalArgumentException"
+          },
+          {
+            "input": "\"abc\"",
+            "expected": "NumberFormatException"
+          }
+        ],
+        "solution": "[java]\npublic class Main {\n    static int positivo(String texto) {\n        int n = Integer.parseInt(texto);\n        if (n <= 0) throw new IllegalArgumentException(\"Debe ser positivo\");\n        return n;\n    }\n    public static void main(String[] args) {\n        try { System.out.println(positivo(\"7\")); }\n        catch (IllegalArgumentException error) { System.out.println(\"Entrada no válida\"); }\n    }\n}",
+        "alternatives": [
+          "Devolver un tipo de resultado explícito cuando un dato inválido sea normal.",
+          "Crear una excepción de dominio si el fallo necesita datos adicionales."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Exceptions",
+          "url": "https://dev.java/learn/language/annotations-exceptions/exceptions/"
+        },
+        {
+          "label": "Dev.java — Catching and Handling Exceptions",
+          "url": "https://dev.java/learn/catching-and-handling-exceptions/"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Colecciones",
+      "explanation": "List conserva orden y admite duplicados; Set representa elementos únicos; Map relaciona claves y valores. ArrayList y HashSet son implementaciones habituales. Programa contra interfaces para expresar el comportamiento requerido; no confíes en el orden de HashSet o HashMap.",
+      "example": "[java]\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        List<String> nombres = new ArrayList<>(List.of(\"Luz\",\"Paz\",\"Luz\"));\n        Set<String> unicos = new HashSet<>(nombres);\n        Map<String,Integer> cuenta = new HashMap<>();\n        for (String nombre : nombres) cuenta.merge(nombre, 1, Integer::sum);\n        System.out.println(nombres.size() + \", \" + unicos.size());\n        System.out.println(cuenta.get(\"Luz\"));\n    }\n}",
+      "output": "3, 2\n2",
+      "mistakes": [
+        "Esperar que List rechace duplicados.",
+        "Suponer que HashMap conserva el orden de inserción.",
+        "Modificar la colección durante un for-each."
+      ],
+      "exercise": {
+        "statement": "Cuenta las frecuencias de palabras de una lista.",
+        "cases": [
+          {
+            "input": "[\"sol\",\"luna\",\"sol\"]",
+            "expected": "sol=2, luna=1"
+          },
+          {
+            "input": "[]",
+            "expected": "mapa vacío"
+          },
+          {
+            "input": "[\"mar\"]",
+            "expected": "mar=1"
+          }
+        ],
+        "solution": "[java]\nimport java.util.*;\npublic class Main {\n    static Map<String,Integer> contar(List<String> palabras) {\n        Map<String,Integer> r = new HashMap<>();\n        for (String palabra : palabras) r.merge(palabra, 1, Integer::sum);\n        return r;\n    }\n    public static void main(String[] args) { System.out.println(contar(List.of(\"sol\",\"luna\",\"sol\"))); }\n}",
+        "alternatives": [
+          "Usar groupingBy de Streams si expresa mejor la transformación.",
+          "Usar TreeMap cuando el resultado requiera claves ordenadas."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — The Collections Framework",
+          "url": "https://dev.java/learn/api/collections-and-streams/collections-framework/"
+        },
+        {
+          "label": "Oracle — Java Collections Framework",
+          "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/package-summary.html"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Genéricos y lambdas",
+      "explanation": "Los genéricos expresan el tipo de elementos y detectan incompatibilidades en compilación. Una lambda implementa una interfaz funcional con un método abstracto. Stream permite filtrar, transformar y consumir datos; una operación terminal consume el stream, que no se puede reutilizar.",
+      "example": "[java]\nimport java.util.Comparator;\nimport java.util.List;\npublic class Main {\n    public static void main(String[] args) {\n        List<String> palabras = List.of(\"sol\", \"cielo\", \"mar\");\n        List<String> largas = palabras.stream()\n            .filter(p -> p.length() >= 4)\n            .sorted(Comparator.comparingInt(String::length).thenComparing(String::compareTo))\n            .toList();\n        System.out.println(largas);\n    }\n}",
+      "output": "[cielo]",
+      "mistakes": [
+        "Usar tipos raw y perder comprobación estática.",
+        "Escribir lambda incompatible con la interfaz funcional esperada.",
+        "Reutilizar el stream después de una operación terminal."
+      ],
+      "exercise": {
+        "statement": "Filtra palabras de cuatro o más letras y ordénalas.",
+        "cases": [
+          {
+            "input": "[\"sol\",\"cielo\",\"mar\"]",
+            "expected": "[cielo]"
+          },
+          {
+            "input": "[\"lago\",\"nube\"]",
+            "expected": "[lago, nube]"
+          },
+          {
+            "input": "[]",
+            "expected": "[]"
+          }
+        ],
+        "solution": "[java]\nimport java.util.*;\npublic class Main {\n    static List<String> filtrar(List<String> palabras) {\n        return palabras.stream().filter(p -> p.length() >= 4).sorted().toList();\n    }\n    public static void main(String[] args) { System.out.println(filtrar(List.of(\"sol\",\"cielo\",\"mar\"))); }\n}",
+        "alternatives": [
+          "Usar un bucle si un flujo declarativo oculta pasos relevantes.",
+          "Usar Comparator.comparing para ordenar según una propiedad."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Dev.java — Writing Your First Lambda Expression",
+          "url": "https://dev.java/learn/lambdas/first-lambdas/"
+        },
+        {
+          "label": "Dev.java — The Stream API",
+          "url": "https://dev.java/learn/api/collections-and-streams/streams/"
+        }
+      ]
+    },
+    {
+      "track": "Java",
+      "title": "Ficheros y pruebas",
+      "explanation": "Path representa una ruta y Files permite leer y escribir archivos. try-with-resources cierra automáticamente recursos AutoCloseable, incluso ante errores. El ejercicio usa comprobaciones ejecutables sin dependencias para poder probarlo con javac; en un proyecto real, JUnit Jupiter automatiza y organiza estas comprobaciones. Usa rutas temporales y datos controlados.",
+      "example": "[java]\nimport java.io.BufferedReader;\nimport java.io.IOException;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nclass FicherosTest {\n    static String primeraLinea(Path ruta) throws IOException {\n        try (BufferedReader reader = Files.newBufferedReader(ruta, StandardCharsets.UTF_8)) {\n            return reader.readLine();\n        }\n    }\n    public static void main(String[] args) throws IOException {\n        Path ruta = Files.createTempFile(\"nota-\", \".txt\");\n        try {\n            Files.writeString(ruta, \"Hola\\nAdiós\", StandardCharsets.UTF_8);\n            if (!\"Hola\".equals(primeraLinea(ruta))) throw new AssertionError(\"Primera línea incorrecta\");\n            System.out.println(\"Prueba superada: primera línea Hola\");\n        } finally { Files.deleteIfExists(ruta); }\n    }\n}",
+      "output": "Prueba superada: primera línea Hola",
+      "mistakes": [
+        "Construir rutas concatenando separadores manualmente.",
+        "Ignorar IOException.",
+        "Hacer las pruebas dependientes de ficheros existentes en una máquina."
+      ],
+      "exercise": {
+        "statement": "Escribe y vuelve a leer texto UTF-8 de un fichero temporal; considera texto normal, vacío y acentuado.",
+        "cases": [
+          {
+            "input": "\"hola\"",
+            "expected": "\"hola\""
+          },
+          {
+            "input": "\"\"",
+            "expected": "\"\""
+          },
+          {
+            "input": "\"café\"",
+            "expected": "\"café\""
+          }
+        ],
+        "solution": "[java]\nimport java.io.IOException;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nclass FicherosTest {\n    static String vuelta(String texto) throws IOException {\n        Path ruta = Files.createTempFile(\"prueba-\", \".txt\");\n        try {\n            Files.writeString(ruta, texto, StandardCharsets.UTF_8);\n            return Files.readString(ruta, StandardCharsets.UTF_8);\n        } finally { Files.deleteIfExists(ruta); }\n    }\n    public static void main(String[] args) throws IOException {\n        String[] entradas = {\"hola\", \"\", \"café\"};\n        for (String entrada : entradas) {\n            if (!entrada.equals(vuelta(entrada))) throw new AssertionError(\"Fallo con: \" + entrada);\n        }\n        System.out.println(\"3 comprobaciones superadas\");\n    }\n}",
+        "alternatives": [
+          "Probar una función pura aparte y dejar una prueba de integración para disco.",
+          "Usar directorio temporal aislado por prueba."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Oracle — try-with-resources",
+          "url": "https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html"
+        },
+        {
+          "label": "JUnit — JUnit 5 User Guide",
+          "url": "https://junit.org/junit5/docs/current/user-guide/"
+        },
+        {
+          "label": "Oracle — API de Files, Java SE 25",
+          "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/nio/file/Files.html"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Sintaxis y consola",
+      "explanation": "let declara un enlace reasignable; const uno que no se reasigna, aunque el objeto referenciado sí pueda mutar. JavaScript distingue mayúsculas. console.log inspecciona valores. Los módulos ESM usan modo estricto automáticamente; en un script clásico se puede declarar \"use strict\".",
+      "example": "[javascript]\n\"use strict\";\nconst curso = \"JavaScript\";\nlet lecciones = 2;\nlecciones += 1;\nconsole.log(curso, lecciones);",
+      "output": "JavaScript 3",
+      "mistakes": [
+        "Reasignar const.",
+        "Creer que const hace inmutables los objetos.",
+        "Confundir variable local y propiedad global."
+      ],
+      "exercise": {
+        "statement": "Declara curso como constante, cuenta lecciones y muestra ambos datos.",
+        "cases": [
+          {
+            "input": "(\"JS\",1)",
+            "expected": "JS 1"
+          },
+          {
+            "input": "(\"DOM\",2)",
+            "expected": "DOM 2"
+          },
+          {
+            "input": "(\"Node\",0)",
+            "expected": "Node 0"
+          }
+        ],
+        "solution": "[javascript]\n\"use strict\";\nconst curso = \"Node\";\nlet lecciones = 0;\nconsole.log(curso, lecciones);",
+        "alternatives": [
+          "Devolver el resumen desde una función pura y dejar console.log en el punto de entrada.",
+          "Probar expresiones breves en la consola interactiva."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — JavaScript Guide",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/"
+        },
+        {
+          "label": "MDN — Grammar and types",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Tipos y coerción",
+      "explanation": "Los primitivos incluyen string, number, bigint, boolean, undefined, symbol y null. typeof null devuelve \"object\" por compatibilidad histórica. Number y String hacen explícita una conversión; Number.isNaN identifica NaN sin convertir otros valores.",
+      "example": "[javascript]\nconst numero = Number(\"12\");\nconsole.log(typeof numero, numero + 3);\nconsole.log(typeof null, Number.isNaN(Number(\"x\")));",
+      "output": "number 15\nobject true",
+      "mistakes": [
+        "Tomar typeof null como tipo útil de objeto.",
+        "Usar == y ocultar conversiones implícitas.",
+        "Comprobar NaN con ===."
+      ],
+      "exercise": {
+        "statement": "Convierte texto numérico y detecta si la conversión produjo NaN.",
+        "cases": [
+          {
+            "input": "\"12\"",
+            "expected": "12"
+          },
+          {
+            "input": "\"0\"",
+            "expected": "0"
+          },
+          {
+            "input": "\"x\"",
+            "expected": "NaN; Number.isNaN true"
+          }
+        ],
+        "solution": "[javascript]\nfunction convertir(texto) {\n  const n = Number(texto);\n  return Number.isNaN(n) ? null : n;\n}\nconsole.log(convertir(\"12\"));",
+        "alternatives": [
+          "Devolver un objeto {ok, valor} para distinguir error de un null válido.",
+          "Validar el formato permitido antes de convertir."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — JavaScript data types and data structures",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Data_structures"
+        },
+        {
+          "label": "MDN — Grammar and types",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Operadores y condiciones",
+      "explanation": "=== compara sin convertir tipos. && y || cortocircuitan y devuelven operandos; ?? usa el valor alternativo solo ante null o undefined. A diferencia de ||, ?? conserva 0 y cadena vacía. El ternario es claro para elegir entre dos valores simples.",
+      "example": "[javascript]\nconst volumen = 0;\nconsole.log(volumen || 10, volumen ?? 10);\nconsole.log(\"5\" === 5);",
+      "output": "10 0\nfalse",
+      "mistakes": [
+        "Usar == y ocultar conversiones.",
+        "Elegir || cuando 0 es un valor válido.",
+        "Anidar ternarios complejos."
+      ],
+      "exercise": {
+        "statement": "Devuelve disponible si hay unidades mayores que cero; 0 se considera agotado.",
+        "cases": [
+          {
+            "input": "3",
+            "expected": "disponible"
+          },
+          {
+            "input": "0",
+            "expected": "agotado"
+          },
+          {
+            "input": "-1",
+            "expected": "agotado"
+          }
+        ],
+        "solution": "[javascript]\nfunction disponibilidad(unidades) {\n  return unidades > 0 ? \"disponible\" : \"agotado\";\n}\nconsole.log(disponibilidad(3));",
+        "alternatives": [
+          "Usar if/else cuando las ramas contienen acciones o son más de dos.",
+          "Usar ?? si solo null y undefined deben activar el valor alternativo."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — Expressions and operators",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators"
+        },
+        {
+          "label": "MDN — Grammar and types",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Bucles e iteración",
+      "explanation": "for y while repiten instrucciones; for...of recorre valores iterables como arrays. for...in recorre nombres de propiedades, por eso no es la elección habitual para recorrer valores de un array. map, filter y reduce expresan transformaciones sin modificar necesariamente el original.",
+      "example": "[javascript]\nconst notas = [7, 8, 9];\nlet suma = 0;\nfor (const nota of notas) suma += nota;\nconsole.log(suma, suma / notas.length);",
+      "output": "24 8",
+      "mistakes": [
+        "Usar for...in esperando valores del array.",
+        "No actualizar la condición de un while.",
+        "Modificar una colección durante el recorrido sin definir la regla."
+      ],
+      "exercise": {
+        "statement": "Calcula la media de una lista y devuelve 0 si está vacía.",
+        "cases": [
+          {
+            "input": "[2,4]",
+            "expected": "3"
+          },
+          {
+            "input": "[5]",
+            "expected": "5"
+          },
+          {
+            "input": "[]",
+            "expected": "0"
+          }
+        ],
+        "solution": "[javascript]\nfunction media(valores) {\n  if (valores.length === 0) return 0;\n  let suma = 0;\n  for (const valor of valores) suma += valor;\n  return suma / valores.length;\n}\nconsole.log(media([7,8,9]));",
+        "alternatives": [
+          "Usar reduce y tratar explícitamente el caso vacío.",
+          "Usar map o filter para producir otra lista sin mutar la original."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — Loops and iteration",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration"
+        },
+        {
+          "label": "MDN — Indexed collections",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Funciones",
+      "explanation": "Las funciones se declaran, asignan a variables y pasan como argumentos. Las funciones flecha tienen sintaxis compacta y no crean su propio this. Una función interna conserva el ámbito donde nació; esa capacidad se llama closure. Parámetros omitidos valen undefined, así que valida si lo exige la operación.",
+      "example": "[javascript]\nfunction crearSumador(base) {\n  return (valor) => base + valor;\n}\nconst sumarCinco = crearSumador(5);\nconsole.log(sumarCinco(3));",
+      "output": "8",
+      "mistakes": [
+        "Esperar que la flecha tenga su propio this.",
+        "Olvidar return en una flecha con cuerpo entre llaves.",
+        "Capturar variables en un bucle sin entender cuándo se leen."
+      ],
+      "exercise": {
+        "statement": "Crea una función que devuelva otra función para sumar una base fija.",
+        "cases": [
+          {
+            "input": "(2,3)",
+            "expected": "5"
+          },
+          {
+            "input": "(0,7)",
+            "expected": "7"
+          },
+          {
+            "input": "(-1,1)",
+            "expected": "0"
+          }
+        ],
+        "solution": "[javascript]\nfunction crearSumador(base) {\n  return function (valor) { return base + valor; };\n}\nconsole.log(crearSumador(2)(3));",
+        "alternatives": [
+          "Usar función normal si this depende de la llamada.",
+          "Usar flecha para capturar léxicamente this cuando sea intencional."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — Functions",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions"
+        },
+        {
+          "label": "MDN — Closures",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Arrays y objetos",
+      "explanation": "Array ofrece map, filter, find y reduce; los objetos agrupan propiedades clave-valor. Spread copia propiedades o elementos en un nivel superficial. La desestructuración extrae valores y permite valores por defecto. Evita mutar referencias compartidas cuando querías producir una copia.",
+      "example": "[javascript]\nconst productos = [{nombre:\"té\",precio:2},{nombre:\"pan\",precio:3}];\nconst nombres = productos.map(({nombre}) => nombre);\nconst total = productos.reduce((s,p) => s + p.precio, 0);\nconst copia = {...productos[0], precio:4};\nconsole.log(JSON.stringify(nombres), total, copia.precio);",
+      "output": "[\"té\",\"pan\"] 5 4",
+      "mistakes": [
+        "Usar map cuando se necesita encontrar un único elemento.",
+        "Suponer que spread clona objetos anidados.",
+        "Mutar un objeto compartido por accidente."
+      ],
+      "exercise": {
+        "statement": "Filtra artículos por precio y calcula el total.",
+        "cases": [
+          {
+            "input": "té=2, límite=3",
+            "expected": "nombres=[té], total=2"
+          },
+          {
+            "input": "pan=3, límite=3",
+            "expected": "nombres=[], total=3"
+          },
+          {
+            "input": "[], límite=5",
+            "expected": "nombres=[], total=0"
+          }
+        ],
+        "solution": "[javascript]\nfunction resumir(productos, limite) {\n  return {\n    nombres: productos.filter(p => p.precio < limite).map(p => p.nombre),\n    total: productos.reduce((s,p) => s + p.precio, 0)\n  };\n}\nconsole.log(resumir([{nombre:\"té\",precio:2}], 3));",
+        "alternatives": [
+          "Recorrer una vez si hace falta calcular muchas métricas.",
+          "Usar structuredClone para copias profundas de estructuras compatibles."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — Indexed collections",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections"
+        },
+        {
+          "label": "MDN — Working with objects",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "DOM y eventos",
+      "explanation": "El DOM modela el documento como nodos. querySelector busca con un selector CSS; addEventListener registra una reacción a un evento. textContent inserta texto sin interpretarlo como HTML y classList gestiona clases. Asegúrate de que el elemento exista cuando se ejecute el código.",
+      "example": "[javascript]\nconst boton = document.querySelector(\"#agregar\");\nconst lista = document.querySelector(\"#lista\");\nif (boton && lista) boton.addEventListener(\"click\", () => {\n  const item = document.createElement(\"li\");\n  item.textContent = \"Luna\";\n  lista.append(item);\n});",
+      "output": "Al pulsar el botón, aparece un elemento de lista con «Luna».",
+      "mistakes": [
+        "Asignar entrada no confiable a innerHTML cuando se quiere texto.",
+        "No tratar querySelector como potencialmente null.",
+        "Ejecutar antes de que se cargue el elemento."
+      ],
+      "exercise": {
+        "statement": "Al hacer clic añade el valor del campo como texto plano en una lista.",
+        "cases": [
+          {
+            "input": "texto Luna",
+            "expected": "li muestra Luna"
+          },
+          {
+            "input": "texto <b>Sol</b>",
+            "expected": "se ve literal"
+          },
+          {
+            "input": "selector no encontrado",
+            "expected": "manejar sin excepción"
+          }
+        ],
+        "solution": "[javascript]\nconst boton = document.querySelector(\"#agregar\");\nconst lista = document.querySelector(\"#lista\");\nconst entrada = document.querySelector(\"#texto\");\nif (boton && lista && entrada) boton.addEventListener(\"click\", () => {\n  const item = document.createElement(\"li\");\n  item.textContent = entrada.value;\n  lista.append(item);\n});",
+        "alternatives": [
+          "Delegar eventos a un contenedor para listas dinámicas grandes.",
+          "Usar submit de formulario cuando la acción corresponda al envío."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — Document Object Model",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model"
+        },
+        {
+          "label": "MDN — Document.querySelector",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Módulos",
+      "explanation": "ES modules organizan código en archivos con export e import. Importaciones con nombre deben coincidir con el nombre exportado; export default ofrece un valor predeterminado. El navegador carga el punto de entrada con script type=\"module\". Cada módulo tiene ámbito propio y modo estricto. En Node.js, ejecuta los ejemplos ESM en archivos .mjs o en un proyecto configurado con type: module.",
+      "example": "[javascript]\n// archivo saludo.js\nexport function saludar(nombre) { return \"Hola, \" + nombre; }\n\n// archivo principal.js\nimport {saludar as saludoImportado} from \"./saludo.js\";\nconsole.log(saludoImportado(\"Ada\"));",
+      "output": "Hola, Ada",
+      "mistakes": [
+        "Importar en script clásico sin type=module.",
+        "Confundir export default con importación entre llaves.",
+        "Probar módulos con file:// cuando hace falta servidor."
+      ],
+      "exercise": {
+        "statement": "Separa sumar en un módulo e impórtala en el punto de entrada.",
+        "cases": [
+          {
+            "input": "sumar(2,3)",
+            "expected": "5"
+          },
+          {
+            "input": "sumar(0,0)",
+            "expected": "0"
+          },
+          {
+            "input": "sumar(-2,5)",
+            "expected": "3"
+          }
+        ],
+        "solution": "[javascript]\n// operaciones.js\nexport function sumar(a,b) { return a + b; }\n// principal.js\nimport {sumar as sumarImportada} from \"./operaciones.js\";\nconsole.log(sumarImportada(2,3));",
+        "alternatives": [
+          "Usar default si hay una única abstracción principal.",
+          "Separar lógica pura del adaptador que accede al DOM o a Node."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — JavaScript modules",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules"
+        },
+        {
+          "label": "MDN — JavaScript language overview",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Language_overview"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Promesas y async/await",
+      "explanation": "Promise representa la finalización o el fallo futuro de una operación. then registra éxito y catch el rechazo. async hace que la función devuelva una Promise; await espera su valor dentro de ella. Captura errores donde el código pueda recuperarse y evita rechazos sin tratar.",
+      "example": "[javascript]\nasync function cargarMensaje() {\n  try { return await Promise.resolve(\"listo\"); }\n  catch (error) { return \"error\"; }\n}\ncargarMensaje().then(console.log);",
+      "output": "listo",
+      "mistakes": [
+        "Usar Promise como si ya fuera el valor resuelto.",
+        "Esperar que un try/catch capture una promesa rechazada no esperada.",
+        "Esperar secuencialmente operaciones independientes sin motivo."
+      ],
+      "exercise": {
+        "statement": "Implementa una función asíncrona que sume dos números.",
+        "cases": [
+          {
+            "input": "(2,3)",
+            "expected": "5"
+          },
+          {
+            "input": "(0,0)",
+            "expected": "0"
+          },
+          {
+            "input": "(-2,5)",
+            "expected": "3"
+          }
+        ],
+        "solution": "[javascript]\nasync function sumarAsync(a,b) {\n  await Promise.resolve();\n  return a + b;\n}\nsumarAsync(2,3).then(console.log);",
+        "alternatives": [
+          "Usar Promise.all para esperar tareas independientes en paralelo.",
+          "Devolver directamente una promesa si no hay lógica adicional que requiera await."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — Using promises",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises"
+        },
+        {
+          "label": "MDN — async function",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "JSON y APIs",
+      "explanation": "JSON.parse convierte texto en un valor JS; JSON.stringify serializa valores compatibles. fetch devuelve una Promise de Response y no rechaza solo por recibir 404/500: comprueba response.ok. Revisa tipo de contenido y valida los datos antes de usarlos.",
+      "example": "[javascript]\nconst texto = '{\"nombre\":\"Luz\",\"activo\":true}';\nconst dato = JSON.parse(texto);\nconsole.log(dato.nombre, JSON.stringify(dato));",
+      "output": "Luz {\"nombre\":\"Luz\",\"activo\":true}",
+      "mistakes": [
+        "No manejar SyntaxError de JSON inválido.",
+        "Suponer que fetch rechaza en un estado HTTP 404.",
+        "Esperar que JSON conserve funciones o undefined."
+      ],
+      "exercise": {
+        "statement": "Parsea un registro, acepta solo si activo es true y devuelve JSON serializado.",
+        "cases": [
+          {
+            "input": "{\"activo\":true}",
+            "expected": "se acepta"
+          },
+          {
+            "input": "{\"activo\":false}",
+            "expected": "se rechaza"
+          },
+          {
+            "input": "texto JSON incompleto",
+            "expected": "SyntaxError controlado"
+          }
+        ],
+        "solution": "[javascript]\nfunction leerRegistro(texto) {\n  const dato = JSON.parse(texto);\n  if (dato.activo !== true) throw new Error(\"Registro inactivo\");\n  return JSON.stringify(dato);\n}\nconsole.log(leerRegistro('{\"activo\":true}'));",
+        "alternatives": [
+          "Usar un esquema de validación para objetos con muchas reglas.",
+          "Separar validación de datos y petición HTTP."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — Fetch API",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API"
+        },
+        {
+          "label": "MDN — JSON",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Clases y POO",
+      "explanation": "class declara constructor y métodos. extends expresa herencia; super llama a constructor o método de la base. La herencia permite especializar un subtipo; la composición puede representar mejor objetos que colaboran sin relación de sustitución.",
+      "example": "[javascript]\nclass Cuenta {\n  constructor(titular) { this.titular = titular; }\n  resumen() { return \"Cuenta de \" + this.titular; }\n}\nconsole.log(new Cuenta(\"Nora\").resumen());",
+      "output": "Cuenta de Nora",
+      "mistakes": [
+        "Olvidar new al crear instancia.",
+        "Leer this antes de super en constructor derivado.",
+        "Confundir método de instancia con propiedad static."
+      ],
+      "exercise": {
+        "statement": "Define Articulo y Libro; Libro añade autor y sobrescribe ficha.",
+        "cases": [
+          {
+            "input": "Articulo Mapa",
+            "expected": "Mapa"
+          },
+          {
+            "input": "Libro Atlas,Nora",
+            "expected": "Atlas — Nora"
+          },
+          {
+            "input": "Libro es subtipo",
+            "expected": "sí"
+          }
+        ],
+        "solution": "[javascript]\nclass Articulo {\n  constructor(titulo) { this.titulo = titulo; }\n  ficha() { return this.titulo; }\n}\nclass Libro extends Articulo {\n  constructor(titulo, autor) { super(titulo); this.autor = autor; }\n  ficha() { return this.titulo + \" — \" + this.autor; }\n}\nconsole.log(new Libro(\"Atlas\",\"Nora\").ficha());",
+        "alternatives": [
+          "Usar función fábrica para estructuras simples sin identidad de clase.",
+          "Componer un autor independiente si tiene comportamiento propio."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — Using classes",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_classes"
+        },
+        {
+          "label": "ECMA International — ECMAScript specification",
+          "url": "https://tc39.es/ecma262/"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Errores y depuración",
+      "explanation": "Error representa un fallo con mensaje y traza; throw interrumpe el flujo hasta un catch. Las herramientas de desarrollo permiten pausar en breakpoints, inspeccionar variables y revisar la pila. No registres contraseñas, tokens ni secretos en consola o mensajes de usuario.",
+      "example": "[javascript]\nfunction dividir(a,b) {\n  if (b === 0) throw new RangeError(\"Divisor cero\");\n  return a / b;\n}\ntry { console.log(dividir(8,2)); }\ncatch (error) { console.log(error.name + \": \" + error.message); }",
+      "output": "4",
+      "mistakes": [
+        "Capturar error sin recuperarse ni informar.",
+        "Lanzar cadenas en lugar de Error.",
+        "Depurar solo con mensajes temporales sin inspeccionar la traza."
+      ],
+      "exercise": {
+        "statement": "Implementa división con error claro cuando el divisor sea cero.",
+        "cases": [
+          {
+            "input": "(8,2)",
+            "expected": "4"
+          },
+          {
+            "input": "(-6,3)",
+            "expected": "-2"
+          },
+          {
+            "input": "(1,0)",
+            "expected": "RangeError"
+          }
+        ],
+        "solution": "[javascript]\nfunction dividir(a,b) {\n  if (b === 0) throw new RangeError(\"Divisor cero\");\n  return a / b;\n}\ntry { console.log(dividir(8,2)); }\ncatch (error) { console.log(error.message); }",
+        "alternatives": [
+          "Devolver un resultado explícito si el error forma parte normal del dominio.",
+          "Crear subclase de Error para fallos diferenciables del dominio."
+        ]
+      },
+      "sources": [
+        {
+          "label": "MDN — Control flow and error handling",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling"
+        },
+        {
+          "label": "MDN — Error",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Node.js y backend",
+      "explanation": "Node ejecuta JavaScript fuera del navegador y proporciona APIs como process y HTTP. process.argv contiene argumentos; process.env permite configurar opciones sin codificar secretos en el repositorio. Un servidor HTTP procesa solicitudes y debe validar método, ruta y datos recibidos. Guarda el ejemplo ESM como .mjs o ejecuta el proyecto con type: module.",
+      "example": "[javascript]\n// Guarda este archivo como servidor.mjs.\nimport {createServer} from \"node:http\";\nconst server = createServer((req,res) => {\n  if (req.method === \"GET\" && req.url === \"/salud\") {\n    res.writeHead(200, {\"content-type\":\"text/plain; charset=utf-8\"});\n    res.end(\"ok\");\n  } else { res.writeHead(404); res.end(\"no encontrado\"); }\n});\nserver.listen(3000, () => console.log(\"Servidor en puerto 3000\"));",
+      "output": "Servidor en puerto 3000; GET /salud responde 200 y «ok».",
+      "mistakes": [
+        "Usar document en Node sin DOM.",
+        "Guardar secretos en el código fuente.",
+        "Ignorar método y ruta y contestar igual a toda petición."
+      ],
+      "exercise": {
+        "statement": "Responde 200/ok para GET /salud y 404 para rutas distintas.",
+        "cases": [
+          {
+            "input": "GET /salud",
+            "expected": "200, ok"
+          },
+          {
+            "input": "GET /desconocido",
+            "expected": "404"
+          },
+          {
+            "input": "GET /salud/",
+            "expected": "404"
+          }
+        ],
+        "solution": "[javascript]\n// Guarda este archivo como servidor.mjs.\nimport {createServer} from \"node:http\";\nconst server = createServer((req,res) => {\n  if (req.method === \"GET\" && req.url === \"/salud\") {\n    res.writeHead(200, {\"content-type\":\"text/plain; charset=utf-8\"}); res.end(\"ok\");\n  } else { res.writeHead(404); res.end(\"no encontrado\"); }\n});\nserver.listen(Number(process.env.PORT) || 3000);",
+        "alternatives": [
+          "Usar una biblioteca de rutas cuando crezcan endpoints y middleware.",
+          "Separar la lógica de dominio del adaptador HTTP."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Node.js — HTTP",
+          "url": "https://nodejs.org/api/http.html"
+        },
+        {
+          "label": "Node.js — Process and environment",
+          "url": "https://nodejs.org/api/process.html"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Pruebas y calidad",
+      "explanation": "Una prueba unitaria compara el comportamiento observable con el resultado esperado. Casos límite e inválidos complementan el caso típico. Node incluye test runner node:test y aserciones node:assert/strict; un linter puede señalar patrones de riesgo antes de ejecutar.",
+      "example": "[javascript]\nimport test from \"node:test\";\nimport assert from \"node:assert/strict\";\nfunction esPar(n) { return n % 2 === 0; }\ntest(\"esPar distingue par e impar\", () => {\n  assert.equal(esPar(4), true);\n  assert.equal(esPar(3), false);\n  assert.equal(esPar(0), true);\n});",
+      "output": "node --test informa que la prueba pasa.",
+      "mistakes": [
+        "Probar solo el caso típico.",
+        "Hacer que una prueba dependa del orden de ejecución.",
+        "Comprobar detalles internos en lugar del resultado observable."
+      ],
+      "exercise": {
+        "statement": "Prueba máximo de lista no vacía para positivos, negativos y una sola entrada.",
+        "cases": [
+          {
+            "input": "[2,7,1]",
+            "expected": "7"
+          },
+          {
+            "input": "[-5,-2]",
+            "expected": "-2"
+          },
+          {
+            "input": "[4]",
+            "expected": "4"
+          }
+        ],
+        "solution": "[javascript]\nimport test from \"node:test\";\nimport assert from \"node:assert/strict\";\nfunction maximo(xs) {\n  if (xs.length === 0) throw new RangeError(\"Lista vacía\");\n  return Math.max(...xs);\n}\ntest(\"maximo\", () => {\n  assert.equal(maximo([2,7,1]), 7);\n  assert.equal(maximo([-5,-2]), -2);\n  assert.equal(maximo([4]), 4);\n});",
+        "alternatives": [
+          "Probar funciones puras con datos controlados.",
+          "Añadir una prueba del error esperado para lista vacía."
+        ]
+      },
+      "sources": [
+        {
+          "label": "Node.js — Test runner",
+          "url": "https://nodejs.org/api/test.html"
+        },
+        {
+          "label": "Node.js — Assertion testing",
+          "url": "https://nodejs.org/api/assert.html"
+        }
+      ]
+    },
+    {
+      "track": "JavaScript",
+      "title": "Seguridad web",
+      "explanation": "Trata como no confiables los datos de usuario y API. textContent muestra texto sin analizarlo como HTML; innerHTML puede abrir XSS. Valida también en servidor. CORS regula qué respuestas puede leer otro origen desde el navegador, pero no reemplaza autorización. Configura cookies según el flujo con Secure, HttpOnly y SameSite.",
+      "example": "[javascript]\nconst salida = document.querySelector(\"#salida\");\nconst dato = \"<img src=x onerror=alert(1)>\";\nsalida.textContent = dato;\nconsole.log(salida.textContent);",
+      "output": "El marcado se muestra como texto literal; no se interpreta como HTML.",
+      "mistakes": [
+        "Asignar entrada no confiable a innerHTML.",
+        "Confiar solo en la validación del navegador.",
+        "Creer que CORS autoriza al usuario a realizar acciones en el servidor."
+      ],
+      "exercise": {
+        "statement": "Muestra entrada como texto plano, rechaza un campo obligatorio vacío y valida de nuevo en el servidor.",
+        "cases": [
+          {
+            "input": "\"Hola\"",
+            "expected": "se muestra como texto"
+          },
+          {
+            "input": "marcado con script",
+            "expected": "se muestra literal"
+          },
+          {
+            "input": "campo vacío obligatorio",
+            "expected": "se rechaza con mensaje accesible"
+          }
+        ],
+        "solution": "[javascript]\nconst formulario = document.querySelector(\"#formulario\");\nconst entrada = document.querySelector(\"#mensaje\");\nconst salida = document.querySelector(\"#salida\");\nformulario.addEventListener(\"submit\", (evento) => {\n  evento.preventDefault();\n  if (entrada.value.trim() === \"\") { entrada.setCustomValidity(\"Escribe un mensaje.\"); entrada.reportValidity(); return; }\n  entrada.setCustomValidity(\"\");\n  salida.textContent = entrada.value; // El servidor valida antes de guardar.\n});",
+        "alternatives": [
+          "Sanitizar HTML con una biblioteca mantenida si se permite marcado limitado.",
+          "Restringir CORS y aplicar autorización real en el servidor."
+        ]
+      },
+      "sources": [
+        {
+          "label": "OWASP — Cross Site Scripting Prevention Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+        },
+        {
+          "label": "MDN — Cross-Origin Resource Sharing (CORS)",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS"
+        }
+      ]
+    }
+  ]
+}

@@ -57,7 +57,7 @@ Los temarios son síntesis didácticas con referencias a documentación primaria
 
 - No hay recuperación automática de contraseña ni verificación del correo.
 - Algunas bibliotecas del IDE se cargan desde CDN y requieren conexión a Internet.
-- Java envía el código y la entrada estándar a Judge0 por HTTPS únicamente después del consentimiento explícito de la sesión. No envíes datos personales, secretos ni código confidencial.
+- Java, Kotlin, Node.js y Python envían el código y la entrada estándar a un endpoint Judge0 compatible por HTTPS solo después del consentimiento explícito de la sesión. Comprueba qué runtimes ofrece el endpoint. No envíes datos personales, secretos ni código confidencial. JavaScript local y los simuladores se ejecutan en un worker del navegador sin acceso de red. React ofrece una vista estática de JSX y no ejecuta componentes.
 - Kotlin y PL/SQL ofrecen análisis estático; Node.js, MongoDB y Firestore se presentan como simuladores didácticos.
 - `server-postgres.js` es experimental: no tiene paridad completa con SQLite ni migra sus datos. Consulta la [guía técnica de PostgreSQL](docs/guias/POSTGRESQL.md).
 

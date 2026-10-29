@@ -7,14 +7,17 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const root = path.join(__dirname, '..');
-const panel = fs.readFileSync(path.join(root, 'public/index.html'), 'utf8');
-const aula = fs.readFileSync(path.join(root, 'public/aula.html'), 'utf8');
+const panel = fs.readFileSync(path.join(root, 'public/index.html'), 'utf8').replace(/\r\n/g, '\n');
+const aula = fs.readFileSync(path.join(root, 'public/aula.html'), 'utf8').replace(/\r\n/g, '\n');
+const apiClient = require('../public/api-client');
 
 function panelApiRunner(fetch) {
   const start = panel.indexOf('async function api(');
   const end = panel.indexOf('// flash:', start);
   if (start < 0 || end <= start) throw new Error('No se encontró el helper de API de la portada.');
-  return vm.runInNewContext(`${panel.slice(start, end)}\napi;`, { fetch });
+  return vm.runInNewContext(`${panel.slice(start, end)}\napi;`, {
+    CodigoClaroApi: { request: (url, opts) => apiClient.request(url, opts, fetch) }
+  });
 }
 
 function panelApiResponse(status, error) {
@@ -93,7 +96,9 @@ test('el envío en curso bloquea la navegación hasta guardar el test', () => {
 test('la app protege reconfiguración, navegación, cierre y salida del navegador', () => {
   assert.ok(panel.includes('onclick="quizReturnToConfig()"'));
   assert.ok(panel.includes("async function render(page){\n  if(!confirmDiscardQuizAttempt())return;"));
-  assert.ok(panel.includes('async function logout(){if(!confirmDiscardQuizAttempt())return;'));
+  assert.match(panel, /async function logout\(\)\{[\s\S]*?result\.ok!==true/);
+  assert.match(panel, /catch\(error\)\{[\s\S]*?flash\(error&&error\.message/);
+  assert.doesNotMatch(panel.slice(panel.indexOf('async function logout(){'), panel.indexOf("$('appNavBar').addEventListener")), /catch\{\}/);
   assert.ok(panel.includes("window.addEventListener('beforeunload',e=>{if(hasUnsubmittedQuizAttempt())"));
   const submitStart = panel.indexOf('async function submitQuiz(e)');
   const submitEnd = panel.indexOf('// planView:', submitStart);
@@ -129,20 +134,22 @@ test('ejercicios renderizan saltos de línea reales y el feedback no imprime \\n
   assert.match(aula, /join\('\\n'\)/);
 });
 
-test('los errores de red del API no exponen rutas locales ni detalles internos', () => {
+test('el cliente API compartido no expone rutas locales ni detalles internos', () => {
+  const apiSource = fs.readFileSync(path.join(root, 'public/api-client.js'), 'utf8');
+  assert.match(apiSource, /No se pudo conectar con CódigoClaro/);
+  assert.match(apiSource, /El servidor devolvió una respuesta inesperada/);
+  assert.doesNotMatch(apiSource, /localhost:3000|e\.message/);
+
   const panelStart = panel.indexOf('async function api(');
   const panelEnd = panel.indexOf('// flash:', panelStart);
   assert.ok(panelStart >= 0 && panelEnd > panelStart);
-  const panelApi = panel.slice(panelStart, panelEnd);
-  assert.match(panelApi, /No hemos podido conectar con CódigoClaro/);
-  assert.doesNotMatch(panelApi, /localhost:3000|\$\{url\}|e\.message/);
+  assert.match(panel.slice(panelStart, panelEnd), /CodigoClaroApi\.request/);
 
   const aulaStart = aula.indexOf('async function ccApi(');
   const aulaEnd = aula.indexOf('// ccStatus:', aulaStart);
   assert.ok(aulaStart >= 0 && aulaEnd > aulaStart);
   const aulaApi = aula.slice(aulaStart, aulaEnd);
-  assert.match(aulaApi, /No se pudo conectar con CódigoClaro/);
-  assert.doesNotMatch(aulaApi, /localhost:3000|\+url|e\.message/);
+  assert.match(aulaApi, /CodigoClaroApi\.request/);
 });
 
 test('api del panel conserva validaciones seguras y oculta errores internos', async () => {
@@ -151,14 +158,14 @@ test('api del panel conserva validaciones seguras y oculta errores internos', as
 
   const unsafeApi = panelApiRunner(async () => panelApiResponse(400, 'Fallo en http://localhost:3000/api/login: TypeError'));
   await assert.rejects(unsafeApi('/api/login'), error => {
-    assert.equal(error.message, 'No se pudo completar la solicitud. Inténtalo de nuevo.');
+    assert.equal(error.message, 'No se pudo completar la solicitud. Revisa los datos e inténtalo de nuevo.');
     assert.doesNotMatch(error.message, /localhost|3000|\/api\/login|TypeError/);
     return true;
   });
 
   const serverApi = panelApiRunner(async () => panelApiResponse(500, 'Error interno del servidor'));
   await assert.rejects(serverApi('/api/login'), error => {
-    assert.equal(error.message, 'CódigoClaro no ha podido completar esta solicitud. Inténtalo de nuevo más tarde.');
+    assert.equal(error.message, 'CódigoClaro no pudo completar la solicitud. Inténtalo de nuevo más tarde.');
     assert.doesNotMatch(error.message, /interno/);
     return true;
   });
@@ -257,13 +264,20 @@ test('el IDE dirige cada lenguaje al motor que realmente ofrece', () => {
   const runStart = aula.indexOf('function ideRun(){');
   const runEnd = aula.indexOf('function ideRunJS(){', runStart);
   const run = runStart >= 0 && runEnd > runStart ? aula.slice(runStart, runEnd) : '';
-  assert.match(run, /l\.id==='python'\)return ideRunPython\(\)/);
+  assert.match(run, /\['java','kotlin','node','python','oop'\]\.includes\(l\.id\)\)return ideRunJudge0\(\)/);
   assert.match(run, /l\.id==='react'\)return ideRunReact\(\)/);
   assert.match(run, /l\.id\.startsWith\('sql-'\).*ideRunSQL\(\)/);
   assert.match(run, /l\.id==='js'\)return ideRunJS\(\)/);
-  assert.match(run, /l\.id==='java'\)return ideRunJudge0\(\)/);
-  assert.match(aula, /id="ideJavaRemoteConsent" type="checkbox"/);
+  assert.match(run, /l\.id==='html'\|\|l\.id==='css'\)return ideRunMarkup\(\)/);
+  assert.match(aula, /id="ideRemoteConsent" type="checkbox"/);
   assert.match(aula, /consent\.dataset\.endpoint!==base/);
+  assert.match(aula, /function ideRunMarkup\(\)/);
+  assert.match(aula, /CCIdeSandbox\.run\(kind,code\)/);
+  assert.match(aula, /function ideSanitizePreview\(/);
+  assert.match(aula, /Vista previa estática del JSX inicial/);
+  assert.doesNotMatch(aula.slice(aula.indexOf('function ideRunReact(){'),aula.indexOf('// ideTestSample:',aula.indexOf('function ideRunReact(){'))), /new Function|https:/);
+  assert.match(aula, /El endpoint predeterminado puede no ofrecerlo/);
+  assert.match(aula, /PL\/SQL requiere Oracle Database/);
   assert.doesNotMatch(run, /La compilación real necesita un JDK\/runtime local/);
 });
 
@@ -336,6 +350,17 @@ test('cada filtro individual de tests tiene al menos cinco preguntas y el aleato
   assert.doesNotMatch(aula, /\.sort\(\(\)=>Math\.random\(\)-\.5\)/);
 });
 
+test('la portada del aula concentra los accesos y ofrece movimiento breve con reducción respetada', () => {
+  const home = aula.match(/function home\(\)\{[\s\S]*?\n(?=function syllabus\()/)?.[0] || '';
+  assert.match(home, /Abrir temarios/);
+  assert.match(home, /Ir a ejercicios/);
+  assert.match(home, /Abrir IDE/);
+  assert.doesNotMatch(home, /C\.slice\(0,6\)/);
+  assert.match(aula, /@media\(prefers-reduced-motion:no-preference\)/);
+  assert.match(aula, /@media\(prefers-reduced-motion:reduce\)/);
+  assert.match(aula, /function gradeLibrarySql\(\)/);
+});
+
 test('la transformación verdadero/falso conserva la respuesta correcta y la incorrecta', () => {
   const match = aula.match(/function makeQuizItem\(q,mode,random=Math\.random\)\{.*?\n(?=function gradeQ\()/s);
   assert.ok(match, 'el constructor de preguntas debe poder probarse aisladamente');
@@ -347,7 +372,10 @@ test('la transformación verdadero/falso conserva la respuesta correcta y la inc
   const falseStatement = makeQuizItem(q, 'tf', () => 0.1);
   assert.equal(falseStatement.correct, false);
   assert.equal(falseStatement.statement, '[1,2]');
-  assert.equal(makeQuizItem(q, 'choice').kind, 'choice');
+  const choice = makeQuizItem(q, 'choice', () => 0);
+  assert.equal(choice.kind, 'choice');
+  assert.deepEqual(choice.options, ['[0,1]','[0,1,2]','[1,2]']);
+  assert.equal(choice.options[choice.correctIndex], q[2][q[3]], 'la respuesta correcta debe seguir apuntando a la opción permutada');
 });
 
 test('el único .txt del repositorio son los requisitos y los enlaces locales a documentos funcionan', () => {

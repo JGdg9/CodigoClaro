@@ -40,8 +40,8 @@ function runnerContext(consentChecked, { timeoutImmediately = false } = {}) {
     contains: name => cancelClasses.has(name)
   } };
   const elements = {
-    ideJavaRemoteConsent: consent,
-    ideCancelJavaRun: cancelButton,
+    ideRemoteConsent: consent,
+    ideCancelRemoteRun: cancelButton,
     ideStdin: { value: 'Ada' },
     judgeToken: { value: 'session-token' }
   };
@@ -114,20 +114,20 @@ test('el botón Ejecutar dirige Java al compilador remoto', () => {
 });
 
 test('Java no envía código si falta consentimiento para el endpoint seleccionado', async () => {
-  const source = extract('async function ideRunJudge0(){', '\n// ideLoadSql');
+  const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
   const setup = runnerContext(false);
   const run = vm.runInNewContext(source + '\nideRunJudge0;', setup.context);
 
   await run();
 
   assert.equal(setup.calls.length, 0, 'no debe consultarse ni enviarse nada al servicio');
-  assert.match(setup.messages[0].message, /consentimiento/i);
+  assert.match(setup.messages[0].message, /confirma.*enviar el código/i);
   assert.equal(setup.privacySettings.open, true, 'debe abrir la sección que contiene el consentimiento');
   assert.equal(setup.consent.focused, true, 'debe llevar el foco a la casilla de consentimiento');
 });
 
 test('con consentimiento Java compila y muestra la salida devuelta por el servicio simulado', async () => {
-  const source = extract('async function ideRunJudge0(){', '\n// ideLoadSql');
+  const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
   const setup = runnerContext(true);
   const run = vm.runInNewContext(source + '\nideRunJudge0;', setup.context);
 
@@ -159,11 +159,58 @@ test('Judge0 conserva texto español al codificar y decodificar UTF-8 en Base64'
   assert.throws(() => judgeBase64.decode('no es base64'), /resultado Base64 o UTF-8 no válido/);
 });
 
+test('el endpoint remoto no sigue redirecciones después del consentimiento', async () => {
+  let request;
+  const fetcher = async (url, options) => {
+    request = {url,options};
+    return {ok:true,status:200,headers:{get:()=>'application/json'},text:async()=>'{\"ok\":true}'};
+  };
+  const judgeFetch = vm.runInNewContext(
+    extract('async function ideJudgeFetch(', '\nfunction ideJudgeEncodeBase64') + '\nideJudgeFetch;',
+    {URL,fetch:fetcher,TextEncoder,TextDecoder,Uint8Array}
+  );
+  await judgeFetch('/languages/', {}, {base:'https://judge.example',token:'secret'});
+  assert.equal(request.options.redirect, 'error');
+  assert.equal(request.url, 'https://judge.example/languages/');
+});
+
+test('el endpoint remoto rechaza respuestas con Content-Length excesivo sin leerlas', async () => {
+  let bodyRead = false;
+  const judgeFetch = vm.runInNewContext(
+    extract('async function ideJudgeFetch(', '\nfunction ideJudgeEncodeBase64') + '\nideJudgeFetch;',
+    {URL,fetch:async()=>({
+      ok:true,status:200,headers:{get:name=>name==='content-length'?'1000001':'application/json'},
+      text:async()=>{bodyRead=true;return '{}'}
+    }),TextEncoder,TextDecoder,Uint8Array}
+  );
+  await assert.rejects(judgeFetch('/languages/', {}, {base:'https://judge.example',token:''}), /límite local de 1 MB/);
+  assert.equal(bodyRead, false);
+});
+
+test('el endpoint remoto cancela una respuesta en streaming cuando supera 1 MB', async () => {
+  let reads = 0, cancelled = false;
+  const response = {
+    ok:true,status:200,headers:{get:()=>null},
+    body:{getReader:()=>({
+      async read(){reads++;return reads<=2?{done:false,value:new Uint8Array(600000)}:{done:true}},
+      async cancel(){cancelled=true},
+      releaseLock(){}
+    })}
+  };
+  const judgeFetch = vm.runInNewContext(
+    extract('async function ideJudgeFetch(', '\nfunction ideJudgeEncodeBase64') + '\nideJudgeFetch;',
+    {URL,fetch:async()=>response,TextEncoder,TextDecoder,Uint8Array}
+  );
+  await assert.rejects(judgeFetch('/submissions/', {}, {base:'https://judge.example',token:''}), /límite local de 1 MB/);
+  assert.equal(reads, 2);
+  assert.equal(cancelled, true);
+});
+
 test('Java invalida la lista de runtimes si se cambia el endpoint', async () => {
-  const source = extract('async function ideRunJudge0(){', '\n// ideLoadSql');
+  const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
   const setup = runnerContext(true);
   setup.context.ideJudgeConfig = () => ({ base: 'https://judge.example', token: '' });
-  setup.context.document.getElementById('ideJavaRemoteConsent').dataset.endpoint = 'https://judge.example';
+  setup.context.document.getElementById('ideRemoteConsent').dataset.endpoint = 'https://judge.example';
   setup.context.ccJudgeLanguagesEndpoint = 'https://old-judge.example';
   const run = vm.runInNewContext(source + '\nideRunJudge0;', setup.context);
 
@@ -177,7 +224,7 @@ test('Java invalida la lista de runtimes si se cambia el endpoint', async () => 
 });
 
 test('Java cancela el sondeo y muestra un error si la ejecución remota supera su límite', async () => {
-  const source = extract('async function ideRunJudge0(){', '\n// ideLoadSql');
+  const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
   const setup = runnerContext(true, { timeoutImmediately: true });
   const run = vm.runInNewContext(source + '\nideRunJudge0;', setup.context);
 
@@ -192,7 +239,7 @@ test('Java cancela el sondeo y muestra un error si la ejecución remota supera s
 });
 
 test('Java permite cancelar desde el IDE y avisa si el runner ya recibió el código', async () => {
-  const source = extract('async function ideRunJudge0(){', '\n// ideLoadSql');
+  const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
   const setup = runnerContext(true);
   const cancelSource = extract('function ideCancelJudgeRun(){', '\n// ideCheckJudge:');
   setup.context.ideCancelJudgeRun = vm.runInNewContext(cancelSource + '\nideCancelJudgeRun;', setup.context);
@@ -214,12 +261,12 @@ test('Java permite cancelar desde el IDE y avisa si el runner ya recibió el có
   assert.equal(setup.calls.some(call => call.options.method === 'GET'), false, 'no debe seguir consultando el resultado');
   assert.equal(setup.consent.checked, false, 'cancelar debe revocar el consentimiento local');
   assert.equal(setup.cancelButton.classList.contains('hide'), true, 'el botón debe ocultarse al terminar la cancelación');
-  assert.match(setup.messages.filter(message => message.message).at(-1)?.message || '', /runner ya recibió el código, puede terminar de procesarlo/i);
+  assert.match(setup.messages.filter(message => message.message).at(-1)?.message || '', /si el endpoint ya recibió el código, puede terminar de procesarlo/i);
 });
 
 function ccApiRunner(fetch) {
-  const source = extract('async function ccApi(', '\n// ccStatus:');
-  return vm.runInNewContext(source + '\nccApi;', { fetch });
+  const client = require('../public/api-client.js');
+  return (url, options = {}) => client.request(url, options, fetch);
 }
 
 function ccApiResponse(status, error, contentType = 'application/json') {
@@ -297,15 +344,15 @@ test('Java ofrece botones para comprobar la conexión y cancelar la ejecución',
   assert.equal(saveButton.inserted.event, 'click');
   saveButton.inserted.handler();
   assert.equal(checks, 1);
-  assert.equal(runButton.inserted.id, 'ideCancelJavaRun');
-  assert.equal(runButton.inserted.textContent, 'Cancelar Java');
+  assert.equal(runButton.inserted.id, 'ideCancelRemoteRun');
+  assert.equal(runButton.inserted.textContent, 'Cancelar ejecución remota');
   assert.equal(runButton.inserted.className, 'btn hide');
   runButton.inserted.handler();
   assert.equal(cancelled, 1);
 });
 
 test('Java cancela y no envía código si cambia endpoint o consentimiento durante la carga de runtimes', async () => {
-  const source = extract('async function ideRunJudge0(){', '\n// ideLoadSql');
+  const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
 
   async function runAfterMutation(mutate) {
     const setup = runnerContext(true);
@@ -314,7 +361,7 @@ test('Java cancela y no envía código si cambia endpoint o consentimiento duran
     let currentToken = 'session-token';
     setup.context.ideJudgeConfig = () => ({ base: currentBase, token: currentToken });
     setup.context.ideCancelJudgeRun = () => {
-      const consent = setup.context.document.getElementById('ideJavaRemoteConsent');
+      const consent = setup.context.document.getElementById('ideRemoteConsent');
       if (consent) { consent.checked = false; consent.dataset.endpoint = ''; }
       setup.context.ccJudgeRunController?.abort();
     };
@@ -344,7 +391,7 @@ test('Java cancela y no envía código si cambia endpoint o consentimiento duran
     setup.context.ideCancelJudgeRun();
   });
   await runAfterMutation(({ setup }) => {
-    const consent = setup.context.document.getElementById('ideJavaRemoteConsent');
+    const consent = setup.context.document.getElementById('ideRemoteConsent');
     consent.checked = false;
     consent.dataset.endpoint = '';
     setup.context.ideCancelJudgeRun();
@@ -356,7 +403,7 @@ test('Java cancela y no envía código si cambia endpoint o consentimiento duran
     setup.context.ideCancelJudgeRun();
   });
   assert.match(aula, /id="judgeEndpoint"[^>]*oninput="ideCancelJudgeRun\(\)"/);
-  assert.match(aula, /id="ideJavaRemoteConsent"[^>]*onchange="[^"]*ideCancelJudgeRun\(\)"/);
+  assert.match(aula, /id="ideRemoteConsent"[^>]*onchange="[^"]*ideCancelJudgeRun\(\)"/);
   assert.match(aula, /id="judgeToken"[^>]*oninput="ideCancelJudgeRun\(\)"/);
 });
 
@@ -450,7 +497,7 @@ test('cambiar endpoint o token cancela solicitudes y revoca el consentimiento', 
   const checkController = new AbortController();
   const source = extract('function ideCancelJudgeRun(){', '\n// ideCheckJudge:');
   const cancel = vm.runInNewContext(source + '\nideCancelJudgeRun;', {
-    document: { getElementById: id => id === 'ideJavaRemoteConsent' ? consent : null },
+    document: { getElementById: id => id === 'ideRemoteConsent' ? consent : null },
     ccJudgeRunController: runController,
     ccJudgeCheckController: checkController
   });
