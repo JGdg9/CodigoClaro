@@ -255,9 +255,12 @@ test('aula usa tema claro también en el IDE', () => {
   assert.match(aula, /\.editor\{background:#fff!important;color:#172033!important/);
 });
 
-test('el IDE no descarga CodeMirror automáticamente y mantiene editor local', () => {
-  assert.match(aula, /Editor local · funciona sin Internet/);
-  assert.doesNotMatch(aula, /async function ideEnsureEditor\(\)\{[^}]*ccLoadCss\(/);
+test('el IDE prepara un editor con resaltado y conserva el textarea si falla la CDN', () => {
+  assert.match(aula, /ccLoadCss\(CC_CODEMIRROR\+'lib\/codemirror\.css'/);
+  assert.match(aula, /ccLoadScript\(CC_CODEMIRROR\+'lib\/codemirror\.js'/);
+  assert.match(aula, /CodeMirror\.fromTextArea\(t/);
+  assert.match(aula, /Editor de texto listo; resaltado no disponible/);
+  assert.match(aula, /function ideBindShortcuts\(\)/);
 });
 
 test('el IDE dirige cada lenguaje al motor que realmente ofrece', () => {

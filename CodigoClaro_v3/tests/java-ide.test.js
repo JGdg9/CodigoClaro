@@ -337,7 +337,7 @@ test('Java ofrece botones para comprobar la conexión y cancelar la ejecución',
   let checks = 0;
   const check = () => { checks++; };
   vm.runInNewContext(source + '\nideInitUI();', {
-    document, IDE_LANGS: [], ccStorageGet: () => '', ideLoadTemplate() {}, ideEnsureEditor() {}, ideSetRuntimeText() {}, ideCheckJudge: check, ideCancelJudgeRun: () => { cancelled++; }
+    document, IDE_LANGS: [], ccStorageGet: () => '', ideLoadTemplate() {}, ideBindShortcuts() {}, ideEnsureEditor() {}, ideSetRuntimeText() {}, ideCheckJudge: check, ideCancelJudgeRun: () => { cancelled++; }
   });
   assert.equal(endpoint.value, 'https://ce.judge0.com');
   assert.equal(saveButton.inserted.textContent, 'Comprobar conexión');
