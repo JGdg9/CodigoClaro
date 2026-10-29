@@ -409,8 +409,28 @@ test('Java cancela y no envía código si cambia endpoint o consentimiento duran
 
 function judgeFetchRunner(fetch) {
   const source = extract('async function ideJudgeFetch(', '\nfunction ideCancelJudgeRun');
-  return vm.runInNewContext(source + '\nideJudgeFetch;', { fetch, URL });
+  return vm.runInNewContext(source + '\nideJudgeFetch;', { fetch, URL, TextEncoder, TextDecoder, Uint8Array });
 }
+
+test('Judge0 acepta la lista JSON de lenguajes que devuelve /languages/', async () => {
+  const languages = [
+    { id: 91, name: 'Java (JDK 17.0.6)' },
+    { id: 111, name: 'Kotlin (2.1.10)' }
+  ];
+  const judgeFetch = judgeFetchRunner(async () => ({
+    ok: true,
+    status: 200,
+    headers: { get: () => null },
+    text: async () => JSON.stringify(languages)
+  }));
+
+  const response = await judgeFetch('/languages/', {}, { base: 'https://ce.judge0.com', token: '' });
+
+  assert.equal(Array.isArray(response), true);
+  assert.equal(response.length, 2);
+  assert.equal(response[0].id, 91);
+  assert.equal(response[0].name, 'Java (JDK 17.0.6)');
+});
 
 test('un endpoint vacío no recupera silenciosamente el endpoint predeterminado', () => {
   const elements = { judgeEndpoint: { value: '   ' }, judgeToken: { value: 'token-local' } };
@@ -464,7 +484,7 @@ test('Comprobar conexión ignora la respuesta de una comprobación anterior', as
   const latest = check();
   assert.equal(requests.length, 2);
   assert.equal(requests[0].signal.aborted, true);
-  requests[1].resolve([{ name: 'Java (21)' }]);
+  requests[1].resolve([{ id: 91, name: 'Java (JDK 21)' }]);
   await Promise.all([previous, latest]);
   assert.match(status.textContent, /Conectado/);
 });

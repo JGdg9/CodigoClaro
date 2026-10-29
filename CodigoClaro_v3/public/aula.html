@@ -333,7 +333,7 @@ async function ideJudgeFetch(path,opts={},config=ideJudgeConfig()){
  const txt=await ideJudgeReadText(resp);
  let data;
  try{data=txt?JSON.parse(txt):{}}catch(e){throw new Error('El endpoint devolvió una respuesta JSON no válida.')}
- if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('El endpoint devolvió una respuesta con formato no válido.');
+ if(!data||typeof data!=='object')throw new Error('El endpoint devolvió una respuesta con formato no válido.');
  return data
 }
 async function ideJudgeReadText(resp){
@@ -391,6 +391,7 @@ async function ideCheckJudge(){
  const timeoutId=setTimeout(()=>{timedOut=true;controller.abort()},10000);
  try{
   const langs=await ideJudgeFetch('/languages/',{signal:controller.signal},config);
+  if(!Array.isArray(langs)||!langs.length||!langs.every(language=>Number.isSafeInteger(language?.id)&&language.id>0&&typeof language.name==='string'&&language.name.trim()))throw new Error('El endpoint no devolvió una lista válida de lenguajes.');
   if(ccJudgeCheckController!==controller)return;
   if(timedOut){status.textContent='La comprobación superó el límite de 10 segundos.';return}
   const current=ideJudgeConfig();
@@ -432,6 +433,7 @@ async function ideRunJudge0(){
   if(ccJudgeLanguagesEndpoint!==base){ccJudgeLanguages=null;ccJudgeLanguagesEndpoint=base}
   ideSaveJudgeSettings();
   if(!ccJudgeLanguages)ccJudgeLanguages=await ideJudgeFetch('/languages/',{signal},config);
+  if(!Array.isArray(ccJudgeLanguages)||!ccJudgeLanguages.length||!ccJudgeLanguages.every(language=>Number.isSafeInteger(language?.id)&&language.id>0&&typeof language.name==='string'&&language.name.trim()))throw new Error('El endpoint no devolvió una lista válida de lenguajes.');
   ensureConsent();
   const opts=ccJudgeLanguages.filter(x=>target.matches(x.name||''));
   if(!opts.length)throw new Error(`La instancia no ofrece un runtime activo para ${target.label}. Prueba otro endpoint compatible.`);
