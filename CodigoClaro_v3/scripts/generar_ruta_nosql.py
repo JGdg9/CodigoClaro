@@ -307,7 +307,7 @@ def build_story():
         story.append(KeepTogether([para(escape(title), "h2"), para(escape(description), "body")]))
     story += [Spacer(1, 7 * mm), para("Cómo estudiar", "h2"),
               para("Lee el objetivo, consulta las fuentes oficiales enlazadas y realiza la práctica en una base de prueba. Compara el resultado con el criterio de comprobación. Los conceptos se atribuyen al producto correspondiente: MongoDB y Firestore comparten algunas ideas, pero no todas sus operaciones ni garantías.", "body"),
-              para("Las capacidades, límites y sintaxis pueden depender de la versión, edición o SDK. Confirma la documentación de la instancia que estés usando antes de trasladar el ejercicio a un entorno real.", "small"), PageBreak()]
+              para("Las capacidades, límites y sintaxis pueden depender de la versión, edición o SDK. Confirma la documentación de la instancia que estés usando antes de trasladar el ejercicio a un entorno real.", "small")]
     for index, topic in enumerate(TOPICS, 1):
         story.extend([para(f"TEMA {index:02d}  /  15", "eyebrow"), para(escape(topic["title"]), "h1"),
                       callout("Al terminar", topic["objective"]), Spacer(1, 4 * mm), para("Conceptos clave", "h2")])
@@ -318,7 +318,7 @@ def build_story():
                   Spacer(1, 3 * mm), para("Fuentes fiables", "h2")]
         for source in topic["sources"]:
             story.append(source_paragraph(source))
-    story += [PageBreak(), para("Referencias de la ruta", "h1"),
+    story += [para("Referencias de la ruta", "h1"),
               para("Cada tema enlaza las fuentes más cercanas a sus afirmaciones. MongoDB y Firebase mantienen esta documentación primaria para sus productos.", "body"), Spacer(1, 3 * mm)]
     for name in SOURCES:
         story.append(source_paragraph(name))

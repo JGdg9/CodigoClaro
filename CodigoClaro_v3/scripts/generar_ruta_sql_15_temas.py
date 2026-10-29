@@ -17,6 +17,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph
+from pdf_flow import build_route_pdf_bytes
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -599,15 +600,15 @@ def draw_page(c, lesson, number):
 def make_pdf():
     if len(LESSONS) != 15:
         raise ValueError(f"Se esperaban 15 temas y hay {len(LESSONS)}")
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4, pageCompression=1)
-    c.setTitle("Ruta SQL: Oracle, MySQL y PostgreSQL · 15 temas")
-    c.setAuthor("CódigoClaro · material didáctico con documentación oficial")
-    c.setSubject("Guía de estudio de SQL relacional con ejemplos etiquetados por dialecto")
-    for number, lesson in enumerate(LESSONS, start=1):
-        draw_page(c, lesson, number)
-    c.save()
-    return buffer.getvalue()
+    return build_route_pdf_bytes(
+        route_name="SQL · Oracle, MySQL y PostgreSQL",
+        title="SQL relacional: Oracle, MySQL y PostgreSQL",
+        subtitle="15 temas · ejemplos etiquetados por dialecto · documentación oficial enlazada",
+        lessons=LESSONS,
+        author="CódigoClaro · síntesis basada en los manuales oficiales de PostgreSQL, MySQL y Oracle",
+        subject="Guía de estudio de SQL relacional con ejemplos etiquetados por dialecto",
+        editorial_note="Las diferencias entre motores se señalan en cada tema y se enlazan a la documentación del producto correspondiente.",
+    )
 
 
 def main():

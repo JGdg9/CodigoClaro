@@ -7,15 +7,18 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 
-test('ambos backends rechazan secretos de ejemplo aunque cambien mayúsculas o espacios', () => {
+test('los backends disponibles rechazan secretos de ejemplo aunque cambien mayúsculas o espacios', t => {
   const examples = [
     'CAMBIA_ESTO_GENERA_UN_SECRET_ALEATORIO_DE_64_CARACTERES',
     '  cambia_esto_GENERA_UN_SECRET_ALEATORIO_DE_64_CARACTERES  '
   ];
-  const servers = [
-    ['server.js', { DB_PATH: ':memory:' }],
-    ['server-postgres.js', { DATABASE_URL: 'postgresql://user:pass@127.0.0.1:1/not-used' }]
-  ];
+  const servers = [['server.js', { DB_PATH: ':memory:' }]];
+  try {
+    require.resolve('pg', { paths: [root] });
+    servers.push(['server-postgres.js', { DATABASE_URL: 'postgresql://user:pass@127.0.0.1:1/not-used' }]);
+  } catch {
+    t.diagnostic('No se ha instalado pg en este entorno; la prueba del backend PostgreSQL se ejecutará en CI después de npm ci.');
+  }
 
   for (const [server, config] of servers) {
     for (const secret of examples) {

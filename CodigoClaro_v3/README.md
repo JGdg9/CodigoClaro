@@ -57,8 +57,11 @@ Los temarios son síntesis didácticas con referencias a documentación primaria
 
 - No hay recuperación automática de contraseña ni verificación del correo.
 - Algunas bibliotecas del IDE se cargan desde CDN y requieren conexión a Internet.
-- Java envía el código y la entrada estándar a Judge0 por HTTPS únicamente después del consentimiento explícito de la sesión. No envíes datos personales, secretos ni código confidencial.
-- Kotlin y PL/SQL ofrecen análisis estático; Node.js, MongoDB y Firestore se presentan como simuladores didácticos.
+- Java, Kotlin, Node.js, Python y TypeScript envían código y, cuando proceda, `stdin` a un endpoint Judge0 compatible por HTTPS solo después del consentimiento explícito de la sesión. Comprueba qué runtimes ofrece el endpoint. No envíes datos personales, secretos ni código confidencial.
+- JavaScript se ejecuta en un worker local. React compila JSX con versiones fijadas de Babel y React dentro de un iframe con acceso de red bloqueado; el código permanece en el navegador.
+- PostgreSQL se ejecuta localmente con PGlite/WASM en un worker y persiste en IndexedDB. La base no se sincroniza con la cuenta. SQL.js ofrece SQLite separado para el modo de gestión de bases.
+- Oracle SQL y PL/SQL se practican en Oracle FreeSQL mediante un enlace manual. La compatibilidad MySQL se ofrece con TiDB Playground, que no equivale a MySQL y no admite todos sus procedimientos, funciones ni triggers.
+- MongoDB, Firestore y backend son simuladores didácticos; HTML/CSS tiene vista previa aislada. XML y XPath usan validación local.
 - `server-postgres.js` es experimental: no tiene paridad completa con SQLite ni migra sus datos. Consulta la [guía técnica de PostgreSQL](docs/guias/POSTGRESQL.md).
 
 ## Licencia

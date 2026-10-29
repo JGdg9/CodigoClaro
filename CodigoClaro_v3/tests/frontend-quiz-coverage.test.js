@@ -8,8 +8,8 @@ const vm = require('node:vm');
 const { buildLocalQuestions, renderLocalQuestions } = require('../scripts/generar_banco_aula');
 
 const root = path.join(__dirname, '..');
-const aula = fs.readFileSync(path.join(root, 'public/aula.html'), 'utf8');
-const generatedAsset = fs.readFileSync(path.join(root, 'public/quiz-bank-expanded.js'), 'utf8');
+const aula = fs.readFileSync(path.join(root, 'public/aula.html'), 'utf8').replace(/\r\n/g, '\n');
+const generatedAsset = fs.readFileSync(path.join(root, 'public/quiz-bank-expanded.js'), 'utf8').replace(/\r\n/g, '\n');
 const baseMatch = aula.match(/const Q=(\[[\s\S]*?\]);\s*Q\.push/);
 assert.ok(baseMatch, 'el aula debe conservar el banco inicial y cargar la ampliación después');
 const base = vm.runInNewContext(baseMatch[1]);

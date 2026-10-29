@@ -302,7 +302,7 @@ if(limitRegister(req,8))return fail(res,429,'Demasiadas solicitudes. Espera unos
  return fail(res,404,'Endpoint no encontrado.');
 }
 const server=http.createServer(async(req,res)=>{
- res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self' 'unsafe-inline' https: data: blob:; img-src 'self' https: data:; frame-src 'self' https: blob:; connect-src 'self' https:; worker-src 'self' blob: https:");
+ res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self' 'unsafe-inline' https: data: blob:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https:; img-src 'self' https: data:; frame-src 'self' https: blob:; connect-src 'self' https:; worker-src 'self' blob: https:");
  let url;try{url=new URL(req.url,'http://'+(req.headers.host||'localhost'))}catch{return fail(res,400,'URL no válida.')}
  try{if(url.pathname.startsWith('/api/')){await handleApi(req,res,url);return}if(!['GET','HEAD'].includes(req.method))return fail(res,405,'Método no permitido.');staticFile(req,res,url.pathname)}catch(e){console.error(e);if(!res.headersSent){const status=e.status||500;if(status===500&&url&&!url.pathname.startsWith('/api/')&&acceptsHtml(req))sendHtmlError(req,res,500);else fail(res,status,e.status?e.message:'Error interno del servidor.')}else res.destroy()}
 });

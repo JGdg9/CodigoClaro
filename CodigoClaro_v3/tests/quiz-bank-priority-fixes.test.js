@@ -9,7 +9,7 @@ const quizzes = require('../lib/quizzes');
 const { buildLocalQuestions, renderLocalQuestions } = require('../scripts/generar_banco_aula');
 
 const root = path.join(__dirname, '..');
-const aula = fs.readFileSync(path.join(root, 'public/aula.html'), 'utf8');
+const aula = fs.readFileSync(path.join(root, 'public/aula.html'), 'utf8').replace(/\r\n/g, '\n');
 const baseMatch = aula.match(/const Q=(\[[\s\S]*?\]);\s*Q\.push/);
 assert.ok(baseMatch, 'el Aula debe conservar su banco base');
 const base = vm.runInNewContext(baseMatch[1]);
@@ -64,7 +64,7 @@ test('el generador quita duplicados del asset y conserva visibles las limitacion
 });
 
 test('el asset generado coincide con la fuente actual', () => {
-  const asset = fs.readFileSync(path.join(root, 'public/quiz-bank-expanded.js'), 'utf8');
+  const asset = fs.readFileSync(path.join(root, 'public/quiz-bank-expanded.js'), 'utf8').replace(/\r\n/g, '\n');
   assert.equal(asset, renderLocalQuestions());
   assert.equal(JSON.stringify(expansion), JSON.stringify(buildLocalQuestions()));
 });

@@ -241,32 +241,15 @@ button, a { touch-action: manipulation; }
   </div><main id="main" tabindex="-1"></main></section>
 <footer class="footer"><div>© CódigoClaro · Proyecto educativo independiente</div><div><a href="/privacidad">Privacidad</a> · <a href="/condiciones">Condiciones</a> · <a href="/diagnostico.html">Diagnóstico</a> · <a href="/aula.html">Aula completa</a></div></footer>
 </div>
+<script src="./api-client.js"></script>
 <script>
 // Lógica de la página: interacción de la interfaz y comunicación con las funciones del proyecto.
 'use strict';
 const $=id=>document.getElementById(id);const newId=()=>window.crypto&&typeof window.crypto.randomUUID==='function'?window.crypto.randomUUID():'cc-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let user=null,progress={xp:0,completed:[],attempts:[],planner:[],snippets:[],updatedAt:null},catalog={topics:[],docs:[]},currentPage='home',authAction='login',registrationEnabled=false,activeQuiz=null,activeReviewTopics=[],lastWrongQuiz=[],adminData=null,quizTimer=null,quizSubmissionPending=false,quizSeconds=0,quizStartedAt=0,flashTimer=null;
+let user=null,progress={xp:0,completed:[],attempts:[],planner:[],snippets:[],updatedAt:null},catalog={topics:[],docs:[]},currentPage='home',authAction='login',registrationEnabled=false,activeQuiz=null,activeReviewTopics=[],lastWrongQuiz=[],adminData=null,sessionGeneration=0,quizTimer=null,quizSubmissionPending=false,quizSeconds=0,quizStartedAt=0,flashTimer=null,logoutPending=false;
 // api: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function api(url,opts={}){
-  let response;
-  try {
-    const options={credentials:'same-origin',...opts,headers:{...(opts.body?{'Content-Type':'application/json'}:{}),...(opts.headers||{})}};
-    response=await fetch(url,options);
-  } catch {
-    throw new Error('No hemos podido conectar con CódigoClaro. Comprueba tu conexión e inténtalo de nuevo. Si continúa, recarga la página.');
-  }
-  const type=response.headers.get('content-type')||'';
-  let data={};
-  try { if(type.includes('application/json')) data=await response.json(); } catch {}
-  if(!response.ok){
-    const fallback=response.status>=500?'CódigoClaro no ha podido completar esta solicitud. Inténtalo de nuevo más tarde.':'No se pudo completar la solicitud. Inténtalo de nuevo.';
-    const candidate=typeof data.error==='string'?data.error:fallback;
-    const hasInternalDetails=/(?:[a-z][a-z0-9+.-]*:\/\/|\/(?:api|auth|internal|server)(?:\/|\b)|\b(?:localhost|127\.0\.0\.1|::1)(?::\d+)?\b|\b(?:stack trace|traceback|internal server|\bintern(?:al|o|os|as)\b|ECONNREFUSED|ENOENT|SQLITE_[A-Z_]*|TypeError|ReferenceError)\b|\bat\s+\S+\s*\(|(?:^|[\s("'=])(?:[a-z0-9-]+\.)+[a-z]{2,63}(?::\d+)?\b|[A-Za-z]:[\\/][^\s]+)/i.test(candidate);
-    const message=response.status>=500||hasInternalDetails?fallback:candidate;
-    throw new Error(message);
-  }
-  return data;
-}// flash: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
+async function api(url,opts={}){return CodigoClaroApi.request(url,opts)}
+// flash: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function flash(msg,type='ok'){
   const container=$('flash');
   if(flashTimer) clearTimeout(flashTimer);
@@ -313,7 +296,41 @@ async function boot(){
 // enterApp: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 async function enterApp(){ $('publicLanding').classList.add('hidden');$('authSection').classList.add('hidden');$('appSection').classList.remove('hidden');$('topAuth').textContent='Cerrar sesión';$('topAuth').onclick=logout;$('status').textContent=`Sesión: ${user.name||user.email}`;$('adminNav').classList.toggle('hidden',user.role!=='admin');await render(currentPage)}
 // logout: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function logout(){if(!confirmDiscardQuizAttempt())return;try{await api('/api/logout',{method:'POST',body:'{}'})}catch{}user=null;progress={xp:0,completed:[],attempts:[],planner:[],snippets:[]};$('topAuth').textContent='Iniciar sesión';$('topAuth').onclick=()=>showAuth();$('status').textContent='Sesión cerrada';$('appSection').classList.add('hidden');showLanding();flash('Has cerrado sesión.')}
+function clearPrivateSessionState(){
+  sessionGeneration++;
+  user=null;
+  progress={xp:0,completed:[],attempts:[],planner:[],snippets:[]};
+  adminData=null;
+  activeQuiz=null;
+  activeReviewTopics=[];
+  lastWrongQuiz=[];
+  if(quizTimer){clearInterval(quizTimer);quizTimer=null}
+  const main=$('main');
+  if(main)main.replaceChildren();
+}
+async function logout(){
+  if(!confirmDiscardQuizAttempt()||logoutPending)return;
+  logoutPending=true;
+  const button=$('topAuth');
+  if(button)button.disabled=true;
+  try{
+    const result=await api('/api/logout',{method:'POST',body:'{}'});
+    if(!result||result.ok!==true)throw new Error('No se pudo confirmar el cierre de sesión. Inténtalo de nuevo.');
+  }catch(error){
+    flash(error&&error.message||'No se pudo cerrar la sesión. Inténtalo de nuevo.','error');
+    return;
+  }finally{
+    logoutPending=false;
+    if(button)button.disabled=false;
+  }
+  clearPrivateSessionState();
+  $('topAuth').textContent='Iniciar sesión';
+  $('topAuth').onclick=()=>showAuth();
+  $('status').textContent='Sesión cerrada';
+  $('appSection').classList.add('hidden');
+  showLanding();
+  flash('Has cerrado sesión.');
+}
 $('appNavBar').addEventListener('click',e=>{
   const button=e.target.closest('button[data-page]');
   if(button) render(button.dataset.page);
@@ -373,7 +390,7 @@ function homeView(){
   return '<section class="dashboard-hero"><div class="dashboard-welcome"><h1>Hola, '+esc(user.name||'estudiante')+'.</h1><p>Avanza a tu ritmo. Un tema y una práctica bastan para dar el siguiente paso.</p></div><article class="dashboard-next-step" aria-labelledby="dashboard-next-title"><h2 id="dashboard-next-title">Tu siguiente paso</h2><h3>'+nextTitle+'</h3><p>'+nextCopy+'</p><button class="btn primary" type="button" onclick="render(\''+nextPage+'\')">'+nextAction+'</button></article></section>'+stats()+'<section class="section activity-section"><div class="section-head"><h2>Actividad reciente</h2>'+historyButton+'</div>'+(activity?'<ul class="activity-list">'+activity+'</ul>':'<div class="empty">Cuando completes tu primer test, aparecerá aquí.</div>')+'</section>';
 }
 // coursesView: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-function coursesView(){const langs=[...new Set(catalog.topics.map(x=>x.language))],count=catalog.topics.length;return `<section class="section"><div class="eyebrow">Biblioteca de aprendizaje</div><h2>Temarios</h2><p class="muted">75 temarios de tres páginas organizados por tecnología. Busca por título, filtra la ruta y abre el PDF ampliado.</p><p class="muted">¿Buscas más recorridos? <a href="/temarios.html">Explora las rutas complementarias de 15 temas</a>.</p><div class="toolbar"><label class="sr" for="courseSearch">Buscar temarios por título o tecnología</label><input id="courseSearch" class="field" type="search" aria-controls="courseList" placeholder="Buscar tema…" oninput="filterCourses()"><label class="sr" for="courseLang">Filtrar temarios por tecnología</label><select id="courseLang" class="field" aria-controls="courseList" onchange="filterCourses()"><option value="all">Todas las tecnologías</option>${langs.map(l=>`<option>${esc(l)}</option>`).join('')}</select></div><p id="courseCount" class="muted" role="status" aria-live="polite" aria-atomic="true">${count} ${count===1?'temario encontrado':'temarios encontrados'}</p><div id="courseList" class="lesson-list">${courseCards(catalog.topics)}</div><section class="section"><div class="section-head"><h2>Guías complementarias</h2></div><div class="lesson-list">${catalog.docs.map(x=>`<article class="lesson"><h3>${esc(x.title)}</h3><a href="${esc(x.url)}" target="_blank" rel="noopener">Abrir PDF ↗</a></article>`).join('')}</div></section></section>`}
+function coursesView(){const langs=[...new Set(catalog.topics.map(x=>x.language))],count=catalog.topics.length;return `<section class="section"><div class="eyebrow">Biblioteca de aprendizaje</div><h2>Temarios</h2><p class="muted">75 temarios organizados por tecnología. Busca por título, filtra la ruta y consulta en cada tarjeta la extensión real del PDF.</p><p class="muted">¿Buscas más recorridos? <a href="/temarios.html">Explora las rutas complementarias de 15 temas</a>.</p><div class="toolbar"><label class="sr" for="courseSearch">Buscar temarios por título o tecnología</label><input id="courseSearch" class="field" type="search" aria-controls="courseList" placeholder="Buscar tema…" oninput="filterCourses()"><label class="sr" for="courseLang">Filtrar temarios por tecnología</label><select id="courseLang" class="field" aria-controls="courseList" onchange="filterCourses()"><option value="all">Todas las tecnologías</option>${langs.map(l=>`<option>${esc(l)}</option>`).join('')}</select></div><p id="courseCount" class="muted" role="status" aria-live="polite" aria-atomic="true">${count} ${count===1?'temario encontrado':'temarios encontrados'}</p><div id="courseList" class="lesson-list">${courseCards(catalog.topics)}</div><section class="section"><div class="section-head"><h2>Guías complementarias</h2></div><div class="lesson-list">${catalog.docs.map(x=>`<article class="lesson"><h3>${esc(x.title)}</h3><a href="${esc(x.url)}" target="_blank" rel="noopener">Abrir PDF ↗</a></article>`).join('')}</div></section></section>`}
 // courseCards: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 function courseCards(items){return items.map(x=>`<article class="lesson"><div class="small">${esc(x.language)} · Tema ${String(x.number).padStart(2,'0')} · ${Number(x.pages)||10} páginas</div><h3>${esc(x.title)}</h3><p class="small">${esc(x.description||'Temario de estudio con ejemplos y ejercicios.')}</p><div class="card-actions"><a href="${esc(x.url)}" target="_blank" rel="noopener">Abrir temario PDF ↗</a><button class="btn" style="padding:5px 9px;font-size:12px" onclick="completeLesson('${esc(x.id)}','${esc(x.title)}')">${progress.completed.includes(x.id)?'Completado ✓':'Marcar visto'}</button></div></article>`).join('')}
 // filterCourses: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
@@ -431,9 +448,9 @@ async function importBackup(){const f=$('backupFile').files[0];if(!f)return flas
 // changePassword: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 async function changePassword(e){const btn=e.target.querySelector('button[type=submit]');const currentPassword=$('currentPassword').value,newPassword=$('newPassword').value;if(newPassword!==$('confirmPassword').value){flash('La nueva contraseña y su confirmación no coinciden.','error');return}if(newPassword.length<10){flash('La nueva contraseña debe tener al menos 10 caracteres.','error');return}btn.disabled=true;try{await api('/api/account/password',{method:'POST',body:JSON.stringify({currentPassword,newPassword})});e.target.reset();flash('Contraseña actualizada. Se han cerrado las demás sesiones de esta cuenta.')}catch(err){flash(err.message,'error')}finally{btn.disabled=false}}
 // deleteAccountPrompt: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function deleteAccountPrompt(){const password=prompt('Introduce tu contraseña actual.');if(password===null)return;const confirmText=prompt('Para confirmar la eliminación permanente, escribe exactamente ELIMINAR.');if(confirmText===null)return;try{await api('/api/account',{method:'DELETE',body:JSON.stringify({password,confirm:confirmText})});user=null;showLanding();$('topAuth').textContent='Iniciar sesión';$('topAuth').onclick=()=>showAuth();$('appSection').classList.add('hidden');flash('Cuenta y datos asociados eliminados.')}catch(e){flash(e.message,'error')}}
+async function deleteAccountPrompt(){const password=prompt('Introduce tu contraseña actual.');if(password===null)return;const confirmText=prompt('Para confirmar la eliminación permanente, escribe exactamente ELIMINAR.');if(confirmText===null)return;try{await api('/api/account',{method:'DELETE',body:JSON.stringify({password,confirm:confirmText})});clearPrivateSessionState();showLanding();$('topAuth').textContent='Iniciar sesión';$('topAuth').onclick=()=>showAuth();$('appSection').classList.add('hidden');flash('Cuenta y datos asociados eliminados.')}catch(e){flash(e.message,'error')}}
 // adminView: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
-async function adminView(){const d=await api('/api/admin/overview');adminData=d;const users=d.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${esc(u.role)}</td><td>${esc(u.createdAt)}</td><td>${esc(u.lastLogin||'—')}</td><td>${Number(u.xp)||0}</td><td>${Number(u.attemptsCount)||0}</td></tr>`).join('');const fbs=d.feedback.map(f=>`<tr><td>#${f.id} · ${esc(f.name)}<br><small class="muted">${esc(f.email)}</small></td><td>${esc(f.kind)} / ${f.rating||'—'}</td><td style="min-width:250px;white-space:pre-wrap">${esc(f.message)}</td><td><select class="field" onchange="updateFeedback(${f.id},this.value)"><option value="open" ${f.status==='open'?'selected':''}>Abierto</option><option value="reviewing" ${f.status==='reviewing'?'selected':''}>En revisión</option><option value="resolved" ${f.status==='resolved'?'selected':''}>Resuelto</option></select></td><td>${esc(f.createdAt)}</td></tr>`).join('');$('main').innerHTML=`<section class="section"><div class="eyebrow">Solo administración</div><h2>Panel del piloto</h2><p class="muted">Métricas agregadas y feedback reportado. No uses estos datos como métrica científica ni compartas las tablas sin revisar privacidad.</p><div class="stats"><div class="stat"><strong>${d.totals.users}</strong><span>Cuentas</span></div><div class="stat"><strong>${d.totals.active7d}</strong><span>Activos últimos 7 días</span></div><div class="stat"><strong>${d.totals.attempts}</strong><span>Tests enviados</span></div><div class="stat"><strong>${d.totals.feedbackOpen}</strong><span>Feedback sin resolver</span></div></div><div class="formactions"><a class="btn primary" href="/api/admin/users.csv">Exportar usuarios CSV</a><button class="btn" onclick="adminView()">Actualizar métricas</button></div><section class="section"><div class="section-head"><h2>Feedback de usuarios</h2></div>${fbs?`<div class="tablewrap"><table class="table"><thead><tr><th>Usuario</th><th>Tipo / valoración</th><th>Comentario</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${fbs}</tbody></table></div>`:'<div class="empty">No hay comentarios todavía.</div>'}</section><section class="section"><div class="section-head"><h2>Usuarios</h2><span class="pill">Máximo 200 registros recientes</span></div><div class="tablewrap"><table class="table"><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Alta</th><th>Último acceso</th><th>XP</th><th>Tests</th></tr></thead><tbody>${users}</tbody></table></div></section><section class="section"><div class="section-head"><h2>Actividad reciente</h2><span class="pill">Últimos 100 eventos</span></div><div class="tablewrap"><table class="table"><thead><tr><th>Usuario</th><th>Actividad</th><th>Detalle</th><th>Fecha</th></tr></thead><tbody>${d.activity.map(a=>`<tr><td>${esc(a.name)}<br><small class="muted">${esc(a.email)}</small></td><td>${esc(a.type)}</td><td>${esc(Object.values(a.detail||{}).join(' · ')||'—')}</td><td>${esc(a.createdAt)}</td></tr>`).join('')}</tbody></table></div></section></section>`;await adminContentView()}
+async function adminView(){const generation=sessionGeneration;const d=await api('/api/admin/overview');if(generation!==sessionGeneration||!user||user.role!=='admin')return;adminData=d;const users=d.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${esc(u.role)}</td><td>${esc(u.createdAt)}</td><td>${esc(u.lastLogin||'—')}</td><td>${Number(u.xp)||0}</td><td>${Number(u.attemptsCount)||0}</td></tr>`).join('');const fbs=d.feedback.map(f=>`<tr><td>#${f.id} · ${esc(f.name)}<br><small class="muted">${esc(f.email)}</small></td><td>${esc(f.kind)} / ${f.rating||'—'}</td><td style="min-width:250px;white-space:pre-wrap">${esc(f.message)}</td><td><select class="field" onchange="updateFeedback(${f.id},this.value)"><option value="open" ${f.status==='open'?'selected':''}>Abierto</option><option value="reviewing" ${f.status==='reviewing'?'selected':''}>En revisión</option><option value="resolved" ${f.status==='resolved'?'selected':''}>Resuelto</option></select></td><td>${esc(f.createdAt)}</td></tr>`).join('');$('main').innerHTML=`<section class="section"><div class="eyebrow">Solo administración</div><h2>Panel del piloto</h2><p class="muted">Métricas agregadas y feedback reportado. No uses estos datos como métrica científica ni compartas las tablas sin revisar privacidad.</p><div class="stats"><div class="stat"><strong>${d.totals.users}</strong><span>Cuentas</span></div><div class="stat"><strong>${d.totals.active7d}</strong><span>Activos últimos 7 días</span></div><div class="stat"><strong>${d.totals.attempts}</strong><span>Tests enviados</span></div><div class="stat"><strong>${d.totals.feedbackOpen}</strong><span>Feedback sin resolver</span></div></div><div class="formactions"><a class="btn primary" href="/api/admin/users.csv">Exportar usuarios CSV</a><button class="btn" onclick="adminView()">Actualizar métricas</button></div><section class="section"><div class="section-head"><h2>Feedback de usuarios</h2></div>${fbs?`<div class="tablewrap"><table class="table"><thead><tr><th>Usuario</th><th>Tipo / valoración</th><th>Comentario</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${fbs}</tbody></table></div>`:'<div class="empty">No hay comentarios todavía.</div>'}</section><section class="section"><div class="section-head"><h2>Usuarios</h2><span class="pill">Máximo 200 registros recientes</span></div><div class="tablewrap"><table class="table"><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Alta</th><th>Último acceso</th><th>XP</th><th>Tests</th></tr></thead><tbody>${users}</tbody></table></div></section><section class="section"><div class="section-head"><h2>Actividad reciente</h2><span class="pill">Últimos 100 eventos</span></div><div class="tablewrap"><table class="table"><thead><tr><th>Usuario</th><th>Actividad</th><th>Detalle</th><th>Fecha</th></tr></thead><tbody>${d.activity.map(a=>`<tr><td>${esc(a.name)}<br><small class="muted">${esc(a.email)}</small></td><td>${esc(a.type)}</td><td>${esc(Object.values(a.detail||{}).join(' · ')||'—')}</td><td>${esc(a.createdAt)}</td></tr>`).join('')}</tbody></table></div></section></section>`;await adminContentView()}
 // adminContentView: función de la interfaz; consultar el cuerpo para sus validaciones y efectos.
 async function adminContentView(){
  const topicsData=await api('/api/admin/learning/topics');
