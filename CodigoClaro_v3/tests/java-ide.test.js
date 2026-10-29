@@ -48,6 +48,7 @@ function runnerContext(consentChecked, { timeoutImmediately = false } = {}) {
   const context = {
     URL,
     AbortController,
+    TextEncoder,
     document: { getElementById: id => elements[id] || null },
     ideLang: () => ({ id: 'java', label: 'Java' }),
     ideGetCode: () => 'public class Main { public static void main(String[] args) { System.out.println("Hola"); } }',
@@ -150,13 +151,42 @@ test('con consentimiento Java compila y muestra la salida devuelta por el servic
   assert.equal(setup.messages.find(message => message.kind)?.kind, 'ok');
 });
 
-test('el IDE selecciona un runtime vigente para Java, Kotlin, Node.js y Python', async () => {
+test('el ejemplo de POO Java tiene el punto de entrada que exige el runner de un solo archivo', () => {
+  const start = aula.indexOf('const IDE_LANGS=[');
+  const end = aula.indexOf('\n];', start);
+  const languages = vm.runInNewContext(aula.slice(start, end) + '\n];\nIDE_LANGS;', {});
+  const oop = languages.find(language => language.id === 'oop');
+
+  assert.ok(oop);
+  assert.match(oop.code, /public class Main\s*\{/);
+  assert.match(oop.code, /public static void main\(String\[\] args\)/);
+  assert.match(oop.code, /new Alumno\("Ana", 8\)/);
+  assert.doesNotMatch(oop.code, /public class Alumno/);
+});
+
+test('el runner remoto aplica límites por bytes UTF-8, no por unidades UTF-16', async () => {
+  const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
+  const codeSetup = runnerContext(true);
+  codeSetup.context.ideGetCode = () => 'ñ'.repeat(25001);
+  await vm.runInNewContext(source + '\nideRunJudge0;', codeSetup.context)();
+  assert.equal(codeSetup.calls.length, 0);
+  assert.match(codeSetup.messages[0].message, /supera el límite de 50 KB/);
+
+  const stdinSetup = runnerContext(true);
+  stdinSetup.context.document.getElementById('ideStdin').value = 'ñ'.repeat(5001);
+  await vm.runInNewContext(source + '\nideRunJudge0;', stdinSetup.context)();
+  assert.equal(stdinSetup.calls.length, 0);
+  assert.match(stdinSetup.messages[0].message, /entrada supera el límite de 10 KB/);
+});
+
+test('el IDE selecciona un runtime vigente para Java, Kotlin, Node.js, Python y TypeScript', async () => {
   const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
   const cases = [
     { id: 'java', label: 'Java', code: 'class Main { public static void main(String[] args) { System.out.println("Hola"); } }', languages: [{ id: 62, name: 'Java (OpenJDK 13.0.1)' }, { id: 91, name: 'Java (JDK 17.0.6)' }], expected: 91 },
     { id: 'kotlin', label: 'Kotlin', code: 'fun main() { println("Hola") }', languages: [{ id: 78, name: 'Kotlin (1.3.70)' }, { id: 111, name: 'Kotlin (2.1.10)' }], expected: 111 },
     { id: 'node', label: 'Node.js', code: 'console.log("Hola")', languages: [{ id: 93, name: 'JavaScript (Node.js 18.15.0)' }, { id: 102, name: 'JavaScript (Node.js 22.08.0)' }], expected: 102 },
-    { id: 'python', label: 'Python', code: 'print("Hola")', languages: [{ id: 100, name: 'Python (3.12.5)' }, { id: 113, name: 'Python (3.14.0)' }], expected: 113 }
+    { id: 'python', label: 'Python', code: 'print("Hola")', languages: [{ id: 100, name: 'Python (3.12.5)' }, { id: 113, name: 'Python (3.14.0)' }], expected: 113 },
+    { id: 'typescript', label: 'TypeScript', code: 'const nota: number = 8; console.log(nota);', languages: [{ id: 101, name: 'TypeScript (5.6.2)' }], expected: 101 }
   ];
 
   for (const item of cases) {

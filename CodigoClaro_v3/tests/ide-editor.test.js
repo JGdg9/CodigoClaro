@@ -26,6 +26,7 @@ test("el editor carga los modos de sintaxis adecuados según el lenguaje", async
   ]);
   assert.deepEqual(Array.from(modes.files({id:"java"})), ["mode/clike/clike.js"]);
   assert.deepEqual(Array.from(modes.files({id:"python"})), ["mode/python/python.js"]);
+  assert.deepEqual(Array.from(modes.files({id:"typescript"})), ["mode/javascript/javascript.js"]);
   assert.deepEqual(Array.from(modes.files({id:"xpath"})), []);
 });
 
@@ -36,6 +37,71 @@ test("HTML, CSS y SQL usan el modo de resaltado correspondiente", () => {
   assert.equal(mode({id:"html"}), "text/html");
   assert.equal(mode({id:"css"}), "text/css");
   assert.equal(mode({id:"sql-postgres"}), "text/x-sql");
+  assert.equal(mode({id:"typescript"}), "text/typescript");
+});
+
+test("la vista previa React compila el JSX aislada, bloquea red y codifica el código fuente", () => {
+  const source = extract("function ideReactPreviewDocument(", "\n// ideRunReact:");
+  const context = {
+    TextEncoder,
+    btoa,
+    CC_REACT_CDN:"https://cdnjs.cloudflare.com",
+    CC_REACT_BABEL:"https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js",
+    CC_REACT_JS:"https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
+    CC_REACT_DOM:"https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"
+  };
+  const makeDocument = vm.runInNewContext(source + "\nideReactPreviewDocument;", context);
+  const code = "export default function App(){return <button onClick={() => alert('ok')}>ñ</button>}";
+  const html = makeDocument(code, "prueba-1");
+
+  assert.match(html, /Babel\.transform/);
+  assert.match(html, /ReactDOM\.createRoot/);
+  assert.match(html, /connect-src 'none'/);
+  assert.match(html, /script-src 'unsafe-inline' https:\/\/cdnjs\.cloudflare\.com/);
+  assert.match(aula, /frame\.setAttribute\('sandbox','allow-scripts'\)/);
+  assert.doesNotMatch(html, /alert\('ok'\)|>ñ</);
+  assert.equal(Buffer.from(html.match(/const encoded = "([^"]+)"/)[1], "base64").toString(), code);
+});
+
+test("Ejecutar monta React en el iframe aislado y muestra la respuesta del componente", () => {
+  const source = extract("function ideRunReact(){", "\nfunction ideTestSample()");
+  const classes = new Set(["hide"]);
+  const frame = {
+    contentWindow:{},
+    attributes:{},
+    setAttribute(name,value){this.attributes[name]=value;},
+    set srcdoc(value){this.document=value;},
+    get srcdoc(){return this.document;}
+  };
+  const box = {classList:{remove(name){classes.delete(name);}}};
+  const outputs=[],statuses=[];
+  let messageHandler;
+  const context = {
+    TextEncoder,
+    Date,
+    Math,
+    document:{getElementById:id=>id==='reactPreviewBox'?box:id==='reactPreview'?frame:null},
+    window:{
+      addEventListener(name,handler){if(name==='message')messageHandler=handler;},
+      removeEventListener(){}
+    },
+    ideGetCode:()=>"export default function App(){return <button>Hola</button>}",
+    ideStopReactPreview(){},
+    ideReactPreviewDocument:(_code,runId)=>`<html><script>const runId = ${JSON.stringify(runId)};</script></html>`,
+    ideShowOutput:(message,kind)=>outputs.push({message,kind}),
+    ideStatus:message=>statuses.push(message),
+    setTimeout:()=>1,
+    clearTimeout(){}
+  };
+  vm.runInNewContext("let ccReactRunCleanup=null,ccReactFrame=null;\n"+source+"\nideRunReact();",context);
+
+  assert.equal(frame.attributes.sandbox,"allow-scripts");
+  assert.equal(classes.has("hide"),false);
+  assert.match(outputs[0].message,/Compilando JSX/);
+  const runId=frame.srcdoc.match(/const runId = "([^"]+)"/)[1];
+  messageHandler({source:frame.contentWindow,data:{source:"cc-react-preview",runId,status:"ready",message:"Montado"}});
+  assert.deepEqual(outputs[outputs.length-1],{message:"Montado",kind:"ok"});
+  assert.ok(statuses.includes("Vista previa React lista"));
 });
 
 test("el editor enriquecido conserva el texto, habilita números de línea y autoguardado", async () => {

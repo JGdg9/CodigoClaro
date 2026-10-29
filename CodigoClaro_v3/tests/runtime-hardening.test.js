@@ -41,6 +41,8 @@ test('las cabeceras de seguridad están presentes en páginas y API', async () =
     assert.equal(r.headers.get('x-frame-options'), 'SAMEORIGIN');
     assert.equal(r.headers.get('referrer-policy'), 'same-origin');
     assert.ok(r.headers.get('content-security-policy'));
+    assert.match(r.headers.get('content-security-policy'), /script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https:/);
+    assert.doesNotMatch(r.headers.get('content-security-policy'), /(?:^|[ ;])'unsafe-eval'(?:$|[ ;])/);
     assert.ok(r.headers.get('permissions-policy'));
   }
 });
