@@ -2,7 +2,11 @@
 
 ## Alcance
 
-La biblioteca principal reúne 75 temas: 15 por cada ruta de Java, JavaScript, Python, Kotlin y React. Cada tema ocupa tres páginas físicas y conserva diez apartados numerados: objetivo, base conceptual, ejemplo, decisiones de diseño, límites, práctica, verificación, laboratorio, autoevaluación y fuentes. El texto fluye entre páginas sin reservar una página para cada apartado.
+La biblioteca principal reúne 75 temas: 15 por cada ruta de Java, JavaScript, Python, Kotlin y React. Cada tema ocupa como mínimo diez páginas físicas: objetivos y estrategia de estudio; modelo mental; vocabulario y reglas de la tecnología; lectura guiada de un ejemplo; decisiones de diseño; errores y depuración; práctica guiada; solución razonada; laboratorio; y síntesis con fuentes oficiales. Cada apartado empieza en página nueva para que el material se pueda usar como cuaderno de estudio.
+
+La biblioteca incluye además seis rutas de 15 temas y nueve guías de referencia anteriores. Los 90 PDF de `public/temarios/` tienen al menos diez páginas; las copias documentales de `docs/temarios/` se mantienen idénticas. El control de entrega comprueba ese mínimo para todos los archivos y también comprueba que cada una de las 75 fichas principales tenga texto didáctico extraíble en todas sus páginas.
+
+El catálogo público declara el número real de páginas de cada PDF. La verificación de entrega exige al menos diez páginas y texto didáctico extraíble en cada página, y comprueba que las copias públicas y documentales sean idénticas. El número de páginas por sí solo no demuestra la calidad pedagógica; por eso cada versión debe revisarse visualmente y por muestreo de contenido antes de publicarse.
 
 ## Fuentes y atribución
 

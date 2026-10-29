@@ -545,6 +545,22 @@ def make_pdf():
         author="CódigoClaro · síntesis basada en la documentación oficial de PostgreSQL",
         subject="Modelado, administración y recuperación de bases de datos",
         editorial_note="Las prácticas se contrastan con la documentación oficial de PostgreSQL 18; revisa la versión de tu instalación antes de aplicarlas.",
+        closing_project={
+            "title": "Proyecto integrador · copia y restauración verificadas",
+            "objective": "Practica un plan de copia y recuperación en una instancia local o de pruebas. No ejecutes estas operaciones sobre producción: primero identifica el entorno y confirma que puedes restaurar sin sobrescribir datos ajenos.",
+            "steps": [
+                "Crea un esquema de prueba con un alumno y varias matrículas; anota la cantidad de filas y las restricciones que deben conservarse.",
+                "Genera una copia en formato adecuado y registra la versión del cliente y del servidor que utilizaste.",
+                "Restaura en una base nueva y aislada. Comprueba tablas, restricciones, índices, secuencias y permisos necesarios.",
+                "Simula una fila dañada solo en la copia de prueba y redacta cómo detectarías el problema antes de aceptar la restauración.",
+            ],
+            "checks": [
+                "La base restaurada contiene el número esperado de filas.",
+                "Las claves y restricciones rechazan datos inválidos después de restaurar.",
+                "La copia original permanece intacta y el procedimiento deja pasos repetibles.",
+            ],
+            "reflection": "Un archivo de copia no prueba por sí solo que el plan funciona. Documenta cuánto tardó la recuperación, qué permisos fueron imprescindibles y qué evidencia tendría que revisar otra persona antes de declarar el servicio recuperado.",
+        },
     )
 
 

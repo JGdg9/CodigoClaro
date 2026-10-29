@@ -6,7 +6,8 @@ El IDE está pensado para prácticas didácticas. Cada selector muestra el motor
 
 - **JavaScript:** se ejecuta en un Web Worker local sin acceso de red, con límites de tiempo y salida.
 - **HTML y CSS:** muestran una vista previa local aislada; no ejecutan scripts de HTML ni cargan recursos externos.
-- **React/JSX:** Babel compila el código y React monta el componente en un iframe aislado. La primera carga solicita versiones fijadas de React y Babel a cdnjs. El código del alumno no se envía a esa CDN y no se admiten paquetes npm arbitrarios.
+- **React/JSX:** compila JSX y muestra HTML estático con assets locales en un worker que se detiene al superar el tiempo límite. La salida pasa por DOMPurify y se muestra en un iframe aislado con scripts y red bloqueados. Los eventos y efectos no se ejecutan; la vista previa no es interactiva.
+- **React local:** el editor limita el código a 32 KB, el worker a 5 segundos y la salida a 64 KB. React, ReactDOMServer, Babel y DOMPurify se empaquetan dentro de `public/`; no se usa CDN ni se envía el código. `npm run build:react-preview` reconstruye los assets y `public/THIRD_PARTY_LICENSES.md` conserva las licencias.
 - **Java, Kotlin, Node.js, Python y TypeScript:** se ejecutan en un endpoint compatible con Judge0 después de marcar el consentimiento de la sesión. El código y, cuando proceda, `stdin` salen del navegador.
 - **PostgreSQL:** PGlite ejecuta PostgreSQL real en WebAssembly dentro de un Web Worker. La primera carga trae el motor desde jsDelivr; la base persiste en IndexedDB de este navegador y no se sincroniza con la cuenta.
 - **Gestión de bases de datos:** SQL.js ejecuta SQLite local. No equivale a Oracle, MySQL ni PostgreSQL.
@@ -25,4 +26,4 @@ Para ejecutar Java, Kotlin, Node.js, Python o TypeScript, marca el consentimient
 
 Los enlaces a Oracle FreeSQL y TiDB Playground no transfieren el contenido del editor. Si copias el código y lo pegas en esos servicios, el proveedor externo lo recibirá y aplicará sus condiciones de uso.
 
-No introduzcas contraseñas, tokens, claves API, datos personales ni código confidencial. Los retos se evalúan con criterios didácticos y no sustituyen pruebas unitarias. Los iframes aislados limitan las capacidades del ejemplo, pero no deben tratarse como una frontera de seguridad profesional.
+No introduzcas contraseñas, tokens, claves API, datos personales ni código confidencial. Los retos se evalúan con criterios didácticos y no sustituyen pruebas unitarias. La vista previa HTML/CSS usa un iframe con restricciones, pero no debe tratarse como una frontera de seguridad profesional.

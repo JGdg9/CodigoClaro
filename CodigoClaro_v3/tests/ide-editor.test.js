@@ -40,68 +40,85 @@ test("HTML, CSS y SQL usan el modo de resaltado correspondiente", () => {
   assert.equal(mode({id:"typescript"}), "text/typescript");
 });
 
-test("la vista previa React compila el JSX aislada, bloquea red y codifica el código fuente", () => {
-  const source = extract("function ideReactPreviewDocument(", "\n// ideRunReact:");
-  const context = {
-    TextEncoder,
-    btoa,
-    CC_REACT_CDN:"https://cdnjs.cloudflare.com",
-    CC_REACT_BABEL:"https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js",
-    CC_REACT_JS:"https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
-    CC_REACT_DOM:"https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"
-  };
-  const makeDocument = vm.runInNewContext(source + "\nideReactPreviewDocument;", context);
-  const code = "export default function App(){return <button onClick={() => alert('ok')}>ñ</button>}";
-  const html = makeDocument(code, "prueba-1");
-
-  assert.match(html, /Babel\.transform/);
-  assert.match(html, /ReactDOM\.createRoot/);
-  assert.match(html, /connect-src 'none'/);
-  assert.match(html, /script-src 'unsafe-inline' https:\/\/cdnjs\.cloudflare\.com/);
-  assert.match(aula, /frame\.setAttribute\('sandbox','allow-scripts'\)/);
-  assert.doesNotMatch(html, /alert\('ok'\)|>ñ</);
-  assert.equal(Buffer.from(html.match(/const encoded = "([^"]+)"/)[1], "base64").toString(), code);
+test("React conserva edición y análisis con vista previa estática en worker", () => {
+  assert.match(aula, /id="ideCode"/);
+  assert.match(aula, /onclick="ideAnalyze\(\)"/);
+  assert.match(aula, /function ideAnalyze\(\)/);
+  assert.match(aula, /React\/JSX · vista previa estática local/);
+  assert.match(aula, /worker terminable/);
+  assert.match(aula, /id="reactPreview"/);
+  assert.match(aula, /CCReactPreview\.render\(code\)/);
+  assert.doesNotMatch(aula, /function ideReactPreviewDocument|Babel\.transform|ReactDOM\.createRoot/);
 });
 
-test("Ejecutar monta React en el iframe aislado y muestra la respuesta del componente", () => {
-  const source = extract("function ideRunReact(){", "\nfunction ideTestSample()");
-  const classes = new Set(["hide"]);
-  const frame = {
-    contentWindow:{},
-    attributes:{},
-    setAttribute(name,value){this.attributes[name]=value;},
-    set srcdoc(value){this.document=value;},
-    get srcdoc(){return this.document;}
-  };
-  const box = {classList:{remove(name){classes.delete(name);}}};
+test("Ejecutar React envía el código al renderizador local y muestra HTML sanitizado", async () => {
+  const source = extract("async function ideRunReact(){", "\nfunction ideTestSample()");
   const outputs=[],statuses=[];
-  let messageHandler;
+  const frame={srcdoc:"",attributes:{},setAttribute(name,value){this.attributes[name]=value;}};
+  const box={hidden:true,classList:{remove(){box.hidden=false;}}};
+  const button={disabled:false};
+  let editorReads=0,renderedCode="";
   const context = {
-    TextEncoder,
-    Date,
-    Math,
-    document:{getElementById:id=>id==='reactPreviewBox'?box:id==='reactPreview'?frame:null},
-    window:{
-      addEventListener(name,handler){if(name==='message')messageHandler=handler;},
-      removeEventListener(){}
-    },
-    ideGetCode:()=>"export default function App(){return <button>Hola</button>}",
-    ideStopReactPreview(){},
-    ideReactPreviewDocument:(_code,runId)=>`<html><script>const runId = ${JSON.stringify(runId)};</script></html>`,
+    ideGetCode(){editorReads++;return "useEffect(() => { while (true) {} });";},
     ideShowOutput:(message,kind)=>outputs.push({message,kind}),
     ideStatus:message=>statuses.push(message),
-    setTimeout:()=>1,
-    clearTimeout(){}
+    ideLang:()=>({id:"react"}),
+    ideSetRuntimeText(){},
+    document:{getElementById(id){return {reactPreviewBox:box,reactPreview:frame,ideRunButton:button}[id]||null;}},
+    window:{CCReactPreview:{async render(code){renderedCode=code;return {document:"<!doctype html><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'\"><p>preview</p>"};}}}
   };
-  vm.runInNewContext("let ccReactRunCleanup=null,ccReactFrame=null;\n"+source+"\nideRunReact();",context);
+  await vm.runInNewContext(`(async()=>{${source}\nawait ideRunReact();})()`,context);
 
-  assert.equal(frame.attributes.sandbox,"allow-scripts");
-  assert.equal(classes.has("hide"),false);
-  assert.match(outputs[0].message,/Compilando JSX/);
-  const runId=frame.srcdoc.match(/const runId = "([^"]+)"/)[1];
-  messageHandler({source:frame.contentWindow,data:{source:"cc-react-preview",runId,status:"ready",message:"Montado"}});
-  assert.deepEqual(outputs[outputs.length-1],{message:"Montado",kind:"ok"});
+  assert.equal(editorReads,2,"lee el código al iniciar y vuelve a comprobar que no cambió mientras renderizaba");
+  assert.match(renderedCode,/useEffect/);
+  assert.match(frame.srcdoc,/<p>preview<\/p>/);
+  assert.equal(frame.attributes.sandbox,"");
+  assert.equal(box.hidden,false);
+  assert.match(outputs.at(-1).message,/vista previa React estática lista/i);
+  assert.equal(outputs.at(-1).kind,"ok");
   assert.ok(statuses.includes("Vista previa React lista"));
+});
+
+test("el selector habilita la vista previa solo cuando el motor React local está disponible", () => {
+  const source = extract("function ideSetRuntimeText(){", "\n// ideAnalyze:");
+  const runButton = {
+    disabled:false,
+    textContent:"▶ Ejecutar",
+    attributes:{},
+    setAttribute(name,value){this.attributes[name]=value;},
+    removeAttribute(name){delete this.attributes[name];}
+  };
+  const runNotice = {
+    hidden:true,
+    classList:{toggle(_name,hidden){runNotice.hidden=hidden;}}
+  };
+  const elements = {
+    runtimeBadge:{textContent:""},
+    runDescription:{textContent:""},
+    stdinPanel:{classList:{toggle(){}}},
+    ideRunButton:runButton,
+    ideRunNotice:runNotice
+  };
+  let language={id:"react"};
+  const context={document:{getElementById:id=>elements[id]||null},ideLang:()=>language,window:{CCReactPreview:{render(){}}}};
+  const setRuntimeText=vm.runInNewContext(source+"\nideSetRuntimeText;",context);
+
+  setRuntimeText();
+  assert.equal(runButton.disabled,false);
+  assert.equal(runButton.textContent,"▶ Vista previa");
+  assert.equal(runButton.attributes["aria-label"],"Vista previa estática de React");
+  assert.equal(runButton.attributes["aria-describedby"],"ideRunNotice");
+  assert.equal(runNotice.hidden,false);
+  assert.match(elements.runDescription.textContent,/worker terminable/);
+
+  language={id:"js"};
+  setRuntimeText();
+  assert.equal(runButton.disabled,false);
+  assert.equal(runButton.textContent,"▶ Ejecutar");
+  assert.equal("aria-label" in runButton.attributes,false);
+  assert.equal("aria-describedby" in runButton.attributes,false);
+  assert.equal(runNotice.hidden,true);
+  assert.match(elements.runDescription.textContent,/worker/);
 });
 
 test("el editor enriquecido conserva el texto, habilita números de línea y autoguardado", async () => {

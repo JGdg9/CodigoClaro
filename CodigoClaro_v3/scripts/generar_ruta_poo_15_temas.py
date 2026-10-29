@@ -594,6 +594,22 @@ def make_pdf():
         author="CódigoClaro · síntesis basada en Dev.java y Oracle",
         subject="Programación orientada a objetos en Java SE 17+",
         editorial_note="Las explicaciones se apoyan en documentación primaria; los ejemplos y prácticas se identifican como material didáctico del curso.",
+        closing_project={
+            "title": "Proyecto integrador · préstamos de biblioteca",
+            "objective": "Modela el préstamo de ejemplares de una biblioteca de centro. El diseño debe proteger las reglas del dominio y permitir probarlo sin depender de una pantalla o una base de datos.",
+            "steps": [
+                "Define Socio, Libro, Ejemplar y Prestamo. Separa el título bibliográfico del ejemplar físico que puede prestarse.",
+                "Crea un servicio que abra un préstamo solo si el ejemplar está disponible y el socio puede pedirlo.",
+                "Añade una operación de devolución que cierre un préstamo abierto y rechace una segunda devolución.",
+                "Usa una interfaz de repositorio para desacoplar el servicio de la colección en memoria y escribe pruebas JUnit para las reglas.",
+            ],
+            "checks": [
+                "Un ejemplar no puede tener dos préstamos abiertos a la vez.",
+                "La devolución conserva el historial y registra una fecha coherente.",
+                "Las pruebas cubren disponibilidad, rechazo y devolución repetida.",
+            ],
+            "reflection": "Explica qué clase es responsable de cada regla, qué colaboración resolviste mediante composición y qué cambiarías si mañana el almacenamiento dejara de ser una lista en memoria.",
+        },
     )
 
 

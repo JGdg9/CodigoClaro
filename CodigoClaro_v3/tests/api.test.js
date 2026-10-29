@@ -56,6 +56,10 @@ test('cabeceras de caché y página 404 para navegación pública', async () => 
   const pdf = await request('/temarios/Java_Tema_01.pdf');
   assert.equal(pdf.res.status, 200);
   assert.equal(pdf.res.headers.get('cache-control'), 'public, max-age=300');
+  const premium = await request('/premium-piloto.html');
+  assert.equal(premium.res.status, 200);
+  assert.match(premium.res.headers.get('content-type'), /text\/html/);
+  assert.match(premium.text, /No hay precio publicado, checkout ni suscripciones/);
   const missing = await request('/ruta-inexistente-de-prueba', { accept: 'text/html' });
   assert.equal(missing.res.status, 404);
   assert.match(missing.res.headers.get('content-type'), /text\/html/);
@@ -67,13 +71,29 @@ test('cabeceras de caché y página 404 para navegación pública', async () => 
   assert.equal(missingApi.res.headers.get('cache-control'), 'no-store');
 });
 
+test('los assets React son locales y el worker recibe CSP sin red', async () => {
+  const worker = await request('/react-preview-worker.js');
+  assert.equal(worker.res.status, 200);
+  assert.match(worker.res.headers.get('content-type'), /javascript/);
+  const policy = worker.res.headers.get('content-security-policy');
+  assert.match(policy, /script-src 'unsafe-eval'/);
+  assert.match(policy, /connect-src 'none'/);
+  assert.match(policy, /frame-src 'none'/);
+  assert.match(policy, /base-uri 'none'/);
+  assert.doesNotMatch(policy, /connect-src[^;]*https?:/);
+
+  const client = await request('/react-preview-client.js');
+  assert.equal(client.res.status, 200);
+  assert.match(client.res.headers.get('content-type'), /javascript/);
+});
+
 
 test('flujo de usuario piloto: registro, sesión, progreso, test, feedback y administración', async () => {
   const home=await request('/');assert.equal(home.res.status,200);assert.match(home.res.headers.get('content-type'),/text\/html/);
   const hidden=await request('/server.js');assert.equal(hidden.res.status,404);
   const noOrigin=await request('/api/register',{method:'POST',expectedOrigin:false,body:{email:'sin-origen@codigoclaro.test',password:'UnaClaveDePrueba_2026!',name:'Sin origen',consent:true}});assert.equal(noOrigin.res.status,403,'las escrituras API deben rechazar peticiones sin origen');
   let r=await request('/api/health');assert.equal(r.res.status,200);assert.equal(r.data.ok,true);assert.equal(r.data.version,require('../package.json').version);assert.ok(r.data.features.includes('quiz-attempts'));assert.ok(r.data.features.includes('admin-content-crud'));assert.ok(r.data.features.includes('topic-learning-statistics'));assert.ok(r.data.features.includes('question-bank-json-import-export'));assert.ok(r.data.features.includes('student-learning-statistics-ui'));assert.ok(r.data.features.includes('date-based-learning-trends'));assert.ok(r.data.features.includes('technology-comparison'));assert.ok(r.data.features.includes('weekly-learning-goals'));assert.ok(r.data.features.includes('persistent-study-timer'));assert.ok(r.data.features.includes('study-session-history'));
-  r=await request('/api/catalog');assert.equal(r.res.status,200);assert.equal(r.data.topics.length,75);assert.ok(r.data.docs.length>=5);assert.ok(r.data.topics.every(t=>t.title&&t.description&&Number.isInteger(t.pages)&&t.pages>0&&t.pages<10&&t.version==='2.0'));assert.equal(r.data.topics.find(t=>t.id==='Python_Tema_01').title,'Instalación y primer programa');assert.match(r.data.topics.find(t=>t.id==='Python_Tema_01').url,/^\/temarios\/Python_Tema_01\.pdf$/,'la API debe usar la carpeta organizada de temarios');
+  r=await request('/api/catalog');assert.equal(r.res.status,200);assert.equal(r.data.topics.length,75);assert.ok(r.data.docs.length>=5);assert.ok(r.data.topics.every(t=>t.title&&t.description&&Number.isInteger(t.pages)&&t.pages>=10&&t.version==='3.0'));assert.equal(r.data.topics.find(t=>t.id==='Python_Tema_01').title,'Instalación y primer programa');assert.match(r.data.topics.find(t=>t.id==='Python_Tema_01').url,/^\/temarios\/Python_Tema_01\.pdf$/,'la API debe usar la carpeta organizada de temarios');
   r=await request('/api/learning/topics');assert.equal(r.res.status,200);assert.ok(r.data.topics.length>=12);assert.ok(r.data.totalQuestions>=30);assert.ok(r.data.topics.every(t=>Number.isInteger(t.questionCount)&&t.slug));const javaTopic=r.data.topics.find(t=>t.name==='Java');assert.ok(javaTopic&&javaTopic.questionCount>0);r=await request('/api/learning/topics/'+javaTopic.slug);assert.equal(r.res.status,200);assert.equal(r.data.topic.name,'Java');assert.equal(r.data.questionCount,javaTopic.questionCount);r=await request('/api/learning/topics/no-existe');assert.equal(r.res.status,404);
 
   r=await request('/api/register',{method:'POST',body:{email:'admin@codigoclaro.test',password:'UnaClaveDePrueba_2026!',name:'Admin piloto',consent:true}});

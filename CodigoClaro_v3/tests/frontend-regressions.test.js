@@ -171,10 +171,12 @@ test('api del panel conserva validaciones seguras y oculta errores internos', as
   });
 });
 
-test('la política de privacidad describe el borrador local y la transferencia de Java', () => {
+test('la política de privacidad describe el borrador local y los motores remotos', () => {
   const privacy = fs.readFileSync(path.join(root, 'public/privacidad.html'), 'utf8');
   assert.match(privacy, /borrador local del IDE/);
   assert.match(privacy, /solo después de marcar el consentimiento[\s\S]*código fuente y el contenido de stdin/);
+  assert.match(privacy, /Java, Kotlin, Node\.js, Python o TypeScript/);
+  assert.match(privacy, /React\/JSX genera HTML estático en un worker local; el código no se transmite/);
   assert.match(privacy, /Comprobar conexión[\s\S]*token opcional[\s\S]*no incluye tu código/);
   assert.match(privacy, /token, también se envía en la petición de ejecución/);
   assert.match(privacy, /CódigoClaro gestiona los datos/);
@@ -207,23 +209,39 @@ test('las limitaciones del piloto se explican en el registro y no cargan la port
   assert.doesNotMatch(panel, /Si la olvidas, aún no podrás recuperarla desde la aplicación/);
 });
 
-test('la configuración pública controla el alta con un booleano estricto', () => {
+test('la configuración pública controla el alta y la visibilidad del CTA del hero', () => {
+  assert.match(panel, /<button id="landingRegister" class="btn hidden" type="button" onclick="showAuth\('register'\)">Crear cuenta<\/button>/);
+  assert.ok(panel.includes('id="topAuth" onclick="showAuth()">Iniciar sesión</button>'));
+  assert.ok(panel.includes('href="/temarios.html">Explorar temarios</a>'));
+  assert.ok(panel.includes('href="/aula.html">Abrir Aula e IDE</a>'));
+  assert.match(panel, /api\('\/api\/config'\)\.then\(applyRegistrationConfig\)\.catch\(\(\)=>\{[^}]*registrationEnabled=false;[^}]*landingRegister[^}]*classList\.add\('hidden'\)/);
   const start = panel.indexOf('function applyRegistrationConfig(config){');
   const end = panel.indexOf('\n', start);
   assert.ok(start >= 0 && end > start);
   const calls = [];
+  const landingRegister = {
+    hidden: true,
+    classList: {
+      toggle: (name, hidden) => { if (name === 'hidden') landingRegister.hidden = hidden; }
+    }
+  };
   const context = {
     registrationEnabled: false,
     authAction: 'register',
-    authMode: () => calls.push(context.authAction)
+    authMode: () => calls.push(context.authAction),
+    $: id => id === 'landingRegister' ? landingRegister : null
   };
   const apply = vm.runInNewContext(panel.slice(start, end) + '\napplyRegistrationConfig;', context);
+  assert.equal(landingRegister.hidden, true, 'el CTA empieza oculto antes de confirmar la configuración');
   apply({registrationOpen: true});
   assert.equal(context.registrationEnabled, true);
+  assert.equal(landingRegister.hidden, false, 'el CTA aparece con confirmación explícita');
   apply({registrationOpen: false});
   assert.equal(context.registrationEnabled, false);
+  assert.equal(landingRegister.hidden, true, 'el CTA se oculta si el registro está cerrado');
   apply({registrationOpen: 1});
   assert.equal(context.registrationEnabled, false);
+  assert.equal(landingRegister.hidden, true, 'un valor distinto de true no abre el CTA');
   assert.deepEqual(calls, ['register', 'register', 'register']);
 });
 
@@ -278,10 +296,15 @@ test('el IDE dirige cada lenguaje al motor que realmente ofrece', () => {
   assert.match(aula, /function ideRunMarkup\(\)/);
   assert.match(aula, /CCIdeSandbox\.run\(kind,code\)/);
   assert.match(aula, /function ideSanitizePreview\(/);
-  assert.match(aula, /Babel\.transform\(source, \{ presets: \[\['env', \{ modules: 'commonjs' \}\], 'react'\] \}\)/);
-  assert.match(aula, /ReactDOM\.createRoot\(document\.getElementById\('root'\)\)/);
+  assert.match(aula, /id="ideCode"/);
+  assert.match(aula, /onclick="ideAnalyze\(\)"/);
+  assert.match(aula, /function ideAnalyze\(\)/);
+  assert.match(aula, /React\/JSX · vista previa estática local/);
+  assert.match(aula, /CCReactPreview\.render\(code\)/);
+  assert.match(aula, /id="reactPreview"/);
+  assert.doesNotMatch(aula, /function ideReactPreviewDocument|Babel\.transform|ReactDOM\.createRoot|Ejecución React desactivada por seguridad/);
   assert.match(aula, /connect-src 'none'; frame-src 'none'/);
-  assert.match(aula, /frame\.setAttribute\('sandbox','allow-scripts'\)/);
+  assert.match(aula, /frame\.setAttribute\('sandbox',''\)/);
   assert.match(aula, /function idePostgresDataDir\(/);
   assert.match(aula, /function ideRunPostgres\(/);
   assert.match(aula, /id==='sql-postgres'\)return ideRunPostgres\(\)/);

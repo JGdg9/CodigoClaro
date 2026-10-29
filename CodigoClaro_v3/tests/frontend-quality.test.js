@@ -15,13 +15,25 @@ test('todas las páginas principales declaran idioma, viewport y título', () =>
     assert.match(html, /<title>[^<]+<\/title>/i, `${name}: título`);
   }
 });
-test('portal y aula comparten los tokens editoriales de Intercom', () => {
+test('portal y aula comparten la base neutra editorial', () => {
   for (const name of ['index.html', 'aula.html']) {
     const html = fs.readFileSync(path.join(pub, name), 'utf8');
-    for (const token of ['#faf9f6', '#f1eee9', '#dedbd6', '#111111', '#0007cb']) assert.ok(html.toLowerCase().includes(token), `${name}: falta ${token}`);
+    for (const token of ['#faf9f6', '#f1eee9', '#dedbd6', '#111111']) assert.ok(html.toLowerCase().includes(token), `${name}: falta ${token}`);
     assert.match(html, /border-radius:\s*4px/i, `${name}: radio editorial de 4 px`);
     assert.match(html, /font-weight:\s*300/i, `${name}: titulares ligeros`);
   }
+});
+test('la portada usa acento sobrio y movimiento sutil con alternativa reducida', () => {
+  const html = fs.readFileSync(path.join(pub, 'index.html'), 'utf8');
+  const start = html.lastIndexOf('/* CódigoClaro v1.3.0');
+  const end = html.indexOf('</style>', start);
+  assert.ok(start >= 0 && end > start, 'debe existir la capa editorial activa');
+  const editorial = html.slice(start, end);
+  assert.match(editorial, /--cyan:#006d75/);
+  assert.doesNotMatch(editorial, /#0007cb|(?:linear|radial)-gradient/i);
+  assert.match(editorial, /landing-arrive 180ms/);
+  assert.match(editorial, /from \{ opacity: \.96; transform: translateY\(2px\); \}/);
+  assert.match(editorial, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?#publicLanding \.landing-hero \{ animation: none !important; \}[\s\S]*?\.btn:active:not\(:disabled\) \{ transform: none !important; \}/);
 });
 test('la hoja editorial no vuelve a activar sombras en los componentes principales', () => {
   const html = fs.readFileSync(path.join(pub, 'index.html'), 'utf8');
@@ -52,6 +64,8 @@ test('los recursos de documentación y políticas se encuentran en el paquete', 
 test('los scripts npm exponen pruebas normales, cobertura y smoke test remoto', () => {
   const pkg = require('../package.json');
   assert.match(pkg.scripts.test, /node --test/);
+  assert.match(pkg.scripts.test, /--test-concurrency=1/);
   assert.match(pkg.scripts['test:coverage'], /--experimental-test-coverage/);
+  assert.match(pkg.scripts['test:coverage'], /--test-concurrency=1/);
   assert.match(pkg.scripts['test:render'], /smoke-render\.js/);
 });

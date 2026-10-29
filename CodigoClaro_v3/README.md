@@ -40,7 +40,7 @@ Las pruebas automatizadas no sustituyen una revisión visual de todos los motore
 
 ## Generar los temarios
 
-Requiere Python 3.10 o posterior y ReportLab. Instala la dependencia con `python -m pip install -r requirements-docs.txt` y ejecuta `python scripts/generar_temarios.py`. Para la ruta de TypeScript, añade `--typescript-route`.
+Requiere Python 3.10 o posterior y ReportLab. Instala la dependencia con `python -m pip install -r requirements-docs.txt` y ejecuta `python scripts/generar_temarios.py`. Para regenerar únicamente la guía complementaria de TypeScript desde su contenido versionado, añade `--typescript-route`.
 
 Los temarios son síntesis didácticas con referencias a documentación primaria. Comprueba los ejemplos en el runtime de tu proyecto y comunica las erratas con la [guía editorial](GUIA_TEMARIOS.md).
 
@@ -58,7 +58,8 @@ Los temarios son síntesis didácticas con referencias a documentación primaria
 - No hay recuperación automática de contraseña ni verificación del correo.
 - Algunas bibliotecas del IDE se cargan desde CDN y requieren conexión a Internet.
 - Java, Kotlin, Node.js, Python y TypeScript envían código y, cuando proceda, `stdin` a un endpoint Judge0 compatible por HTTPS solo después del consentimiento explícito de la sesión. Comprueba qué runtimes ofrece el endpoint. No envíes datos personales, secretos ni código confidencial.
-- JavaScript se ejecuta en un worker local. React compila JSX con versiones fijadas de Babel y React dentro de un iframe con acceso de red bloqueado; el código permanece en el navegador.
+- JavaScript se ejecuta en un worker local. React/JSX ofrece una vista previa estática con ReactDOMServer en un worker terminable; no ejecuta eventos ni efectos y no envía código fuera del navegador.
+- La vista previa React se sirve desde assets empaquetados en `public/`. Para reconstruirlos tras cambiar dependencias, ejecuta `npm run build:react-preview`; los avisos de licencias están en `public/THIRD_PARTY_LICENSES.md`.
 - PostgreSQL se ejecuta localmente con PGlite/WASM en un worker y persiste en IndexedDB. La base no se sincroniza con la cuenta. SQL.js ofrece SQLite separado para el modo de gestión de bases.
 - Oracle SQL y PL/SQL se practican en Oracle FreeSQL mediante un enlace manual. La compatibilidad MySQL se ofrece con TiDB Playground, que no equivale a MySQL y no admite todos sus procedimientos, funciones ni triggers.
 - MongoDB, Firestore y backend son simuladores didácticos; HTML/CSS tiene vista previa aislada. XML y XPath usan validación local.

@@ -8,7 +8,7 @@ from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import Paragraph, Preformatted, SimpleDocTemplate, Spacer
+from reportlab.platypus import PageBreak, Paragraph, Preformatted, SimpleDocTemplate, Spacer
 
 
 INK = colors.HexColor("#17243A")
@@ -60,6 +60,15 @@ def _paragraph(text, style=BODY):
     return Paragraph(escape(str(text), quote=False).replace("\n", "<br/>"), style)
 
 
+def _sources_paragraph(sources):
+    links = [
+        f'<link href="{escape(str(url), quote=True)}" color="#087E8B">'
+        f'{escape(str(label), quote=False)}</link>'
+        for label, url in sources
+    ]
+    return Paragraph("Fuentes enlazadas: " + " · ".join(links), SMALL)
+
+
 def _footer(route_name):
     def draw(canvas, doc):
         canvas.saveState()
@@ -76,7 +85,7 @@ def _footer(route_name):
 
 
 def build_route_pdf_bytes(*, route_name, title, subtitle, lessons, author, subject,
-                          editorial_note=None):
+                          editorial_note=None, closing_project=None):
     """Render a sequence of sourced lessons continuously, without one-page-per-topic breaks."""
     buffer = BytesIO()
     doc = SimpleDocTemplate(
@@ -112,13 +121,27 @@ def build_route_pdf_bytes(*, route_name, title, subtitle, lessons, author, subje
         story.extend([_paragraph("Alcance y precisión", H2), _paragraph(lesson["note"])])
         story.extend([_paragraph("Práctica", H2), _paragraph(lesson["practice"])])
         story.extend([_paragraph("Comprobación", H2), _paragraph(lesson["check"])])
-        links = [
-            f'<link href="{escape(url, quote=True)}" color="#087E8B">'
-            f'{escape(label, quote=False)}</link>'
-            for label, url in lesson["sources"]
-        ]
-        story.append(_paragraph("Fuentes enlazadas: " + " · ".join(links), SMALL))
+        story.append(_sources_paragraph(lesson["sources"]))
         story.append(Spacer(1, 4))
+
+    if closing_project:
+        story.extend([
+            PageBreak(),
+            _paragraph(closing_project["title"], H1),
+            _paragraph("Objetivo", H2),
+            _paragraph(closing_project["objective"]),
+            _paragraph("Pasos de trabajo", H2),
+        ])
+        story.extend(
+            _paragraph(f"{index}. {step}")
+            for index, step in enumerate(closing_project["steps"], start=1)
+        )
+        story.append(_paragraph("Comprobaciones", H2))
+        story.extend(_paragraph(f"- {check}") for check in closing_project["checks"])
+        story.extend([
+            _paragraph("Explicación final", H2),
+            _paragraph(closing_project["reflection"]),
+        ])
 
     doc.build(story, onFirstPage=_footer(route_name), onLaterPages=_footer(route_name))
     return buffer.getvalue()

@@ -608,6 +608,22 @@ def make_pdf():
         author="CódigoClaro · síntesis basada en los manuales oficiales de PostgreSQL, MySQL y Oracle",
         subject="Guía de estudio de SQL relacional con ejemplos etiquetados por dialecto",
         editorial_note="Las diferencias entre motores se señalan en cada tema y se enlazan a la documentación del producto correspondiente.",
+        closing_project={
+            "title": "Proyecto integrador · matrículas de módulos",
+            "objective": "Diseña una base pequeña para gestionar alumnos, módulos y matrículas. La práctica se ejecuta en una base local desechable; antes de cambiar un sistema real, revisa permisos, copias y dialecto.",
+            "steps": [
+                "Dibuja las tablas alumno, modulo y matricula; marca claves primarias, claves foráneas y la regla que impide duplicar la misma matrícula.",
+                "Escribe el DDL para el motor elegido y etiqueta cualquier diferencia de identity, tipos de texto o generación de claves.",
+                "Inserta dos alumnos y dos módulos. Añade matrículas dentro de una transacción y consulta el resultado con JOIN.",
+                "Prepara una consulta parametrizada para buscar matrículas por alumno; no unas valores de usuario mediante concatenación de cadenas.",
+            ],
+            "checks": [
+                "Un id de alumno inexistente se rechaza por la clave foránea.",
+                "Una matrícula duplicada no crea una segunda relación.",
+                "El informe muestra cero, una o varias matrículas sin cambiar el esquema.",
+            ],
+            "reflection": "Compara el SQL común con el dialecto concreto que ejecutaste. Anota qué sintaxis depende de PostgreSQL, MySQL u Oracle y comprueba las diferencias en la documentación oficial enlazada antes de reutilizarla.",
+        },
     )
 
 
