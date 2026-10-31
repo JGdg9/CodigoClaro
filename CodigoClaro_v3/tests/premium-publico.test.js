@@ -18,7 +18,7 @@ test('la propuesta pública conserva los planes y no muestra cálculos financier
   assert.match(section, /Intensivo/);
   assert.match(section, /no están activos/);
   assert.match(section, /aún no se pueden contratar/);
-  assert.doesNotMatch(section, /margen|beneficio neto|rentabilidad|Stripe|OpenAI|tokens|USD|costes variables/i);
+  assert.doesNotMatch(section, /margen|beneficio neto|rentabilidad|costes?|comisiones?|tarifas?|ingresos?|Stripe|OpenAI|tokens|USD|tipo de cambio|\bIVA\b/i);
   assert.doesNotMatch(html, /premium-precios\.js|premiumMargin|premiumEstimate/);
   assert.equal(fs.existsSync(path.join(publicDir, 'premium-precios.js')), false);
 });

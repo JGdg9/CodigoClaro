@@ -146,7 +146,7 @@ test('la página comunica que la prueba es gratuita y no integra pagos ni red', 
   assert.match(page, /No pedimos tarjeta ni generamos cargos\./i);
   assert.match(page, /Esta prueba no se conecta a servicios externos/i);
   assert.match(page, /se almacena únicamente en el almacenamiento local del navegador/i);
-  assert.doesNotMatch(page, /margen variable|beneficio neto|rentabilidad|costes variables|Stripe Billing|tokens de entrada/i);
+  assert.doesNotMatch(page, /margen|beneficio neto|rentabilidad|costes?|comisiones?|tarifas?|ingresos?|Stripe|OpenAI|tokens|USD|tipo de cambio|\bIVA\b/i);
 
   assert.doesNotMatch(page, /<form\b/i);
   assert.doesNotMatch(page, /<script\b[^>]*\bsrc\s*=/i);
