@@ -102,30 +102,16 @@ button, a { touch-action: manipulation; }
 #publicLanding .premium-overview-content { display: grid; gap: 16px; }
 #publicLanding .premium-plan-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 #publicLanding .premium-plan { display: flex; flex-direction: column; min-width: 0; padding: clamp(16px, 2.5vw, 24px); border: 1px solid #dedbd6; background: #fff; transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
-#publicLanding .premium-plan.is-selected { border: 2px solid #1b4d39; padding: calc(clamp(16px, 2.5vw, 24px) - 1px); box-shadow: 0 5px 18px #1b4d3912; }
 #publicLanding .premium-plan .preview-label { min-height: 18px; margin: 0 0 9px; color: #625b54; font: 12px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .4px; }
 #publicLanding .premium-plan h3 { margin: 0 0 6px; font-size: 19px; font-weight: 500; }
 #publicLanding .premium-plan-price { margin: 0 0 14px; color: #585858; }
 #publicLanding .premium-plan-price strong { color: #111; font-size: 30px; font-weight: 400; letter-spacing: -1px; }
 #publicLanding .premium-plan ul { flex: 1; margin: 0 0 16px; padding-left: 19px; color: #414141; font-size: 14px; }
 #publicLanding .premium-plan li + li { margin-top: 7px; }
-#publicLanding .premium-plan-estimate { display: grid; gap: 2px; min-height: 60px; margin: 0 0 14px; padding: 10px 0; border-top: 1px solid #dedbd6; color: #585858; font-size: 13px; }
-#publicLanding .premium-plan-estimate strong { color: #111; font-size: 16px; font-weight: 500; }
-#publicLanding .premium-plan-button { width: 100%; min-height: 44px; }
-#publicLanding .premium-margin-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 18px; padding: clamp(16px, 2.5vw, 22px); border: 1px solid #dedbd6; background: #f1eee9; }
-#publicLanding .premium-margin-panel h3 { margin: 0 0 4px; font-size: 18px; }
-#publicLanding .premium-margin-panel p { margin: 0; color: #585858; font-size: 13px; }
-#publicLanding .premium-margin-value { min-width: 130px; }
-#publicLanding .premium-margin-value span { display: block; color: #585858; font: 11px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
-#publicLanding .premium-margin-value strong { display: block; color: #111; font-size: clamp(20px, 3vw, 27px); font-weight: 400; letter-spacing: -.6px; }
-#publicLanding .premium-assumptions { padding: 14px 16px; border-left: 3px solid #1b4d39; background: #f1eee9; color: #414141; font-size: 13px; }
-#publicLanding .premium-assumptions summary { cursor: pointer; color: #111; font-weight: 500; }
-#publicLanding .premium-assumptions p { max-width: 100ch; }
-#publicLanding .premium-assumptions a { color: #006d75; }
 #publicLanding .premium-payment-note { margin: 0; color: #414141; font-size: 14px; }
 #publicLanding .premium-payment-note strong { color: #111; }
-@media(max-width:850px) { #publicLanding .premium-plan-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } #publicLanding .premium-plan:last-child { grid-column: 1 / -1; } #publicLanding .premium-margin-panel { grid-template-columns: 1fr 1fr; } #publicLanding .premium-margin-panel > div:first-child { grid-column: 1 / -1; } }
-@media(max-width:560px) { #publicLanding .premium-plan-grid { grid-template-columns: 1fr; } #publicLanding .premium-plan:last-child { grid-column: auto; } #publicLanding .premium-margin-panel { grid-template-columns: 1fr; gap: 12px; } #publicLanding .premium-margin-panel > div:first-child { grid-column: auto; } }
+@media(max-width:850px) { #publicLanding .premium-plan-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } #publicLanding .premium-plan:last-child { grid-column: 1 / -1; } }
+@media(max-width:560px) { #publicLanding .premium-plan-grid { grid-template-columns: 1fr; } #publicLanding .premium-plan:last-child { grid-column: auto; } }
 @media(prefers-reduced-motion:reduce) { #publicLanding .premium-plan { transition: none; } }
 .pilot-note { max-width: 78ch; padding-block: 22px; border-top: 1px solid #dedbd6; }
 .pilot-note h2 { margin: 0 0 8px; font-size: 20px; font-weight: 500; }
@@ -259,40 +245,24 @@ button, a { touch-action: manipulation; }
   <div class="premium-overview-copy">
     <span class="eyebrow">Planes posibles · propuesta en evaluación</span>
     <h2 id="premium-overview-title">Un tutor de programación que explica cada paso.</h2>
-    <p>El tutor local actual sigue siendo gratuito y funciona sin una API externa. Estos tres planes muestran cómo podría añadirse un tutor con IA conectada, con límites de uso y un coste mensual estimado. Ninguna de esas funciones de pago está activa. Los precios son una hipótesis con IVA del 21% supuesto, pendiente de revisión.</p>
+    <p>El tutor local actual sigue siendo gratuito y funciona sin una API externa. Estos tres planes son una propuesta de posibles funciones para acompañar el estudio. El tutor con IA conectada y las funciones de pago no están activos; los precios son orientativos y aún no se pueden contratar.</p>
     <div class="formactions"><a class="btn primary" href="/premium-piloto.html">Ver la demo gratuita</a></div>
   </div>
   <div class="premium-overview-content">
     <div class="premium-plan-grid" role="group" aria-label="Planes mensuales propuestos">
-      <article class="premium-plan" data-premium-card="gratis">
+      <article class="premium-plan">
         <p class="preview-label">Siempre disponible</p><h3>Gratis</h3><p class="premium-plan-price"><strong>0 €</strong> / mes</p>
         <ul><li>Temarios, tests y prácticas actuales</li><li>Tutor local con respuestas guiadas, sin API externa</li><li>Sin tarjeta ni límite de tiempo</li></ul>
-        <p class="premium-plan-estimate"><span>Margen variable por cuenta</span><strong data-premium-card-margin="gratis">0,00 € / mes</strong></p>
-        <button class="btn premium-plan-button" type="button" data-premium-plan="gratis" aria-pressed="false">Ver margen Gratis</button>
       </article>
-      <article class="premium-plan is-selected" data-premium-card="estudiante">
+      <article class="premium-plan">
         <p class="preview-label">Propuesta para estudiar</p><h3>Estudiante</h3><p class="premium-plan-price"><strong>4,99 €</strong> / mes</p>
         <ul><li>Hasta 100 consultas al tutor con IA al mes</li><li>Explicaciones guiadas de ejercicios</li><li>El tutor local y los materiales siguen disponibles</li></ul>
-        <p class="premium-plan-estimate"><span>Margen con 100 consultas</span><strong data-premium-card-margin="estudiante">2,60 € / mes</strong></p>
-        <button class="btn primary premium-plan-button" type="button" data-premium-plan="estudiante" aria-pressed="true">Ver margen Estudiante</button>
       </article>
-      <article class="premium-plan" data-premium-card="intensivo">
+      <article class="premium-plan">
         <p class="preview-label">Propuesta para proyectos</p><h3>Intensivo</h3><p class="premium-plan-price"><strong>9,99 €</strong> / mes</p>
-        <ul><li>Hasta 250 consultas al tutor con IA al mes</li><li>Posible revisión guiada de proyectos</li><li>Más margen para practicar durante el curso</li></ul>
-        <p class="premium-plan-estimate"><span>Margen con 250 consultas</span><strong data-premium-card-margin="intensivo">4,88 € / mes</strong></p>
-        <button class="btn premium-plan-button" type="button" data-premium-plan="intensivo" aria-pressed="false">Ver margen Intensivo</button>
+        <ul><li>Hasta 250 consultas al tutor con IA al mes</li><li>Posible revisión guiada de proyectos</li><li>Cuota ampliada para acompañar proyectos del curso</li></ul>
       </article>
     </div>
-    <div class="premium-margin-panel" id="premiumEstimate" aria-live="polite" aria-atomic="true">
-      <div><h3 id="premiumEstimateTitle">Estudiante · escenario de uso de cuota</h3><p id="premiumEstimateCopy">Margen variable estimado con 100 consultas y los tokens por respuesta indicados, IVA supuesto y comisiones de pago. No es beneficio neto.</p></div>
-      <div class="premium-margin-value"><span data-premium-peruser-label>Por suscriptor / mes</span><strong id="premiumMarginPerUser">2,60 €</strong></div>
-      <div class="premium-margin-value"><span data-premium-for100-label>100 suscriptores, mismo uso</span><strong id="premiumMarginFor100">260,06 €</strong></div>
-    </div>
-    <details class="premium-assumptions">
-      <summary>Ver supuestos y fuentes de la estimación</summary>
-      <p>Simulación de costes variables, no previsión de ventas. Usa como escenario un precio con IVA del 21% (tipo general en España; el aplicable debe revisarse para el servicio y cada cliente), 3.000 tokens de entrada y 700 de salida por respuesta con GPT-6.1 Sol. La tarifa estándar usada es 2 USD por millón de tokens de entrada y 10 USD por millón de salida; se convierte con el cambio de 1 € = 1,1172 USD publicado por el BCE el 30/10/2026. Se supone que cada persona consume todas sus consultas; los tokens indicados son una hipótesis, no un límite aplicado. El contexto de conversaciones y los tokens de razonamiento también pueden generar coste. No incluye posibles recargos de procesamiento regional ni llamadas a herramientas. Para el cobro se estiman 0,7% de Stripe Billing más 1,5% + 0,25 € por tarjeta europea estándar de Stripe Payments. El margen descuenta esos conceptos; no incluye alojamiento, soporte, impagos, reembolsos, otros impuestos ni costes fijos.</p>
-      <p>Fuentes: <a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noopener">precios de OpenAI API</a>, <a href="https://developers.openai.com/api/docs/guides/reasoning" target="_blank" rel="noopener">coste de tokens de razonamiento</a>, <a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-usd.en.html" target="_blank" rel="noopener">tipo de cambio del BCE</a>, <a href="https://stripe.com/es/billing/pricing" target="_blank" rel="noopener">Stripe Billing</a>, <a href="https://stripe.com/es/pricing" target="_blank" rel="noopener">Stripe Payments</a> y <a href="https://sede.agenciatributaria.gob.es/Sede/iva/calculo-iva-repercutido-clientes/tipos-impositivos-iva.html" target="_blank" rel="noopener">Agencia Tributaria: tipos de IVA</a>.</p>
-    </details>
     <p class="premium-payment-note" role="note"><strong>Prototipo visual.</strong> Los precios y ventajas son hipótesis para evaluar. No hay API de IA conectada, checkout, suscripciones ni cobros. El tutor local y las funciones gratuitas actuales no cambian.</p>
   </div>
 </section><aside id="pilotNote" class="section pilot-note hidden" role="note" aria-labelledby="pilot-title">
@@ -567,4 +537,4 @@ async function toggleAdminQuestion(encodedId,active){try{const id=decodeURICompo
 async function updateFeedback(id,status){try{await api('/api/admin/feedback/'+id,{method:'PATCH',body:JSON.stringify({status})});flash('Estado del comentario actualizado.')}catch(e){flash(e.message,'error')}}
 $('main').addEventListener('click',e=>{const link=e.target.closest('a[href^="/"]');if(link&&link.pathname==='/aula.html'&&user){api('/api/events',{method:'POST',body:JSON.stringify({type:'study_session',detail:{result:'opened-learning-classroom'}})}).catch(()=>{})}});
 (async()=>{await boot()})();
-</script><script src="./premium-precios.js"></script></body></html>
+</script></body></html>

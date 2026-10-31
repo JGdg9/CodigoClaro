@@ -142,10 +142,11 @@ test('el piloto inicia, guarda y reanuda el avance en almacenamiento local', () 
 
 test('la página comunica que la prueba es gratuita y no integra pagos ni red', () => {
   assert.match(page, /Prototipo gratuito · sin pagos activos/i);
-  assert.match(page, /No hay precio publicado, checkout ni suscripciones\./i);
+  assert.match(page, /Los planes que aparecen en la portada son una propuesta y todavía no se pueden contratar\./i);
   assert.match(page, /No pedimos tarjeta ni generamos cargos\./i);
-  assert.match(page, /La prueba no se conecta a servicios externos/i);
+  assert.match(page, /Esta prueba no se conecta a servicios externos/i);
   assert.match(page, /se almacena únicamente en el almacenamiento local del navegador/i);
+  assert.doesNotMatch(page, /margen|beneficio neto|rentabilidad|costes?|comisiones?|tarifas?|ingresos?|Stripe|OpenAI|tokens|USD|tipo de cambio|\bIVA\b/i);
 
   assert.doesNotMatch(page, /<form\b/i);
   assert.doesNotMatch(page, /<script\b[^>]*\bsrc\s*=/i);

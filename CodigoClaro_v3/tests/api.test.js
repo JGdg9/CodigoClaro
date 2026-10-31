@@ -59,7 +59,9 @@ test('cabeceras de caché y página 404 para navegación pública', async () => 
   const premium = await request('/premium-piloto.html');
   assert.equal(premium.res.status, 200);
   assert.match(premium.res.headers.get('content-type'), /text\/html/);
-  assert.match(premium.text, /No hay precio publicado, checkout ni suscripciones/);
+  assert.match(premium.text, /Los planes que aparecen en la portada son una propuesta y todavía no se pueden contratar/);
+  const oldFinancialAsset = await request('/premium-precios.js');
+  assert.equal(oldFinancialAsset.res.status, 404);
   const missing = await request('/ruta-inexistente-de-prueba', { accept: 'text/html' });
   assert.equal(missing.res.status, 404);
   assert.match(missing.res.headers.get('content-type'), /text\/html/);
