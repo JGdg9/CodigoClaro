@@ -32,12 +32,12 @@ MYSQL = "https://dev.mysql.com/doc/refman/8.4/en/"
 ORACLE = "https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/"
 
 INK = colors.HexColor("#17243A")
-MUTED = colors.HexColor("#58677D")
+MUTED = colors.HexColor("#526477")
 TEAL = colors.HexColor("#087E8B")
-PALE = colors.HexColor("#EAF5F6")
-PALE_BLUE = colors.HexColor("#EEF3FA")
+PALE = colors.HexColor("#F1F6F8")
+PALE_BLUE = colors.HexColor("#F1F6F8")
 PALE_GOLD = colors.HexColor("#FFF5DF")
-LINE = colors.HexColor("#D9E1EB")
+LINE = colors.HexColor("#D6E1E8")
 WHITE = colors.white
 PAGE_W, PAGE_H = A4
 LEFT = 46
@@ -410,13 +410,14 @@ LESSONS = [
         ],
     },
     {
-        "title": "Vistas y lógica en el servidor",
-        "goal": "Usar vistas para dar un nombre a consultas reutilizables y reconocer que rutinas y triggers son específicos del motor.",
+        "title": "Vistas, cursores y lógica en el servidor",
+        "goal": "Usar vistas para consultas reutilizables y reconocer cómo Oracle PL/SQL procesa resultados y organiza rutinas sin tratar su sintaxis como SQL común.",
         "explain": [
             "Una vista normal define una consulta con un nombre reutilizable. En PostgreSQL, la vista no se materializa físicamente: la consulta se ejecuta cuando se referencia. Una vista materializada es otro objeto y guarda resultados que deben actualizarse según las reglas del motor.",
-            "Procedimientos, funciones y disparadores permiten lógica cercana a los datos, pero su lenguaje, delimitadores, tipos de retorno y reglas de ejecución no se portan automáticamente. Antes de diseñar esa lógica, define qué debe garantizar la base y qué pertenece a la aplicación; después consulta el manual exacto de la versión.",
+            "Procedimientos, funciones y disparadores permiten lógica cercana a los datos, pero su lenguaje, delimitadores, tipos de retorno y reglas de ejecución no se portan automáticamente. Oracle PL/SQL añade bloques y cursores; un cursor FOR LOOP abre, recorre y cierra el resultado. Antes de diseñar esa lógica, define qué debe garantizar la base y qué pertenece a la aplicación.",
+            "En Oracle, un paquete separa una especificación pública de un cuerpo que implementa sus procedimientos y funciones. Este mecanismo organiza código PL/SQL y no tiene una sintaxis equivalente común a los tres motores de la ruta.",
         ],
-        "code_label": "Vista reutilizable · PostgreSQL",
+        "code_label": "Vista PostgreSQL y cursor FOR LOOP · Oracle PL/SQL",
         "code": [
             "CREATE VIEW detalle_matriculas AS",
             "SELECT a.id AS alumno_id, a.nombre,",
@@ -426,11 +427,19 @@ LESSONS = [
             "JOIN curso AS c ON c.id = m.curso_id;",
             "",
             "SELECT * FROM detalle_matriculas;",
+            "",
+            "-- Oracle PL/SQL: SET SERVEROUTPUT ON en SQL*Plus",
+            "BEGIN",
+            "  FOR r IN (SELECT id, nombre FROM alumno) LOOP",
+            "    DBMS_OUTPUT.PUT_LINE(r.id || ': ' || r.nombre);",
+            "  END LOOP;",
+            "END;",
+            "/",
         ],
-        "reading": "La vista proporciona un nombre y una forma de salida a la unión; no copia por defecto esas filas a una tabla independiente en PostgreSQL.",
-        "note": "No presentes CREATE PROCEDURE ni la sintaxis de triggers como SQL universal. PostgreSQL, MySQL y Oracle documentan sintaxis y capacidades distintas para rutinas y disparadores.",
-        "practice": "Crea una vista que muestre solo cursos activos. Explica quién puede consultarla y qué cambios en las tablas base afectarían su resultado.",
-        "check": "Una vista normal vuelve a consultar las tablas subyacentes; si necesitas datos almacenados, investiga materialized views o el objeto equivalente de tu motor.",
+        "reading": "La vista proporciona un nombre y una forma de salida a la unión; en PostgreSQL no copia por defecto esas filas a otra tabla. El cursor FOR LOOP de Oracle obtiene un registro por iteración y gestiona su ciclo de apertura y cierre. El paquete declara qué rutinas son públicas y define su implementación en el cuerpo.",
+        "note": "SET SERVEROUTPUT ON habilita la salida de DBMS_OUTPUT en SQL*Plus; no forma parte del bloque PL/SQL. La barra final envía el bloque desde ese cliente. No presentes CREATE PROCEDURE, paquetes ni triggers como sintaxis común: PostgreSQL, MySQL y Oracle documentan capacidades y reglas distintas.",
+        "practice": "Crea una vista que muestre solo cursos activos y explica quién puede consultarla. En Oracle, define la especificación y el cuerpo de un paquete de consulta con un procedimiento que recorra matrículas mediante cursor FOR LOOP; registra qué cambia al portar la lógica a otro motor.",
+        "check": "Puedes distinguir la vista normal de una materializada, explicar cuándo se cierra el cursor FOR LOOP y señalar qué declaraciones del paquete son públicas. No confundes PL/SQL con SQL portable.",
         "sources": [
             ("CREATE VIEW PostgreSQL", PG18 + "sql-createview.html"),
             ("CREATE VIEW MySQL 8.4", MYSQL + "create-view.html"),
@@ -438,6 +447,8 @@ LESSONS = [
             ("Vista materializada PostgreSQL", PG18 + "rules-materializedviews.html"),
             ("Rutinas MySQL 8.4", MYSQL + "create-procedure.html"),
             ("Procedimientos Oracle 26", "https://docs.oracle.com/en/database/oracle/oracle-database/26/lnpls/CREATE-PROCEDURE-statement.html"),
+            ("Cursor FOR LOOP · Oracle 26", "https://docs.oracle.com/en/database/oracle/oracle-database/26/lnpls/cursor-FOR-LOOP-statement.html"),
+            ("Cuerpo de paquete PL/SQL · Oracle 26", "https://docs.oracle.com/en/database/oracle/oracle-database/26/lnpls/package-body.html"),
             ("CREATE TRIGGER PostgreSQL", PG + "sql-createtrigger.html"),
         ],
     },
@@ -499,7 +510,7 @@ def draw_card(c, text, y, fill, style=SMALL, pad_x=11, pad_y=9):
         raise ValueError(f"Tarjeta fuera de página: {text[:70]!r}; y={y:.1f}, h={card_h:.1f}")
     c.setFillColor(fill)
     c.setStrokeColor(LINE)
-    c.roundRect(LEFT, y - card_h, CONTENT_W, card_h, 7, fill=1, stroke=1)
+    c.roundRect(LEFT, y - card_h, CONTENT_W, card_h, 5, fill=1, stroke=1)
     p.drawOn(c, LEFT + pad_x, y - pad_y - h)
     return y - card_h
 
@@ -515,7 +526,7 @@ def draw_code(c, label, lines, y):
     if y - box_h < BOTTOM:
         raise ValueError(f"Ejemplo fuera de página: {label}; y={y:.1f}, h={box_h:.1f}")
     c.setFillColor(INK)
-    c.roundRect(LEFT, y - box_h, CONTENT_W, box_h, 7, fill=1, stroke=0)
+    c.roundRect(LEFT, y - box_h, CONTENT_W, box_h, 5, fill=1, stroke=0)
     c.setFillColor(colors.HexColor("#81D2D4"))
     c.setFont("Helvetica-Bold", 7.8)
     c.drawString(LEFT + 12, y - 15, label.upper())
@@ -541,12 +552,12 @@ def draw_sources(c, sources, y):
 
 
 def draw_page(c, lesson, number):
-    c.setFillColor(colors.HexColor("#F8FAFC"))
+    c.setFillColor(WHITE)
     c.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
     c.setFillColor(INK)
-    c.rect(0, PAGE_H - 8, PAGE_W, 8, fill=1, stroke=0)
+    c.rect(0, PAGE_H - 3, PAGE_W, 3, fill=1, stroke=0)
     c.setFillColor(TEAL)
-    c.rect(0, PAGE_H - 8, PAGE_W * (number / len(LESSONS)), 8, fill=1, stroke=0)
+    c.rect(0, PAGE_H - 3, PAGE_W * (number / len(LESSONS)), 3, fill=1, stroke=0)
 
     c.setFillColor(MUTED)
     c.setFont("Helvetica-Bold", 8)
@@ -609,6 +620,8 @@ def make_pdf():
         subject="Guía de estudio de SQL relacional con ejemplos etiquetados por dialecto",
         editorial_note="Las diferencias entre motores se señalan en cada tema y se enlazan a la documentación del producto correspondiente.",
         closing_project={
+            "before_lesson_number": 14,
+            "page_break_before_lesson_number": 15,
             "title": "Proyecto integrador · matrículas de módulos",
             "objective": "Diseña una base pequeña para gestionar alumnos, módulos y matrículas. La práctica se ejecuta en una base local desechable; antes de cambiar un sistema real, revisa permisos, copias y dialecto.",
             "steps": [

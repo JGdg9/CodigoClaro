@@ -79,6 +79,8 @@ test('la ayuda de ejecución refleja el motor activo en vez de duplicar capacida
 
 test('el tutor declara su alcance local y no persiste ni transmite preguntas', () => {
   const source = fs.readFileSync(path.join(__dirname, '../public/tutor-local.js'), 'utf8');
+  assert.match(source, /toggle\.textContent = 'Tutor local'/);
+  assert.match(source, /title\.textContent = 'Tutor local de estudio'/);
   assert.match(source, /no es IA generativa/i);
   assert.doesNotMatch(source, /\b(?:fetch|XMLHttpRequest|sendBeacon|localStorage|sessionStorage)\b/);
   assert.match(source, /paragraph\.textContent\s*=\s*text/);

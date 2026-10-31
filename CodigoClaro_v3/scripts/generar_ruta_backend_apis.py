@@ -16,16 +16,14 @@ from reportlab.platypus import (
 ROOT = Path(__file__).resolve().parents[1]
 DOC_OUTPUT = ROOT / "docs" / "temarios" / "Ruta_Backend_APIs_15_Temas.pdf"
 PUBLIC_OUTPUT = ROOT / "public" / "temarios" / "Ruta_Backend_APIs_15_Temas.pdf"
-NAVY = colors.HexColor("#18354A")
-TEAL = colors.HexColor("#167A78")
-VIOLET = colors.HexColor("#6651A5")
+NAVY = colors.HexColor("#24345B")
+TEAL = colors.HexColor("#245A69")
 INK = colors.HexColor("#26323A")
-MUTED = colors.HexColor("#596873")
-PAPER = colors.HexColor("#F6F4EF")
-PALE = colors.HexColor("#EAF4F2")
-LILAC = colors.HexColor("#F1EFF8")
-LINE = colors.HexColor("#D8E0E2")
+MUTED = colors.HexColor("#45516A")
 WHITE = colors.white
+PALE = WHITE
+LILAC = WHITE
+LINE = colors.HexColor("#D3D9E4")
 
 SOURCES = {
     "RFC 9110 - Semántica HTTP": "https://www.rfc-editor.org/rfc/rfc9110.html",
@@ -58,6 +56,7 @@ TOPICS = [
             "Una petición contiene método, destino, cabeceras y, cuando corresponde, contenido.",
             "Una respuesta contiene código de estado, cabeceras y, salvo casos definidos, una representación.",
             "HTTP define semántica para los mensajes; la API define los recursos y datos concretos que intercambia.",
+            "Ejemplo y lectura: GET /api/cursos/7 puede responder 200 con una representación JSON; la URI identifica el recurso y el cuerpo describe el dato devuelto.",
         ],
         "practice": "Dibuja el intercambio para consultar un curso y para crear una matrícula. Anota método, ruta, cabeceras relevantes, cuerpo y respuesta esperada.",
         "check": "Otra persona puede reconstruir ambos intercambios y distinguir petición, respuesta y reglas propias de la aplicación.",
@@ -70,6 +69,7 @@ TOPICS = [
             "GET recupera una representación y debe ser seguro: no se diseña para cambiar el estado solicitado.",
             "POST solicita procesar el contenido; PUT crea o reemplaza el estado del recurso objetivo; PATCH aplica cambios parciales.",
             "PUT y DELETE son idempotentes en su efecto previsto: repetir la petición no acumula ese efecto, aunque las respuestas o los registros puedan variar.",
+            "Ejemplo y lectura: repetir PUT /api/cursos/7 con el mismo estado no acumula cambios; repetir POST /api/matriculas puede crear recursos distintos según el contrato.",
         ],
         "practice": "Diseña operaciones para crear una matrícula, cambiar su estado y eliminarla. Simula dos envíos idénticos de PUT y anota el estado final.",
         "check": "Puedes explicar por qué un método encaja con cada operación y cuándo un cliente puede repetir una petición tras un fallo de red.",
@@ -83,6 +83,7 @@ TOPICS = [
             "201 Created confirma la creación; identifica el recurso primario mediante Location si está presente, o mediante la URI objetivo si no se envía esa cabecera. 204 No Content no incluye una representación.",
             "405 Method Not Allowed requiere Allow. Distingue 401 (falta autenticación válida) de 403 (operación no permitida) y usa 404 para un recurso ausente según el contrato.",
             "429 puede comunicar que se alcanzó un límite; documenta cómo reintentar, por ejemplo respetando Retry-After si se devuelve.",
+            "Ejemplo y lectura: al crear una matrícula, 201 Created y Location: /api/matriculas/81 permiten reconocer el recurso; 204 significa que no se envía representación.",
         ],
         "practice": "Completa una tabla para creación, lectura, dato inválido, falta de sesión, recurso inexistente, conflicto y exceso de solicitudes. Añade Location o Allow donde aplique.",
         "check": "Cada caso tiene un resultado coherente con HTTP y el cliente puede decidir qué hacer sin interpretar texto ambiguo.",
@@ -95,6 +96,7 @@ TOPICS = [
             "Usa identificadores estables y rutas comprensibles, por ejemplo /api/cursos/{cursoId}/matriculas.",
             "El método expresa la operación; evita codificar cambios de estado dentro de un GET.",
             "OpenAPI puede describir rutas, operaciones, parámetros, cuerpos, respuestas y esquemas para que personas y herramientas compartan el contrato.",
+            "Ejemplo y lectura: GET /api/cursos?activo=true filtra una colección; GET /api/cursos/7 identifica un recurso. OpenAPI debe describir parámetros y respuestas de ambas operaciones.",
         ],
         "practice": "Define las rutas para consultar cursos, recuperar uno por ID, matricular a una persona y cancelar la matrícula. Especifica parámetros y respuestas.",
         "check": "Dos clientes pueden implementar la API a partir de la descripción sin adivinar nombres, formatos o códigos.",
@@ -107,6 +109,7 @@ TOPICS = [
             "Valida tipos, campos requeridos, rangos numéricos, formatos, opciones permitidas y límites de longitud.",
             "Valida también cantidad de elementos y estructura de objetos anidados; un formulario del navegador no es una barrera de seguridad.",
             "Limita el tamaño del cuerpo antes de procesarlo. Un esquema OpenAPI ayuda a expresar la forma válida, pero el servidor debe aplicarla.",
+            "Ejemplo y lectura: {\"cursoId\":7,\"email\":\"ana@example.test\"} puede cumplir el esquema; si cursoId llega como texto, el servidor lo rechaza antes de persistir.",
         ],
         "practice": "Escribe el esquema de una matrícula con cursoId, email y fecha. Añade ejemplos válidos, vacíos, de tipo incorrecto y fuera de rango.",
         "check": "Los casos inválidos se rechazan antes de modificar datos y los mensajes identifican el campo sin devolver información interna.",
@@ -119,6 +122,7 @@ TOPICS = [
             "node:http expone objetos IncomingMessage y ServerResponse; permite trabajar con cabeceras y flujos.",
             "El módulo HTTP no interpreta por sí mismo el contrato JSON de la aplicación: el servidor debe leer y validar el cuerpo.",
             "Separa resolución de ruta, validación, lógica de negocio, acceso a datos y construcción de respuesta. Mantén acotado el trabajo síncrono.",
+            "Ejemplo y lectura: una petición POST llega como flujo de bytes; la ruta aplica un límite, lee el cuerpo y analiza JSON antes de llamar al caso de uso.",
         ],
         "practice": "Implementa GET /api/cursos y POST /api/cursos en un servidor de práctica. Rechaza cuerpos demasiado grandes y envía una sola respuesta por petición.",
         "check": "La ruta distingue método y destino, maneja errores de lectura y no bloquea el proceso con trabajo síncrono innecesario.",
@@ -131,6 +135,7 @@ TOPICS = [
             "Usa una forma estable para errores, por ejemplo código legible, mensaje breve e identificador de solicitud.",
             "No devuelvas trazas, consultas, rutas del sistema, credenciales ni detalles de implementación al cliente.",
             "Registra contexto suficiente para diagnosticar, con cuidado de no guardar contraseñas, tokens ni cuerpos sensibles.",
+            "Ejemplo y lectura: responde 400 con un código estable como JSON_INVALIDO; conserva el identificador de solicitud en el log y omite el cuerpo sensible.",
         ],
         "practice": "Diseña respuestas para JSON mal formado, error de validación y fallo interno. Comprueba qué ve el cliente y qué información útil conserva el registro.",
         "check": "El cliente recibe una respuesta consistente y el registro permite investigar sin exponer secretos o datos que no hacen falta.",
@@ -143,6 +148,7 @@ TOPICS = [
             "Autenticación valida quién presenta la sesión; autorización decide qué acción puede realizar sobre cada objeto.",
             "Aplica la comprobación de acceso en el servidor para cada recurso indicado por un ID; no confíes en IDs, roles o permisos enviados por el cliente.",
             "Define caducidad de sesión en el servidor y configura cookies de sesión con atributos apropiados, como HttpOnly, Secure bajo HTTPS y SameSite.",
+            "Ejemplo y lectura: aunque la sesión sea válida, A no puede modificar /api/matriculas/42 si pertenece a B; el servidor comprueba la autorización sobre ese objeto.",
         ],
         "practice": "Crea dos cuentas y dos matrículas. Prueba si la cuenta A puede leer, cambiar o borrar la matrícula de B alterando el ID.",
         "check": "Cada intento sobre un objeto ajeno se rechaza y una sesión vencida deja de autorizar aunque el navegador conserve una copia de la cookie.",
@@ -155,6 +161,7 @@ TOPICS = [
             "CORS regula si un navegador permite que una página de otro origen lea una respuesta; no concede permisos de negocio.",
             "Las peticiones no simples pueden activar una comprobación previa OPTIONS; para solicitudes con credenciales, el servidor debe permitir explícitamente el origen.",
             "CSRF intenta inducir al navegador autenticado a enviar una acción no deseada. Usa una defensa adecuada, como token o validación de origen; SameSite es defensa en profundidad.",
+            "Ejemplo y lectura: CORS puede impedir que el navegador lea una respuesta cross-origin, pero no concede acceso al recurso; una cookie automática exige valorar CSRF.",
         ],
         "practice": "Dibuja una petición same-origin y otra cross-origin con cookie. Marca qué valida CORS, qué valida CSRF y qué permiso sigue comprobando el servidor.",
         "check": "Puedes mostrar un caso donde CORS bloquea la lectura pero no sustituye la autorización ni una defensa CSRF.",
@@ -167,6 +174,7 @@ TOPICS = [
             "Usa consultas parametrizadas para los valores. No unas texto recibido del cliente dentro de la consulta.",
             "Si una parte estructural no admite parámetros, como una columna de ORDER BY, elige entre opciones fijas permitidas por la aplicación.",
             "Concede a la cuenta de base de datos los permisos mínimos que necesita y valida los permisos del usuario antes de consultar o cambiar un objeto.",
+            "Ejemplo y lectura: WHERE id = $1 enlaza el valor como dato; una columna de ORDER BY se elige de una lista fija porque el identificador no es un valor enlazable.",
         ],
         "practice": "Implementa una búsqueda por nombre con parámetros. Prueba comillas y caracteres SQL como datos literales, y revisa que no cambien la consulta.",
         "check": "Los valores externos siempre llegan como datos enlazados y el usuario de la aplicación no tiene permisos innecesarios.",
@@ -179,6 +187,7 @@ TOPICS = [
             "Una clave primaria identifica filas; una clave foránea representa una relación y puede impedir referencias inexistentes.",
             "NOT NULL, UNIQUE y CHECK expresan reglas diferentes: presencia, unicidad y una condición sobre valores.",
             "Las restricciones de la base protegen la integridad frente a rutas, importaciones o procesos distintos que escriban los mismos datos.",
+            "Ejemplo y lectura: UNIQUE (alumno_id, curso_id) impide repetir la pareja; una clave foránea impide guardar una matrícula para un alumno inexistente.",
         ],
         "practice": "Modela alumno, curso y matrícula. Impide duplicar una pareja alumno-curso y crea una clave foránea para cada relación.",
         "check": "La base rechaza una matrícula repetida o una referencia a un alumno inexistente, incluso si se omite la validación de interfaz.",
@@ -191,6 +200,7 @@ TOPICS = [
             "Una transacción delimita una unidad de trabajo: confirma con COMMIT o descarta con ROLLBACK.",
             "Usa transacciones cuando un caso de negocio modifica varias filas que deben quedar coherentes entre sí.",
             "Mantén el alcance claro y breve; maneja errores y define qué respuesta recibe el cliente si la operación no se confirma.",
+            "Ejemplo y lectura: inserta la matrícula y actualiza el contador dentro de la misma transacción; si falla la segunda escritura, ROLLBACK evita conservar solo la primera.",
         ],
         "practice": "Implementa la matrícula que inserta una relación y actualiza un contador. Fuerza un error en la segunda escritura y comprueba que no quede un estado parcial.",
         "check": "Tras éxito aparecen todos los cambios; tras fallo no queda ninguno de los cambios que pertenecen a la unidad.",
@@ -203,6 +213,7 @@ TOPICS = [
             "Define máximos para cuerpo, cadenas, arrays, tamaño de página y operaciones por solicitud.",
             "Usa paginación y límites del lado del servidor; no permitas que un parámetro controle un conjunto sin tope.",
             "Aplica límites de frecuencia y tiempos máximos acordes con el endpoint; comunica el límite alcanzado con una respuesta clara.",
+            "Ejemplo y lectura: el servidor acota pageSize=5000 a un máximo documentado; ante exceso de frecuencia puede responder 429 y enviar Retry-After.",
         ],
         "practice": "Define límites para GET /api/cursos y POST /api/cursos/importar. Prueba una página grande, un array largo y solicitudes repetidas.",
         "check": "Cada límite se valida en servidor, se prueba en sus bordes y no depende de que el cliente use la interfaz oficial.",
@@ -215,6 +226,7 @@ TOPICS = [
             "No incluyas claves de API, contraseñas o claves de firma en el repositorio, el JavaScript del navegador ni registros.",
             "Entrega secretos mediante el mecanismo aprobado para el entorno; limita su alcance, revisa acceso, y define cómo revocarlos o rotarlos.",
             "Si una credencial se expone, considera que ya no es secreta: revócala o rótala y revisa dónde se copió.",
+            "Ejemplo y lectura: DB_URL se carga en el servidor desde la configuración del entorno; no se envía al navegador ni se registra junto con su valor.",
         ],
         "practice": "Mueve una credencial ficticia fuera del código, agrega una plantilla sin valores secretos y documenta quién puede acceder y cómo se rota.",
         "check": "El repositorio contiene nombres de variables y pasos de configuración, pero ninguna credencial utilizable.",
@@ -227,6 +239,7 @@ TOPICS = [
             "Combina pruebas del caso normal con límites, entradas inválidas, permisos, IDs ajenos, conflictos y fallos de persistencia.",
             "En Node.js, node:test ofrece un ejecutor integrado; prueba la API mediante sus peticiones y respuestas observables.",
             "Mantén la descripción OpenAPI alineada con rutas, parámetros, esquemas y códigos que el servidor realmente implementa.",
+            "Ejemplo y lectura: prueba que POST /api/cursos acepte una entrada válida, rechace un email inválido y deniegue una cuenta sin permiso.",
         ],
         "practice": "Proyecto: API de cursos con CRUD, validación, base relacional, autorización por objeto, límites y errores consistentes. Entrega especificación OpenAPI y una suite de pruebas.",
         "check": "Las pruebas cubren éxito, error y abuso razonable; una persona ajena al código puede ejecutar el contrato y entender cada resultado.",
@@ -236,15 +249,15 @@ TOPICS = [
 
 STYLES = {
     "eyebrow": ParagraphStyle("eyebrow", fontName="Helvetica-Bold", fontSize=9, leading=12, textColor=TEAL, spaceAfter=5),
-    "cover_title": ParagraphStyle("cover_title", fontName="Helvetica-Bold", fontSize=30, leading=35, textColor=NAVY, spaceAfter=8),
-    "cover_sub": ParagraphStyle("cover_sub", fontName="Helvetica", fontSize=13, leading=19, textColor=MUTED, spaceAfter=11),
-    "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=22, leading=27, textColor=NAVY, spaceAfter=12),
-    "h2": ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=12, leading=15, textColor=TEAL, spaceBefore=7, spaceAfter=5),
+    "cover_title": ParagraphStyle("cover_title", fontName="Helvetica-Bold", fontSize=27, leading=32, textColor=NAVY, spaceAfter=8),
+    "cover_sub": ParagraphStyle("cover_sub", fontName="Helvetica", fontSize=12, leading=17, textColor=MUTED, spaceAfter=11),
+    "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=20, leading=24, textColor=NAVY, spaceAfter=12),
+    "h2": ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=13, leading=16, textColor=TEAL, spaceBefore=7, spaceAfter=5),
     "body": ParagraphStyle("body", fontName="Helvetica", fontSize=10.2, leading=14.2, textColor=INK, spaceAfter=5),
     "bullet": ParagraphStyle("bullet", fontName="Helvetica", fontSize=9.8, leading=13.8, textColor=INK, leftIndent=11, firstLineIndent=-9, spaceAfter=4),
     "small": ParagraphStyle("small", fontName="Helvetica", fontSize=8.6, leading=11.2, textColor=MUTED, spaceAfter=3),
-    "source": ParagraphStyle("source", fontName="Helvetica", fontSize=8.2, leading=11, textColor=VIOLET, spaceAfter=2),
-    "label": ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=8, leading=10, textColor=TEAL, uppercase=True),
+    "source": ParagraphStyle("source", fontName="Helvetica", fontSize=8.2, leading=11, textColor=TEAL, spaceAfter=2),
+    "label": ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=12, leading=15, textColor=TEAL),
 }
 
 
@@ -252,22 +265,25 @@ def para(text, style="body"):
     return Paragraph(text, STYLES[style])
 
 
-def source_paragraph(name):
-    url = SOURCES[name]
-    label = escape(name)
-    return para(f'<link href="{escape(url)}" color="#6651A5"><u>{label}</u></link>', "source")
+def source_paragraphs(names):
+    links = [
+        f'<link href="{escape(SOURCES[name])}" color="#245A69"><u>{escape(name)}</u></link>'
+        for name in names
+    ]
+    return para(" · ".join(links), "source")
 
 
 def callout(label, text, background=PALE):
-    tbl = Table([[para(escape(label.upper()), "label"), para(escape(text), "body")]], colWidths=[34 * mm, 130 * mm])
+    tbl = Table([[para(escape(label.upper()), "label")], [para(escape(text), "body")]], colWidths=[164 * mm])
     tbl.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), background),
-        ("BOX", (0, 0), (-1, -1), 0.5, LINE),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 9),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 9),
-        ("TOPPADDING", (0, 0), (-1, -1), 8),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, 0), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 1),
+        ("TOPPADDING", (0, 1), (-1, 1), 0),
+        ("BOTTOMPADDING", (0, 1), (-1, 1), 3),
     ]))
     return tbl
 
@@ -306,20 +322,17 @@ def build_story():
               para("Lee el objetivo, contrasta los conceptos en las fuentes enlazadas y realiza la práctica. Usa el criterio de comprobación para explicar qué funciona y qué caso límite falta. Los estándares definen el protocolo; OWASP mantiene guías de seguridad, y cada organismo o proyecto documenta sus herramientas. Comprueba la versión y el contexto antes de aplicar una recomendación.", "body"),
               para("Las recomendaciones de seguridad dependen del contexto del sistema. Esta ruta enseña controles verificables; no fija valores universales de producción.", "small")]
     for index, topic in enumerate(TOPICS, 1):
+        if index == len(TOPICS):
+            story.append(PageBreak())
         story.extend([para(f"TEMA {index:02d}  /  15", "eyebrow"), para(escape(topic["title"]), "h1"),
-                      callout("Al terminar", topic["objective"]), Spacer(1, 5 * mm),
+                      callout("Al terminar", topic["objective"]), Spacer(1, 3 * mm),
                       para("Conceptos clave", "h2")])
         for point in topic["points"]:
             story.append(para("-  " + escape(point), "bullet"))
-        story += [Spacer(1, 2 * mm), callout("Práctica", topic["practice"], LILAC),
-                  Spacer(1, 4 * mm), callout("Comprueba", topic["check"], PALE),
-                  Spacer(1, 5 * mm), para("Fuentes fiables", "h2")]
-        for source in topic["sources"]:
-            story.append(source_paragraph(source))
-    story += [para("Referencias de la ruta", "h1"),
-              para("Las fuentes de cada tema enlazan a la sección más relevante. Consulta la versión indicada por el organismo cuando cambie el runtime o la norma.", "body"), Spacer(1, 3 * mm)]
-    for name, url in SOURCES.items():
-        story.append(para(f'<link href="{escape(url)}" color="#6651A5"><u>{escape(name)}</u></link>', "source"))
+        story += [Spacer(1, 1 * mm), callout("Práctica", topic["practice"], LILAC),
+                  Spacer(1, 2 * mm), callout("Comprueba", topic["check"], PALE),
+                  Spacer(1, 3 * mm), para("Fuentes fiables", "h2"),
+                  source_paragraphs(topic["sources"])]
     return story
 
 

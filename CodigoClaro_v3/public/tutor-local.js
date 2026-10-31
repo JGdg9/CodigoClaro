@@ -742,7 +742,7 @@
     const toggle = document.createElement('button');
     toggle.id = 'ccTutorToggle';
     toggle.type = 'button';
-    toggle.textContent = 'Ayuda para estudiar';
+    toggle.textContent = 'Tutor local';
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-controls', 'ccTutorPanel');
 
@@ -758,7 +758,7 @@
     const heading = document.createElement('div');
     const title = document.createElement('h2');
     title.id = 'ccTutorTitle';
-    title.textContent = 'Ayuda para estudiar';
+    title.textContent = 'Tutor local de estudio';
     const note = document.createElement('p');
     note.id = 'ccTutorNote';
     note.textContent = DISCLOSURE;

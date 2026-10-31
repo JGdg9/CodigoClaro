@@ -25,6 +25,10 @@
         {
           "label": "JUnit 5.14.4 · User Guide",
           "url": "https://docs.junit.org/5.14.4/overview.html"
+        },
+        {
+          "label": "API Java SE 21: String.equals",
+          "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html#equals(java.lang.Object)"
         }
       ],
       "pages": [
@@ -37,7 +41,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Java comprueba sintaxis y tipos al compilar; normalmente produce bytecode que la JVM carga y ejecuta. Separar compilación y ejecución ayuda a localizar un error: un símbolo desconocido se corrige antes de ejecutar, mientras que una clase no encontrada apunta a ruta o classpath. El ejemplo evita características preview y funciona con Java SE 21."
+              "text": "Java comprueba sintaxis y tipos al compilar; normalmente produce bytecode que la JVM carga y ejecuta. Separar compilación y ejecución ayuda a localizar un error: un símbolo desconocido se corrige antes de ejecutar, mientras que una clase no encontrada apunta a ruta o classpath. El nombre del archivo debe corresponder a la clase pública. El ejemplo evita funciones preview y puede compilarse con Java SE 21; anota la versión usada para reproducir el resultado."
             },
             {
               "type": "code",
@@ -46,12 +50,19 @@
             },
             {
               "type": "paragraph",
-              "text": "Práctica: Compila Main.java y ejecútalo desde otra carpeta. ¿Qué debe estar disponible para que Java encuentre Main?"
+              "text": "Lectura del ejemplo: javac analiza el archivo indicado y genera una clase compilada; java carga esa clase y busca main como entrada del programa. Si se declara package centro, el archivo va en la ruta centro y se ejecuta usando el nombre cualificado desde la raíz del classpath. Para diagnosticar “class not found”, anota la carpeta actual y la ruta de clases. El bytecode separa el código fuente de la ejecución, pero las clases dependientes también deben estar disponibles."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: Compila Main.java y ejecútalo desde otra carpeta. ¿Qué debe estar disponible para que Java encuentre Main y cómo verificarías el directorio de trabajo?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: javac crea Main.class en el directorio actual; java debe recibir un classpath que incluya ese directorio. Un error de compilación no se arregla cambiando la ejecución y viceversa."
+              "text": "Respuesta razonada: javac crea Main.class en el directorio actual; java necesita un classpath que incluya ese directorio, o la raíz adecuada si la clase declara paquete. Verifica la carpeta, la ruta del archivo y el comando de ejecución. Un error de compilación no se corrige cambiando la ejecución y viceversa."
             }
+          ],
+          "sources": [
+            "Java Language Specification, Java SE 21"
           ]
         },
         {
@@ -63,21 +74,29 @@
             },
             {
               "type": "paragraph",
-              "text": "Java es estáticamente tipado: una condición debe producir boolean. Los números no se convierten implícitamente en verdadero o falso. Usa enteros para contadores; cuando el enunciado requiera importes exactos, evita suponer que double representa cada decimal con exactitud. Prueba tanto el límite como un valor justo a cada lado."
+              "text": "Java es estáticamente tipado: una condición debe producir boolean y los números no se convierten automáticamente en verdadero o falso. if/else resuelve una decisión; switch expresa alternativas discretas y for recorre una secuencia conocida. String es una referencia: == compara identidad y equals compara contenido. Usa enteros para contadores; si el enunciado exige importes exactos, no supongas que double representa cada decimal con exactitud. Prueba el límite y un valor a cada lado."
             },
             {
               "type": "code",
               "language": "Java",
-              "text": "int plazas = 0;\nboolean admiteAlta = plazas > 0;\nString estado = admiteAlta ? \"abierta\" : \"completa\";\nSystem.out.println(estado);"
+              "text": "int plazas = 0;\nif (plazas < 0) throw new IllegalArgumentException();\nString estado = plazas > 0 ? \"abierta\" : \"completa\";\nfor (int i = 0; i < plazas; i++) System.out.println(i + 1);\nString a = new String(\"DAM\");\nSystem.out.println(a.equals(\"DAM\"));"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: Prueba plazas 0, 1 y -1. ¿Qué valor incumple el dominio aunque el condicional lo clasifique?"
+              "text": "La condición se decide con un boolean; por eso una comparación como plazas > 0 produce una decisión explícita. switch resulta útil cuando se comparan estados discretos y for cuando el número de vueltas se conoce. La validación inicial evita que un dato fuera del dominio se confunda con “completa”. Para cadenas no compares con == si preguntas por el texto: usa equals y decide qué hacer si la referencia pudiera ser null."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: Prueba plazas 0, 1 y -1; luego compara a == \"DAM\" con a.equals(\"DAM\"). ¿Qué regla expresa cada comparación?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Cero y -1 hacen que admiteAlta sea falso; solo -1 es un estado de dominio inválido si las plazas nunca pueden ser negativas. Valida esa regla al recibir el dato, no la escondas en la condición."
+              "text": "Respuesta razonada: -1 se rechaza por la validación; 0 deja el estado completo y 1 abre una plaza. El bucle recorre una vuelta por plaza. == puede ser falso porque compara referencias distintas; equals devuelve verdadero al comparar el texto. Valida el dominio por separado de la decisión de negocio."
             }
+          ],
+          "sources": [
+            "Java Language Specification, Java SE 21",
+            "API Java SE 21: String.equals"
           ]
         },
         {
@@ -98,12 +117,19 @@
             },
             {
               "type": "paragraph",
+              "text": "La firma diferencia métodos por nombre y parámetros; cambiar solo el tipo de retorno no crea una sobrecarga válida. El cast a double antes de dividir conserva la parte fraccionaria, mientras que una división entre dos int trunca el resultado. Al añadir la versión para int[], conserva un único contrato para “sin datos”: rechazarlo con excepción o representarlo de manera explícita. Las pruebas deben comprobar tanto la media normal como el caso vacío. En una sobrecarga, el compilador elige la variante según los tipos y cantidad de argumentos; el tipo devuelto se conoce después de esa elección. Para una API pública, documenta qué excepción representa cada entrada inválida."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Añade una sobrecarga que acepte un array y define su comportamiento si está vacío."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La sobrecarga acepta int[] y suma sus elementos. Para el array vacío, rechaza la entrada o devuelve un resultado explícito; dividir entre cero no es una política válida implícita."
             }
+          ],
+          "sources": [
+            "Java Language Specification, Java SE 21"
           ]
         },
         {
@@ -124,12 +150,19 @@
             },
             {
               "type": "paragraph",
+              "text": "El primer índice válido es 0 y el último es length - 1; por eso el límite de un for es i < notas.length. Un for-each evita errores de posición si no se necesita el índice. La suma es entera, así que convierte al calcular la media para no truncar. Prueba el array vacío antes de dividir y uno de longitud uno para verificar que el denominador y el recorrido coinciden. El cast antes de dividir evita que una media como 7.5 se convierta en 7 por división entera. El array conserva su longitud al recorrerlo; no se puede añadir una cuarta nota sin crear otro array."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué ocurre si sustituyes i < notas.length por i <= notas.length?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El bucle intenta leer el índice length, fuera del array, y lanza ArrayIndexOutOfBoundsException. La media necesita además tratar length igual a cero."
             }
+          ],
+          "sources": [
+            "Java Language Specification, Java SE 21"
           ]
         },
         {
@@ -150,12 +183,23 @@
             },
             {
               "type": "paragraph",
+              "text": "La regla saldo >= 0 es una invariante: debe ser cierta después del constructor y cada operación. El retiro comprueba el importe antes de restar; si falla, no modifica el estado. Encapsular saldo permite que Cuenta sea la única vía para cambiarlo. El método saldo() permite consultar sin exponer el campo. Evita ofrecer otra ruta que pueda crear o dejar una cuenta fuera del dominio."
+            },
+            {
+              "type": "paragraph",
+              "text": "La regla saldo >= 0 es una invariante: debe ser cierta después de construir el objeto y tras cada operación. Un retiro se valida antes de restar; si se rechaza, el saldo no cambia. Encapsular el campo permite que Cuenta controle esa regla en un solo lugar. Un método lector puede exponer el valor sin entregar una forma de modificarlo directamente desde código externo. Una cuenta válida encapsula saldo y operaciones. La comprobación ocurre antes de la resta para que un rechazo no deje saldo negativo; un getter no debe permitir cambiar el campo desde otra clase."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Define qué debe ocurrir al retirar más dinero del saldo."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La operación debe rechazar el retiro antes de modificar saldo. Así el objeto no atraviesa un estado inválido y el llamador distingue una operación imposible de una retirada correcta."
             }
+          ],
+          "sources": [
+            "Dev.java: programación orientada a objetos"
           ]
         },
         {
@@ -167,7 +211,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Un constructor puede delegar en otro de su clase mediante this(...), que debe ser la primera instrucción. Los campos final se asignan durante la inicialización. Validar nombre y cantidad al crear el objeto evita que otros métodos reciban instancias parcialmente válidas."
+              "text": "Un constructor puede delegar en otro de su clase mediante this(...), que debe ser la primera instrucción. Los campos final se asignan durante la inicialización y no se pueden volver a reasignar después. Validar nombre y cantidad al crear el objeto evita que otros métodos reciban instancias parcialmente válidas. El constructor corto reutiliza la misma validación al llamar al completo; no dupliques reglas en cada variante."
             },
             {
               "type": "code",
@@ -176,12 +220,20 @@
             },
             {
               "type": "paragraph",
-              "text": "Práctica: ¿Debe crearse Producto con nombre vacío o con unidades negativas?"
+              "text": "La llamada this(nombre, 0) debe ocupar la primera instrucción del constructor delegante, de modo que toda creación use el mismo camino de validación. Los campos final expresan que el valor queda fijado tras construir el objeto. isBlank comprueba texto vacío o formado solo por espacios; si el contrato permite esos nombres, la condición debe cambiarse deliberadamente. El tipo de excepción debe señalar que el argumento incumple el contrato."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: Define si debe poder crearse Producto con nombre vacío o unidades negativas. ¿Qué constructor recibe primero el control y cuándo se asignan los campos?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: No. Ambos argumentos infringen el contrato, por lo que se rechazan antes de asignar los campos. this.nombre identifica el campo frente al parámetro del mismo nombre."
+              "text": "Respuesta razonada: No se acepta ninguno de esos valores. El constructor de un argumento delega inmediatamente con this(nombre, 0); después el constructor completo valida y asigna. this.nombre identifica el campo frente al parámetro homónimo. Si la validación falla, no se devuelve una instancia con estado incompleto."
             }
+          ],
+          "sources": [
+            "Java Language Specification, Java SE 21",
+            "Dev.java: programación orientada a objetos"
           ]
         },
         {
@@ -202,12 +254,19 @@
             },
             {
               "type": "paragraph",
+              "text": "La composición hace visible la dependencia: PrecioFinal recibe una política Descuento y la utiliza al calcular. La política puede ser fija, promocional o de prueba sin cambiar el consumidor. Con herencia, una subclase debe respetar lo que promete la clase base; si restringe sus operaciones o cambia resultados esperados, deja de ser sustituible. Elige la relación por el modelo del dominio, no por ahorrar una declaración. Si PrecioFinal conociera las campañas concretas, cada cambio obligaría a modificarlo y recompilar sus ramas. La interfaz permite que el mismo contrato use varias políticas sin acoplar el cálculo al catálogo de promociones."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué ventaja tiene inyectar una política de descuento frente a crear una subclase por campaña?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La política se puede sustituir en pruebas o en ejecución sin multiplicar subclases. Herencia encaja cuando el subtipo puede reemplazar a la base sin cambiar la expectativa del llamador."
             }
+          ],
+          "sources": [
+            "Dev.java: programación orientada a objetos"
           ]
         },
         {
@@ -219,7 +278,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Una interfaz declara capacidades compartidas sin exigir que las clases hereden de una misma base. Al llamar a un método mediante la interfaz, Java selecciona en ejecución la implementación del objeto real. Una clase abstracta puede compartir estado o código, pero no hace falta si solo se comparte un contrato."
+              "text": "Una interfaz declara capacidades compartidas sin exigir que las clases hereden de una misma base. Al llamar a texto() mediante Aviso, Java despacha en ejecución la implementación del objeto real. Una clase abstracta puede compartir estado o código, pero no hace falta si solo se comparte un contrato. El consumidor conserva una referencia del tipo Aviso y evita decidir por nombre de clase qué método llamar."
             },
             {
               "type": "code",
@@ -228,12 +287,20 @@
             },
             {
               "type": "paragraph",
-              "text": "Práctica: Añade AvisoVacio y pásalo a mostrar. ¿Qué consumidor debe cambiar?"
+              "text": "El método mostrar recibe Aviso, no una clase particular; la llamada aviso.texto() se resuelve según el objeto real. Esa selección dinámica evita cadenas de if por cada variante y permite añadir una implementación sin tocar el cliente. Una interfaz debe expresar solo operaciones que todas sus implementaciones puedan cumplir. Si una variante no puede producir texto, revisa el contrato en vez de esconder un caso especial en el consumidor."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: Añade AvisoVacio y pásalo a mostrar. ¿Qué implementación necesita y qué consumidor debe cambiar?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Si AvisoVacio implementa la interfaz, mostrar no cambia. La implementación nueva debe cumplir texto(); el consumidor programa contra el contrato y no necesita ramificaciones por clase."
+              "text": "Respuesta razonada: AvisoVacio implementa texto() y devuelve una representación válida, quizá una cadena vacía o un mensaje acordado. Si cumple el contrato, mostrar no cambia. La clase nueva añade comportamiento sin una rama por tipo; el diseño sigue siendo extensible y comprobable mediante la interfaz común."
             }
+          ],
+          "sources": [
+            "Java Language Specification, Java SE 21",
+            "Dev.java: programación orientada a objetos"
           ]
         },
         {
@@ -245,7 +312,7 @@
             },
             {
               "type": "paragraph",
-              "text": "List conserva posiciones y repetidos; Set representa pertenencia sin duplicados; Map asocia claves únicas a valores. HashMap no promete orden de iteración. Usa LinkedHashMap para orden de inserción y TreeMap para orden por clave. Escribe pruebas contra la garantía requerida y no contra un orden incidental."
+              "text": "List conserva posiciones y repetidos; Set modela pertenencia sin duplicados; Map asocia claves únicas a valores. HashMap no promete orden de iteración, LinkedHashMap conserva orden de inserción y TreeMap ordena por clave. Al diseñar una colección de claves propias, define igualdad y hashCode de forma coherente. Prueba la garantía que necesita el informe, no un orden incidental observado en una ejecución."
             },
             {
               "type": "code",
@@ -254,12 +321,19 @@
             },
             {
               "type": "paragraph",
-              "text": "Práctica: Cuenta artículos repetidos y presenta las claves alfabéticamente. ¿Qué estructuras usarías?"
+              "text": "LinkedHashMap conserva el orden de inserción; TreeMap ordena por clave. HashMap no garantiza ninguno de esos órdenes. merge actualiza el valor asociado y crea una cuenta cuando la clave aún no existe. Si las claves son objetos, igualdad y hashCode gobiernan su búsqueda: claves iguales deben compartir hash. Para un informe alfabético, TreeMap evita ordenar una lista a mano y hace explícito el requisito."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: Cuenta artículos repetidos con un Map y presenta las claves alfabéticamente. Si usas objetos Producto como claves, ¿qué contrato deben respetar equals y hashCode?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Un Map acumula frecuencias; TreeMap ordena por clave al presentar. HashMap puede ser suficiente para contar, pero su orden no debe formar parte del resultado esperado."
+              "text": "Respuesta razonada: Un Map acumula frecuencias; TreeMap ordena las claves para presentar el informe. HashMap sirve para contar si no se exige orden. Si dos Producto se consideran iguales, equals debe ser simétrico y coherente, y ambos deben producir el mismo hashCode; de lo contrario un Set o Map puede no encontrar una clave que ya contiene."
             }
+          ],
+          "sources": [
+            "API Java SE 21: colecciones"
           ]
         },
         {
@@ -271,21 +345,28 @@
             },
             {
               "type": "paragraph",
-              "text": "Path representa una ruta y Files ofrece operaciones de lectura. Las APIs de alto nivel gestionan el cierre; try-with-resources cierra recursos abiertos aunque ocurra una excepción. Fija la codificación del texto y captura IOException solo donde puedas aportar contexto o una recuperación útil."
+              "text": "Path representa una ruta y Files ofrece operaciones de lectura. Files.newBufferedReader permite recorrer texto en UTF-8 sin cargar el fichero completo; try-with-resources cierra el lector aunque falle la lectura. Captura IOException solo donde puedas aportar contexto o una recuperación útil. Para archivos pequeños, readAllLines es cómodo, pero también consume memoria proporcional al contenido."
             },
             {
               "type": "code",
               "language": "Java",
-              "text": "Path ruta = Path.of(\"notas.txt\");\ntry {\n  for (String linea : Files.readAllLines(ruta, StandardCharsets.UTF_8))\n    System.out.println(linea);\n} catch (IOException ex) {\n  System.err.println(\"No se pudo leer: \" + ex.getMessage());\n}"
+              "text": "Path ruta = Path.of(\"notas.txt\");\ntry (BufferedReader lector = Files.newBufferedReader(\n        ruta, StandardCharsets.UTF_8)) {\n  String linea;\n  while ((linea = lector.readLine()) != null) {\n    System.out.println(linea);\n  }\n} catch (IOException ex) {\n  System.err.println(\"No se pudo leer: \" + ex.getMessage());\n}"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: El fichero no existe. ¿Qué información debe recibir el usuario y qué detalle registrarías?"
+              "text": "Files.newBufferedReader permite procesar el fichero línea a línea sin cargarlo entero. try-with-resources cierra el lector incluso si readLine o la salida falla. Fijar UTF-8 evita depender de la codificación por defecto. IOException debe comunicarse con contexto útil; no se debe sustituir por una lista vacía que parezca una lectura correcta. Para archivos pequeños, readAllLines es cómodo, pero también consume memoria proporcional al contenido."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: El fichero no existe. ¿Qué información debe recibir el usuario y qué detalle registrarías para distinguirlo de un error de codificación o permisos?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Informa que la lectura ha fallado y registra la causa para depuración; no devuelvas contenido inventado. UTF-8 evita depender de la codificación por defecto del sistema."
+              "text": "Respuesta razonada: Informa que la lectura ha fallado y conserva la causa para depuración; no devuelvas contenido inventado ni una lista vacía que parezca correcta. UTF-8 evita depender de la codificación por defecto. Si el usuario puede reparar una ruta o permiso, indica el siguiente paso sin exponer una traza interna innecesaria."
             }
+          ],
+          "sources": [
+            "API Java SE 21: Files"
           ]
         }
       ]
@@ -306,6 +387,18 @@
         {
           "label": "Oracle AI Database 26ai · PL/SQL Language Reference",
           "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/lnpls/database-pl-sql-language-reference.pdf"
+        },
+        {
+          "label": "MySQL 8.4 · SELECT",
+          "url": "https://dev.mysql.com/doc/refman/8.4/en/select.html"
+        },
+        {
+          "label": "MySQL 8.4 · transacciones InnoDB",
+          "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-model.html"
+        },
+        {
+          "label": "MySQL 8.4 · EXPLAIN",
+          "url": "https://dev.mysql.com/doc/refman/8.4/en/explain.html"
         }
       ],
       "pages": [
@@ -327,12 +420,20 @@
             },
             {
               "type": "paragraph",
+              "text": "La clave primaria hace única e identificable cada fila; la foránea exige una referencia válida a la tabla relacionada. La clave compuesta alumno_id, modulo evita repetir una misma matrícula sin impedir que el alumno curse otros módulos. NOT NULL expresa que la relación debe estar completa. Prueba una matrícula válida y otra con un alumno inexistente: el motor debe rechazar la segunda por la restricción, no por una comprobación manual posterior. La clave primaria compuesta impone la regla en la base incluso si llegan dos peticiones simultáneas. La aplicación puede validar antes para mostrar un mensaje, pero la restricción sigue siendo la garantía final."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué evita repetir una matrícula del mismo alumno en el mismo módulo?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La clave primaria compuesta alumno_id y modulo hace única la pareja. La clave foránea exige que el alumno exista; NOT NULL impide una relación incompleta."
             }
+          ],
+          "sources": [
+            "MySQL 8.4 Reference Manual",
+            "Oracle AI Database 26ai · SQL Language Reference"
           ]
         },
         {
@@ -353,12 +454,19 @@
             },
             {
               "type": "paragraph",
+              "text": "En este ejemplo, nombre depende del identificador del módulo y no de cada matrícula. Guardarlo repetido puede dejar dos nombres distintos para el mismo módulo después de una actualización parcial. Separar modulo y matricula evita ese cambio múltiple; el JOIN reconstruye la vista cuando se necesita. Antes de normalizar, identifica qué atributo depende de qué clave y conserva las reglas que el sistema debe hacer cumplir. La separación también evita anomalías de inserción y borrado: se puede registrar un módulo antes de matricular a alguien y borrar una matrícula sin perder el nombre del módulo. Las claves mantienen la relación."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Si cambia el nombre de un módulo, ¿cuántas filas se actualizan con este diseño?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Se actualiza una fila de modulo; las matrículas conservan el identificador. Se elimina la anomalía de actualización sin duplicar el nombre en cada inscripción."
             }
+          ],
+          "sources": [
+            "MySQL 8.4 Reference Manual"
           ]
         },
         {
@@ -379,12 +487,19 @@
             },
             {
               "type": "paragraph",
+              "text": "WHERE reduce filas antes de formar grupos; HAVING filtra el resultado agregado. La consulta conserva una fila por modulo_id y calcula AVG y COUNT dentro de esa misma agrupación. Si se necesita solo una convocatoria, el filtro va en WHERE; si se pide solo módulos con cinco resultados, esa condición depende del agregado y va en HAVING. Ordena por media para que el informe no dependa del orden físico de las filas. COUNT(*) cuenta filas del grupo y AVG ignora valores NULL en la columna agregada. Si el ejercicio incluye notas ausentes, define si se excluyen o se consideran antes de interpretar el promedio."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué ocurre con un módulo que tiene solo cuatro notas ordinarias?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: No aparece: WHERE conserva las notas ordinarias y HAVING elimina grupos con menos de cinco. AVG se calcula por módulo, no sobre toda la tabla."
             }
+          ],
+          "sources": [
+            "MySQL 8.4 · SELECT"
           ]
         },
         {
@@ -405,12 +520,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Para un alumno sin matrícula, LEFT JOIN conserva una fila del lado alumno y asigna NULL a las columnas de matricula. Un filtro como WHERE m.modulo_id = 3 descarta esas filas y se comporta como coincidencia obligatoria; si hay que mantener alumnos sin matrícula, expresa el criterio en ON o diseña la condición con el resultado deseado. Antes de agregar resultados, cuenta filas por clave para detectar multiplicación uno-a-muchos. Un JOIN puede multiplicar un alumno por cada matrícula encontrada. Si solo interesa saber si existe alguna, una condición EXISTS puede expresar esa intención sin presentar todas las filas relacionadas."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué ve una consulta para un alumno sin matrículas?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La fila de alumno permanece y modulo_id vale NULL. Si ese campo se filtra después con WHERE, la fila puede desaparecer; el filtro debe situarse según el resultado que exige el enunciado."
             }
+          ],
+          "sources": [
+            "MySQL 8.4 · SELECT",
+            "MySQL 8.4 Reference Manual"
           ]
         },
         {
@@ -431,12 +554,19 @@
             },
             {
               "type": "paragraph",
+              "text": "El CTE medias nombra el agregado y deja que la consulta exterior filtre una fila por módulo. No convierte esa relación en tabla permanente ni cambia su granularidad. Una subconsulta puede expresar el mismo cálculo; elige la forma que deja más clara la intención. Para averiguar qué filas alimentan el promedio, ejecuta primero el SELECT interno con un módulo concreto y compara el resultado manualmente. Un CTE puede ayudar a revisar cada etapa por separado. Aun así, el optimizador decide el plan físico; la legibilidad de WITH no debe presentarse como una mejora automática del rendimiento."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué alumno_id no forma parte del GROUP BY del informe?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El informe tiene una fila por módulo. Incluir alumno_id cambiaría la granularidad a una fila por alumno y produciría una media distinta."
             }
+          ],
+          "sources": [
+            "MySQL 8.4 Reference Manual"
           ]
         },
         {
@@ -452,8 +582,12 @@
             },
             {
               "type": "code",
-              "language": "JDBC + MySQL 8.4",
+              "language": "MySQL 8.4",
               "text": "UPDATE matricula\nSET convocatoria = ?\nWHERE alumno_id = ? AND modulo_id = ?;\n-- El driver enlaza los valores como parámetros."
+            },
+            {
+              "type": "paragraph",
+              "text": "UPDATE y DELETE afectan todas las filas que cumplen su predicado, así que conviene ejecutar un SELECT con el mismo WHERE antes de modificar datos. Los parámetros del controlador separan valores de la sintaxis de SQL; no concatenes texto del usuario. Después revisa filas afectadas: cero puede significar identificador inexistente, mientras que más de una puede indicar un filtro demasiado amplio. Incluye restricciones y transacción cuando varios cambios formen una unidad. El enlace de parámetros no protege contra una regla de negocio incorrecta: hay que comprobar que la persona tiene permiso para modificar esa matrícula. Transacción, autorización y validación resuelven problemas distintos."
             },
             {
               "type": "paragraph",
@@ -463,6 +597,9 @@
               "type": "callout",
               "text": "Respuesta razonada: No. Valida la entrada y comprueba que el filtro apunta a la matrícula concreta. El enlace de parámetros evita inyección, pero la aplicación debe rechazar identificadores incompletos."
             }
+          ],
+          "sources": [
+            "MySQL 8.4 Reference Manual"
           ]
         },
         {
@@ -474,21 +611,28 @@
             },
             {
               "type": "paragraph",
-              "text": "Una transacción agrupa operaciones que deben confirmarse juntas o revertirse juntas. En InnoDB ACID y el nivel de aislamiento condicionan la concurrencia; el programa debe comprobar las filas afectadas. ROLLBACK descarta cambios aún no confirmados. No mezcles esta sintaxis MySQL con bloques PL/SQL de Oracle."
+              "text": "Una transacción agrupa operaciones que deben confirmarse juntas o revertirse juntas. En MySQL, el motor de almacenamiento importa: InnoDB ofrece transacciones y aislamiento; no supongas las mismas garantías para cualquier tabla. COMMIT confirma los cambios pendientes y ROLLBACK los descarta. Comprueba las filas afectadas antes de confirmar una reserva y no mezcles esta sintaxis con bloques PL/SQL de Oracle."
             },
             {
               "type": "code",
-              "language": "MySQL 8.4 / InnoDB",
+              "language": "MySQL 8.4",
               "text": "START TRANSACTION;\nUPDATE material SET unidades = unidades - 1\nWHERE id = 12 AND unidades > 0;\n-- Comprobar filas afectadas antes de confirmar.\nCOMMIT; -- o ROLLBACK si no se reservó"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: La actualización afecta cero filas. ¿Qué hace el flujo con el resto de la reserva?"
+              "text": "ACID resume propiedades transaccionales: atomicidad, consistencia, aislamiento y durabilidad. En el ejemplo, la condición de stock protege la regla local y la transacción permite revertir si la reserva completa no puede confirmarse. La aplicación debe atender fallos antes del COMMIT y cerrar la operación con ROLLBACK cuando corresponda. InnoDB ofrece niveles de aislamiento que afectan lecturas concurrentes; no asumas que dos sesiones ven el mismo estado sin definir el escenario."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: La actualización de unidades afecta cero filas. ¿Qué hace el flujo con la operación relacionada y por qué?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Revierte la transacción e informa de que no quedan unidades. La condición evita descontar bajo cero, pero comprobar el número de filas afectadas decide si puede confirmarse la reserva completa."
+              "text": "Respuesta razonada: No se confirma la reserva: se revierte la transacción y se informa de que no quedan unidades o de que el material no existe. La condición unidades > 0 evita descontar bajo cero, pero las filas afectadas deciden si la operación tuvo éxito. Si se confirma antes de comprobar, la regla de negocio puede quedar a medias."
             }
+          ],
+          "sources": [
+            "MySQL 8.4 · transacciones InnoDB"
           ]
         },
         {
@@ -509,12 +653,23 @@
             },
             {
               "type": "paragraph",
+              "text": "Registra el patrón de consulta y el volumen aproximado de filas antes de comparar el plan estimado con una medición controlada."
+            },
+            {
+              "type": "paragraph",
+              "text": "Un índice compuesto por (alumno_id, modulo_id) está ordenado por su primera columna y puede ser útil para búsquedas que comiencen por alumno_id. No implica que el filtro solo por modulo_id use ese mismo prefijo de forma eficiente. EXPLAIN muestra cómo el optimizador estima ejecutar la consulta; compáralo antes y después con datos representativos. Todo índice ocupa almacenamiento y debe mantenerse al escribir, así que mide también el coste de INSERT y UPDATE. Un índice no corrige una consulta mal construida ni garantiza una lectura rápida para cualquier volumen. EXPLAIN informa del plan estimado; contrástalo con mediciones controladas y la consulta exacta del informe."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿El mismo índice sirve necesariamente para filtrar solo por modulo_id?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: No necesariamente: el prefijo empieza por alumno_id. Si ese patrón es frecuente, evalúa un índice con modulo_id primero y compara costes de consulta y escritura."
             }
+          ],
+          "sources": [
+            "MySQL 8.4 · EXPLAIN"
           ]
         },
         {
@@ -535,12 +690,20 @@
             },
             {
               "type": "paragraph",
+              "text": "PL/SQL usa DECLARE, BEGIN y EXCEPTION dentro de Oracle; el slash final es una orden de ciertos clientes como SQL*Plus, no una sentencia del bloque. SELECT INTO asigna una sola fila: ninguna produce NO_DATA_FOUND y más de una, TOO_MANY_ROWS. %TYPE ancla la variable al tipo de columna. Si el filtro puede devolver varios empleados, define una regla única o procesa el conjunto con un cursor; no suprimas la excepción. El ejemplo utiliza sintaxis de Oracle. En MySQL, las variables, el bloque y el tratamiento de errores se escriben de otra forma; mantener el dialecto visible evita mezclar comandos no compatibles."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué ocurre si el filtro no es único y encuentra varias filas?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Se produce TOO_MANY_ROWS. SELECT INTO no convierte un conjunto plural en un escalar; cambia la consulta o procesa las filas mediante un cursor."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference",
+            "Oracle AI Database 26ai · SQL Language Reference"
           ]
         },
         {
@@ -552,21 +715,28 @@
             },
             {
               "type": "paragraph",
-              "text": "Una función devuelve un valor; un procedimiento ejecuta una acción; un cursor permite procesar filas y un trigger reacciona a cambios DML. Prefiere SQL set-based cuando expresa la operación completa. Los triggers por fila disponen de :OLD y :NEW; evita confirmar la transacción desde el trigger."
+              "text": "Una función devuelve un valor; un procedimiento ejecuta una operación; un cursor permite procesar varias filas y un trigger reacciona a cambios DML. Prefiere SQL set-based cuando expresa la operación completa. Los triggers por fila disponen de :OLD y :NEW; evita lógica oculta que complique comprender los cambios y no confirmes la transacción desde el trigger. MySQL y Oracle tienen rutinas y lenguajes procedurales distintos: etiqueta siempre el dialecto."
             },
             {
               "type": "code",
               "language": "Oracle PL/SQL 26ai",
-              "text": "CREATE OR REPLACE TRIGGER valida_stock\nBEFORE INSERT OR UPDATE OF unidades ON material\nFOR EACH ROW\nBEGIN\n  IF :NEW.unidades < 0 THEN\n    RAISE_APPLICATION_ERROR(-20001, 'Stock negativo');\n  END IF;\nEND;\n/"
+              "text": "CREATE OR REPLACE FUNCTION duplicar(p_num NUMBER)\nRETURN NUMBER IS\nBEGIN\n  RETURN p_num * 2;\nEND;\n/"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: ¿Cuándo se ejecuta el trigger y qué representa :NEW?"
+              "text": "La función del ejemplo recibe un número y devuelve su doble con RETURN; un procedimiento se invoca para una acción y puede exponer datos por parámetros OUT. Un cursor se usa cuando hay varias filas, pero una consulta por conjunto suele ser más clara. Un trigger se ejecuta por un evento declarado y puede comparar los valores anterior y nuevo. Mantén estos ejemplos identificados como Oracle PL/SQL; no son sintaxis de MySQL."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: ¿Qué devuelve duplicar(4), qué haría una función con NULL según la regla definida y cuándo usarías un trigger con :OLD/:NEW?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Se ejecuta antes de insertar o cambiar unidades en cada fila. :NEW contiene el valor propuesto. La sintaxis es Oracle PL/SQL, no una declaración MySQL."
+              "text": "Respuesta razonada: La función devuelve 8 y RETURN entrega el resultado al llamador. Para NULL define si se propaga o se rechaza; no inventes una regla. Un trigger se ejecuta al producirse el evento declarado y puede comparar :OLD con :NEW en UPDATE. No lo confundas con un procedimiento invocado de forma explícita."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference"
           ]
         }
       ]
@@ -603,6 +773,14 @@
         {
           "label": "WHATWG Fetch Standard",
           "url": "https://fetch.spec.whatwg.org/"
+        },
+        {
+          "label": "W3C · CSS Box Model Level 3",
+          "url": "https://www.w3.org/TR/css-box-3/"
+        },
+        {
+          "label": "WHATWG · DOM Standard",
+          "url": "https://dom.spec.whatwg.org/"
         }
       ],
       "pages": [
@@ -624,12 +802,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Un documento accesible conserva una jerarquía de encabezados que describe secciones y no el tamaño visual de la letra. header puede identificar contenido introductorio, nav una zona de navegación y main el contenido principal; article sirve para una pieza que tenga sentido por sí misma. El nombre accesible de un enlace debe comunicar su destino incluso fuera del párrafo. Mantén un solo flujo de lectura coherente y comprueba landmarks con lector de pantalla o árbol de accesibilidad. La estructura semántica no fija por sí sola el aspecto visual; CSS lo hace después. Mantén el orden de títulos como una tabla de contenidos y describe el idioma del documento para que el navegador pueda aplicar reglas lingüísticas."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Cambia el texto del enlace por “Pulsa aquí”. ¿Qué información pierde una persona que recorre enlaces fuera de contexto?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Pierde la pista de que el destino es la lista de módulos. Un texto como “Consultar módulos” identifica mejor el enlace sin depender del texto que lo rodea."
             }
+          ],
+          "sources": [
+            "WHATWG HTML Living Standard"
           ]
         },
         {
@@ -650,12 +835,20 @@
             },
             {
               "type": "paragraph",
+              "text": "El atributo for de label debe coincidir con el id del control; name determina el dato que el formulario envía. required y type=email aportan validación nativa, pero no impiden que alguien construya otra petición. Cuando falla la validación, explica el problema en texto junto al campo y permite corregirlo sin perder la información introducida. No uses el placeholder como única etiqueta: desaparece al escribir y no reemplaza el nombre del control. La etiqueta visible ayuda a identificar el campo antes y después de escribir. Si se muestra un error, relaciónalo programáticamente con el control y no dependas solo del color; así el mensaje sigue disponible con tecnologías de asistencia."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué debe hacer el servidor si recibe una petición sin correo aunque la interfaz tenga required?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Debe rechazarla con un mensaje comprensible. La validación cliente mejora el uso, pero se puede omitir; la etiqueta da nombre al control y el servidor vuelve a comprobar los datos."
             }
+          ],
+          "sources": [
+            "W3C WAI: formularios",
+            "WHATWG HTML Living Standard"
           ]
         },
         {
@@ -676,12 +869,20 @@
             },
             {
               "type": "paragraph",
+              "text": "La cascada no decide solo por “la regla más específica”: participan origen, importancia, capas, especificidad y orden. DevTools muestra qué declaración ganó y por qué. Con box-sizing:border-box, el ancho declarado incluye contenido, padding y borde; el margen queda fuera. Si una tarjeta mide más de lo esperado, revisa width, padding, borde y reglas heredadas antes de añadir !important. Usa clases con responsabilidades claras para que el arreglo no afecte otras vistas. Las capas de cascada pueden resolver conflictos antes de comparar especificidad. Usa una capa para estilos base y otra para componentes si el proyecto lo necesita; añadir selectores cada vez más largos puede esconder la causa."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Dos reglas asignan color a .tarjeta. ¿Qué compruebas antes de aumentar la especificidad?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Comprueba qué regla gana en el panel de estilos, su capa, importancia y orden. Elimina la regla duplicada si ya no tiene responsabilidad; aumentar especificidad suele crear una cadena difícil de mantener."
             }
+          ],
+          "sources": [
+            "W3C CSS Cascade Level 5",
+            "W3C · CSS Box Model Level 3"
           ]
         },
         {
@@ -702,12 +903,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Flexbox distribuye elementos en un eje principal y ayuda a alinear una barra; Grid organiza filas y columnas para tarjetas. minmax define un ancho mínimo y un máximo flexible, mientras auto-fit permite adaptar el número de columnas al espacio. min-width:0 puede permitir que contenido largo se contraiga en un grid item. Revisa textos ampliados y zoom además de los anchos de pantalla; un breakpoint no debe alterar el orden semántico de lectura. El tamaño mínimo de una columna afecta a cuándo se produce el desbordamiento. Prueba contenido largo, zoom y una ventana estrecha, no solo una captura de pantalla con frases cortas; el flujo debe seguir legible."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Comprueba la cuadrícula a 320 px y 1280 px. ¿Cuántas columnas esperas en cada caso?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: En la ventana estrecha cabe una columna y no debe aparecer desplazamiento horizontal; en la ancha aparecen varias según el espacio. El contenido conserva su orden original."
             }
+          ],
+          "sources": [
+            "W3C Flexbox Level 1",
+            "W3C Grid Level 2"
           ]
         },
         {
@@ -719,12 +928,16 @@
             },
             {
               "type": "paragraph",
-              "text": "JavaScript tiene valores falsy como 0, cadena vacía, false, null y undefined. El operador || devuelve uno de sus operandos y puede sustituir un cero válido; ?? solo recurre al valor alternativo ante null o undefined. === compara sin coerción implícita y hace visible la intención de la condición."
+              "text": "JavaScript distingue valores falsy como 0, cadena vacía, false, null y undefined. || devuelve un operando y puede sustituir un cero válido; ?? solo usa el valor alternativo ante null o undefined. === compara sin coerción implícita. Declara con const si no reasignas la variable y usa let cuando debas cambiar su referencia; const no vuelve inmutable un objeto contenido."
             },
             {
               "type": "code",
               "language": "ECMAScript 2025",
               "text": "const plazas = 0;\nconst conOr = plazas || 10;\nconst conNullish = plazas ?? 10;\nconsole.log(conOr, conNullish); // 10, 0"
+            },
+            {
+              "type": "paragraph",
+              "text": "La diferencia entre || y ?? es visible con plazas = 0: el primero elige el valor alternativo porque 0 es falsy, el segundo conserva cero porque solo comprueba null/undefined. Usa === para comparar el mismo tipo de valor sin conversión implícita. const impide reasignar el enlace de la variable, pero un objeto const todavía puede mutarse; evita esa mutación si el componente comparte el mismo objeto con otra parte de la interfaz. Si el dato significa que no existe valor, usa null o undefined según el contrato y valida ambos. Si cero es una cantidad real, conserva cero. No conviertas todos los valores falsy en una misma categoría por comodidad."
             },
             {
               "type": "paragraph",
@@ -734,6 +947,9 @@
               "type": "callout",
               "text": "Respuesta razonada: ?? conserva cero porque no considera falsy todos los valores; || sustituye cero por 10. La regla debe expresar diferencia entre ausencia y valor numérico válido."
             }
+          ],
+          "sources": [
+            "ECMAScript 2025"
           ]
         },
         {
@@ -754,12 +970,19 @@
             },
             {
               "type": "paragraph",
+              "text": "filter devuelve una selección y map transforma los elementos de esa selección; ninguno modifica por sí mismo el array original. En el ejemplo, el filtro estricto precio > 20 excluye un artículo que cueste exactamente 20. Define el umbral con el enunciado, y comprueba el array vacío antes de construir mensajes. Si las operaciones se encadenan, nombra resultados intermedios cuando eso facilite explicar qué conjunto entra en cada paso. La comparación >= incluye el umbral y > lo excluye. Esa diferencia debe decidirse con el enunciado y probarse en el propio valor frontera. Mantener productos intacto permite reutilizarlos en otra vista."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Cambia > por >= y fija el precio del Teclado en 20. ¿Qué cambia?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La comparación estricta no selecciona el precio 20; la inclusiva sí. productos mantiene sus dos objetos porque filter construye una selección nueva."
             }
+          ],
+          "sources": [
+            "ECMAScript 2025"
           ]
         },
         {
@@ -780,12 +1003,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Los eventos de los controles se propagan por el árbol y pueden ser atendidos por un contenedor común. closest busca el botón dentro del objetivo o sus ancestros; contains verifica que pertenece al catálogo. Esa delegación cubre también botones que se agregan después de registrar el listener. Usa textContent para texto no confiable y conserva atributos de datos solo para identificadores que el cliente pueda utilizar; la autorización de una operación sigue siendo responsabilidad del servidor. El evento puede originarse en un hijo dentro del botón, por eso closest es más robusto que comparar el target directamente. Comprueba también que el resultado encontrado pertenezca al contenedor que recibió el evento."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Añade una tarea después de registrar el listener. ¿Es necesario enlazarla individualmente?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: No. El clic sube hasta lista y el listener detecta el botón por su atributo. contains evita tratar un botón ajeno como hijo del catálogo."
             }
+          ],
+          "sources": [
+            "WHATWG · DOM Standard"
           ]
         },
         {
@@ -806,12 +1036,19 @@
             },
             {
               "type": "paragraph",
+              "text": "fetch rechaza por ciertos fallos de red, pero una respuesta 404 o 500 sigue siendo una respuesta HTTP y debe comprobarse con ok. La lectura del cuerpo también puede fallar o no cumplir el formato esperado. Separa estado de carga, error y datos válidos para evitar presentar un resultado viejo como si fuera nuevo. Cancela una petición obsoleta si el usuario cambia rápidamente de filtro, y no registres cuerpos que puedan contener información sensible. La validación de Array.isArray solo confirma la forma de la raíz. Para aceptar los datos, revisa además los campos requeridos y sus tipos; un array puede contener objetos incompletos."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: La respuesta es 200 y el cuerpo es un objeto, no una lista. ¿Qué debe hacer la función?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Debe rechazar el formato o transformarlo según contrato; no puede tratar el objeto como una lista válida. Comprueba el estado HTTP y el esquema por separado."
             }
+          ],
+          "sources": [
+            "WHATWG Fetch Standard"
           ]
         },
         {
@@ -832,12 +1069,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Los módulos ES exponen dependencias mediante export e import; esto permite leer qué necesita cada fichero y reduce el uso de globals. El navegador resuelve rutas de módulos dentro de su entorno, mientras Node ofrece APIs de servidor como filesystem y no crea document. Mantén el cálculo puro separado de la vista y del acceso a disco: así se puede probar el precio sin abrir una página. Configura el entorno en el que realmente se ejecutará el módulo. Las importaciones declaran dependencias entre módulos y facilitan sustituir el cálculo en una prueba. Evita poner en un módulo común llamadas a APIs disponibles solo en uno de los entornos de ejecución."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué precios.js no debe consultar document si también se usa desde Node?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: document pertenece al navegador y no existe en Node. Separar el cálculo de la interfaz deja que ambos entornos compartan la misma regla sin crear globals simulados."
             }
+          ],
+          "sources": [
+            "WHATWG HTML Living Standard",
+            "ECMAScript 2025"
           ]
         },
         {
@@ -845,25 +1090,34 @@
           "blocks": [
             {
               "type": "paragraph",
-              "text": "Objetivo: Comprobar que una tarjeta es operable sin ratón y muestra literalmente el comentario recibido."
+              "text": "Mini proyecto: catálogo accesible y salida segura"
             },
             {
               "type": "paragraph",
-              "text": "Una interfaz debe mantener foco visible y nombres accesibles en botones. El texto aportado por el usuario se debe insertar como texto, no como HTML. Prueba con teclado el orden de tabulación y una cadena que parezca una etiqueta; no uses aria-label para reemplazar una etiqueta visible que el usuario necesita."
+              "text": "Objetivo: Construir un catálogo responsive de cursos con tarjetas, filtro y un formulario accesible que funcione con teclado."
             },
             {
               "type": "code",
               "language": "WAI + DOM",
-              "text": "const comentario = document.querySelector(\"#comentario\");\ncomentario.textContent = textoRecibido;\n// Evitar asignar texto no confiable a innerHTML."
+              "text": "const resultado = document.querySelector(\"#resultado\");\nfunction pintar(cursos) {\n  resultado.replaceChildren(...cursos.map(curso => {\n    const tarjeta = document.createElement(\"article\");\n    const titulo = document.createElement(\"h2\");\n    titulo.textContent = curso.nombre;\n    tarjeta.append(titulo);\n    return tarjeta;\n  }));\n}"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: Si textoRecibido es <img src=x onerror=alert(1)>, ¿qué debe ocurrir?"
+              "text": "La revisión final del proyecto comprueba el mismo catálogo en escritorio y móvil, navegación completa con Tab, foco visible, etiquetas enlazadas y texto alternativo útil en imágenes. Prueba que el filtro conserve la lista original y que una lista vacía tenga un mensaje. Usa entradas como `<img>` para confirmar que se muestra texto literal. La validación cliente ayuda a quien usa el formulario, pero el backend aplica las reglas y devuelve errores asociados a campos. El ejemplo usa createElement para construir estructura y textContent para insertar el nombre. Nunca interpoles contenido externo en una cadena HTML; prueba la misma función con nombre vacío, muy largo y con caracteres especiales."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: Añade un filtro por tecnología y prueba el catálogo con teclado, a 360 px y con un nombre que contenga `<img onerror=...>`. ¿Qué debe verse?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Debe mostrarse la cadena literal y no crearse una imagen. textContent no interpreta el texto como HTML; la validación del servidor sigue siendo necesaria para los datos."
+              "text": "Respuesta razonada: El filtro muestra solo coincidencias y deja un estado claro cuando no hay cursos. El nombre sospechoso aparece literalmente porque textContent no lo interpreta como marcado. Todos los controles tienen etiqueta y foco visible; no aparece scroll horizontal en móvil. Si se envía un formulario, el servidor vuelve a validar los datos y comunica qué campo corregir."
             }
+          ],
+          "sources": [
+            "WHATWG HTML Living Standard",
+            "W3C WAI: formularios",
+            "WHATWG · DOM Standard"
           ]
         }
       ]
@@ -892,6 +1146,14 @@
         {
           "label": "Biblioteca estándar: unittest",
           "url": "https://docs.python.org/3.14/library/unittest.html"
+        },
+        {
+          "label": "Python 3.14 · venv",
+          "url": "https://docs.python.org/3.14/library/venv.html"
+        },
+        {
+          "label": "PEP 8 · Style Guide for Python Code",
+          "url": "https://peps.python.org/pep-0008/"
         }
       ],
       "pages": [
@@ -904,12 +1166,16 @@
             },
             {
               "type": "paragraph",
-              "text": "Python ejecuta las instrucciones en orden y delimita bloques mediante indentación. El guard de __main__ separa una demostración ejecutable de las definiciones reutilizables; al importar, el código dentro del guard no se ejecuta. Anota el intérprete usado y el directorio de trabajo para reproducir un problema."
+              "text": "Python ejecuta instrucciones en orden y delimita bloques mediante indentación. El guard de __main__ separa una demostración ejecutable de las definiciones reutilizables; al importar, el código dentro del guard no se ejecuta. Anota el intérprete usado y el directorio de trabajo para reproducir un problema. Evita que un fichero del proyecto tenga el mismo nombre que una biblioteca estándar que necesita importar."
             },
             {
               "type": "code",
               "language": "Python 3.14",
               "text": "def saludar(nombre):\n    return f\"Hola, {nombre}\"\n\nif __name__ == \"__main__\":\n    print(saludar(\"Ada\"))"
+            },
+            {
+              "type": "paragraph",
+              "text": "El guard protege efectos como imprimir, leer argumentos o empezar una demostración cuando se importa el módulo. Mantén las funciones y clases al nivel superior para que otro archivo pueda reutilizarlas. Ejecuta el mismo fichero con el intérprete elegido para el entorno y registra la versión, porque una sintaxis reciente puede no existir en una instalación antigua. Si un programa funciona desde una carpeta y falla desde otra, revisa primero el directorio de trabajo y las rutas relativas. El guard protege efectos como imprimir, leer argumentos o empezar una demostración cuando se importa el módulo. Mantén las funciones y clases al nivel superior para que otro archivo pueda reutilizarlas. Ejecuta el mismo fichero con el intérprete elegido para el entorno y registra la versión, porque una sintaxis reciente puede no existir en una instalación antigua. Si un programa funciona desde una carpeta y falla desde otra, revisa primero el directorio de trabajo y las rutas relativas."
             },
             {
               "type": "paragraph",
@@ -919,6 +1185,9 @@
               "type": "callout",
               "text": "Respuesta razonada: No. Al importarse, __name__ contiene el nombre del módulo, no __main__. La función se puede reutilizar sin que el import tenga un efecto de impresión."
             }
+          ],
+          "sources": [
+            "Tutorial oficial Python 3.14"
           ]
         },
         {
@@ -939,12 +1208,20 @@
             },
             {
               "type": "paragraph",
+              "text": "input siempre entrega texto; la conversión a int, float o Decimal es una decisión explícita que puede fallar con ValueError. Para cálculos comerciales, crea Decimal desde la cadena escrita y mantén tipos compatibles durante toda la operación. El formato de salida no define por sí mismo una regla de redondeo: acuerda escala y modo con el dominio. Comprueba también cero unidades y datos con separador decimal inesperado antes de presentar un total. input siempre entrega texto; la conversión a int, float o Decimal es una decisión explícita que puede fallar con ValueError. Para cálculos comerciales, crea Decimal desde la cadena escrita y mantén tipos compatibles durante toda la operación. El formato de salida no define por sí mismo una regla de redondeo: acuerda escala y modo con el dominio. Comprueba también cero unidades y datos con separador decimal inesperado antes de presentar un total."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué no conviene crear Decimal a partir de float 19.95?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El float ya contiene una aproximación binaria al convertirse. Decimal desde la cadena conserva el importe decimal escrito; el redondeo debe definirse aparte según la regla contable."
             }
+          ],
+          "sources": [
+            "Tutorial oficial Python 3.14",
+            "Documentación oficial Python 3.14"
           ]
         },
         {
@@ -965,12 +1242,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Las ramas se evalúan en orden: primero valida que la nota esté dentro del dominio y luego decide si alcanza el aprobado. Así un 12 no se clasifica como aprobada solo porque sea mayor que cinco. Convierte input a número antes de invocar la función y maneja aparte un texto que no pueda convertirse. Prueba -1, 0, 5, 10 y 12 para cubrir fuera de rango, ambos extremos y el umbral inclusivo. Las ramas se evalúan en orden: primero valida que la nota esté dentro del dominio y luego decide si alcanza el aprobado. Así un 12 no se clasifica como aprobada solo porque sea mayor que cinco. Convierte input a número antes de invocar la función y maneja aparte un texto que no pueda convertirse. Prueba -1, 0, 5, 10 y 12 para cubrir fuera de rango, ambos extremos y el umbral inclusivo."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Calcula las respuestas para -1, 0, 5 y 10. ¿Qué ocurre con 12?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Las salidas son inválida, suspensa, aprobada y aprobada; 12 también es inválida. Validar el rango antes del aprobado mantiene el contrato explícito."
             }
+          ],
+          "sources": [
+            "Tutorial oficial Python 3.14"
           ]
         },
         {
@@ -991,12 +1275,19 @@
             },
             {
               "type": "paragraph",
+              "text": "range(3) produce 0, 1 y 2; el límite superior queda excluido. En un bucle con índices, esa propiedad coincide con las posiciones válidas de una lista de tres elementos. En while, identifica qué variable cambia y qué condición acaba siendo falsa; si ninguna cambia, el bucle puede no terminar. Usa una lista vacía y una con un elemento para confirmar el valor inicial del acumulador y que no hay una vuelta extra. range(3) produce 0, 1 y 2; el límite superior queda excluido. En un bucle con índices, esa propiedad coincide con las posiciones válidas de una lista de tres elementos. En while, identifica qué variable cambia y qué condición acaba siendo falsa; si ninguna cambia, el bucle puede no terminar. Usa una lista vacía y una con un elemento para confirmar el valor inicial del acumulador y que no hay una vuelta extra."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Escribe el recorrido equivalente con índices. ¿Qué valores produce range(len(pendientes))?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Produce 0, 1 y 2, uno por cada posición. El rango excluye el 3; añadir uno al límite intentaría acceder a un índice inexistente."
             }
+          ],
+          "sources": [
+            "Tutorial oficial Python 3.14"
           ]
         },
         {
@@ -1017,12 +1308,19 @@
             },
             {
               "type": "paragraph",
+              "text": "list y tuple conservan secuencia; la lista se modifica y la tupla expresa una colección que no se cambia en el sitio. set elimina duplicados, pero no ofrece un orden de presentación para un informe. dict asocia claves únicas con valores y conserva el orden de inserción en las versiones actuales de Python. La copia de una lista es superficial si contiene otras listas: prueba si modificar un elemento interno afecta también a la estructura original. list y tuple conservan secuencia; la lista se modifica y la tupla expresa una colección que no se cambia en el sitio. set elimina duplicados, pero no ofrece un orden de presentación para un informe. dict asocia claves únicas con valores y conserva el orden de inserción en las versiones actuales de Python. La copia de una lista es superficial si contiene otras listas: prueba si modificar un elemento interno afecta también a la estructura original."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué usarías para conservar notas en orden y qué para impedir códigos duplicados?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Una lista conserva el orden de notas; un conjunto elimina duplicados de códigos. Si el orden de códigos también importa, usa dict como conjunto ordenado en Python moderno y documenta esa decisión."
             }
+          ],
+          "sources": [
+            "Tutorial oficial Python 3.14"
           ]
         },
         {
@@ -1043,12 +1341,19 @@
             },
             {
               "type": "paragraph",
+              "text": "El valor por defecto se evalúa una vez al definir la función. Si se usa una lista mutable, llamadas distintas pueden compartirla accidentalmente; usa None y crea una nueva lista dentro cuando cada llamada necesite estado independiente. Devuelve el resultado para que otra función pueda utilizarlo y deja la impresión a la capa de presentación. El precio y la tasa deben tener tipos compatibles, en este ejemplo Decimal, para no mezclar precisión binaria y decimal. El valor por defecto se evalúa una vez al definir la función. Si se usa una lista mutable, llamadas distintas pueden compartirla accidentalmente; usa None y crea una nueva lista dentro cuando cada llamada necesite estado independiente. Devuelve el resultado para que otra función pueda utilizarlo y deja la impresión a la capa de presentación. El precio y la tasa deben tener tipos compatibles, en este ejemplo Decimal, para no mezclar precisión binaria y decimal."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué excepción produce el precio -1 y qué devuelve 100 con tipo 0.10?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El precio negativo lanza ValueError; 100 con tasa Decimal 0.10 devuelve 110.00. Mantén ambos operandos Decimal para no mezclar precisión decimal y binaria."
             }
+          ],
+          "sources": [
+            "Tutorial oficial Python 3.14"
           ]
         },
         {
@@ -1069,12 +1374,20 @@
             },
             {
               "type": "paragraph",
+              "text": "un módulo suele corresponder a un fichero .py y un paquete organiza varios módulos. Un entorno virtual separa paquetes instalados para un proyecto sin cambiar el Python global. Usa `python -m pip` con el mismo intérprete que ejecuta la aplicación; comprueba la ruta del ejecutable dentro de .venv. No versionas la carpeta .venv: guarda la declaración de dependencias y recrea el entorno cuando otra persona clona el proyecto. Un módulo suele corresponder a un fichero .py y un paquete organiza varios módulos. Un entorno virtual separa paquetes instalados para un proyecto sin cambiar el Python global. Usa `python -m pip` con el mismo intérprete que ejecuta la aplicación; comprueba la ruta del ejecutable dentro de .venv. No versionas la carpeta .venv: guarda la declaración de dependencias y recrea el entorno cuando otra persona clona el proyecto."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué salida confirma que pip pertenece al entorno activo?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La ruta mostrada por python -m pip debe apuntar a .venv. Usar pip mediante el propio intérprete reduce el riesgo de instalar en otro Python global."
             }
+          ],
+          "sources": [
+            "Python 3.14 · venv",
+            "Tutorial oficial Python 3.14"
           ]
         },
         {
@@ -1086,12 +1399,16 @@
             },
             {
               "type": "paragraph",
-              "text": "with cierra el fichero tras leerlo. json.load analiza sintaxis, pero no comprueba el esquema de aplicación; valida tipo raíz y campos después. Distingue fichero ausente, JSON malformado y un documento válido con campos inválidos, porque la respuesta y el diagnóstico son distintos."
+              "text": "with cierra el fichero tras leerlo. json.load analiza sintaxis, pero no comprueba el esquema de aplicación; valida tipo raíz y campos después. Distingue fichero ausente, JSON malformado y un documento válido con campos inválidos, porque la respuesta y el diagnóstico son distintos. Fija encoding=\"utf-8\" al abrir texto y conserva el error original para distinguir una codificación o formato inesperado."
             },
             {
               "type": "code",
               "language": "Python 3.14 + json",
               "text": "import json\nfrom pathlib import Path\nwith Path(\"alumno.json\").open(encoding=\"utf-8\") as f:\n    datos = json.load(f)\nif not isinstance(datos, dict) or not isinstance(datos.get(\"nombre\"), str):\n    raise ValueError(\"Perfil inválido\")"
+            },
+            {
+              "type": "paragraph",
+              "text": "json.load convierte el texto en valores Python y lanza JSONDecodeError si la sintaxis está rota. Un JSON válido puede tener raíz o campos incorrectos. Valida tipos antes de usar get; distingue fichero ausente, formato malformado y contrato incumplido. Abre en UTF-8 y usa pathlib para las rutas. JSONDecodeError incluye posición de línea y columna para localizar un fallo de sintaxis; muéstralo como diagnóstico y evita capturar Exception si no puedes recuperarte."
             },
             {
               "type": "paragraph",
@@ -1101,6 +1418,10 @@
               "type": "callout",
               "text": "Respuesta razonada: [] es JSON sintácticamente válido, pero la raíz no es un objeto con nombre. Comprueba el tipo antes de usar get y comunica el incumplimiento de esquema."
             }
+          ],
+          "sources": [
+            "Biblioteca estándar: json",
+            "Biblioteca estándar: pathlib"
           ]
         },
         {
@@ -1121,12 +1442,19 @@
             },
             {
               "type": "paragraph",
+              "text": "__init__ recibe la instancia por self y establece el estado que utilizarán los métodos. Validar saldo antes de guardarlo impide que la cuenta nazca fuera del dominio. Una propiedad de solo lectura permite consultar el saldo sin ofrecer una asignación arbitraria desde fuera. Si se añade ingresar, valida la cantidad antes de actualizar; una operación inválida no debe dejar saldo parcialmente cambiado. Una dataclass ahorra código, pero no valida reglas automáticamente. __init__ recibe la instancia por self y establece el estado que utilizarán los métodos. Validar saldo antes de guardarlo impide que la cuenta nazca fuera del dominio. Una propiedad de solo lectura permite consultar el saldo sin ofrecer una asignación arbitraria desde fuera. Si se añade ingresar, valida la cantidad antes de actualizar; una operación inválida no debe dejar saldo parcialmente cambiado. Una dataclass ahorra código, pero no valida reglas automáticamente."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Añade ingresar(cantidad). ¿Debe cambiar el saldo si cantidad es -5?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: No. Lanza ValueError antes de modificarlo. La cuenta mantiene el saldo anterior y conserva la misma regla para cada llamador."
             }
+          ],
+          "sources": [
+            "Tutorial oficial Python 3.14"
           ]
         },
         {
@@ -1138,12 +1466,16 @@
             },
             {
               "type": "paragraph",
-              "text": "Una prueba prepara una entrada, ejecuta una unidad y compara un resultado observable. Incluye caso habitual, vacío y valores negativos si el dominio los admite. Para depurar, reduce el fallo, observa valores intermedios y prueba una hipótesis cada vez; no ocultes la causa con un resultado inventado."
+              "text": "Una prueba prepara una entrada, ejecuta una unidad y compara un resultado observable. Incluye caso habitual, vacío y valores negativos si el dominio los admite. Para depurar, reduce el fallo, observa valores intermedios y prueba una hipótesis cada vez; no ocultes la causa con un resultado inventado. Sigue PEP 8 con nombres descriptivos y formato consistente, pero prioriza que la prueba exprese el contrato, no un detalle interno de implementación."
             },
             {
               "type": "code",
               "language": "unittest · Python 3.14",
               "text": "import unittest\ndef contar_pares(xs):\n    return sum(1 for n in xs if n % 2 == 0)\nclass TestPares(unittest.TestCase):\n    def test_vacio(self):\n        self.assertEqual(contar_pares([]), 0)"
+            },
+            {
+              "type": "paragraph",
+              "text": "Cada test debe poder ejecutarse de manera independiente y describir una condición observable. El caso vacío comprueba el valor neutro, el caso normal detecta una suma incorrecta y los negativos confirman el comportamiento de módulo. PEP 8 recomienda nombres legibles, indentación uniforme y líneas manejables; el estilo ayuda a revisar, pero no demuestra corrección. Cuando falle una prueba, reduce los datos y contrasta esperado frente a observado antes de cambiar varias funciones. Cada test debe poder ejecutarse de manera independiente y describir una condición observable. El caso vacío comprueba el valor neutro, el caso normal detecta una suma incorrecta y los negativos confirman el comportamiento de módulo. PEP 8 recomienda nombres legibles, indentación uniforme y líneas manejables; el estilo ayuda a revisar, pero no demuestra corrección. Cuando falle una prueba, reduce los datos y contrasta esperado frente a observado antes de cambiar varias funciones."
             },
             {
               "type": "paragraph",
@@ -1153,6 +1485,10 @@
               "type": "callout",
               "text": "Respuesta razonada: Esperas 2 y 1. El resto módulo dos identifica pares negativos también; el caso vacío fija el valor neutro de la suma."
             }
+          ],
+          "sources": [
+            "Biblioteca estándar: unittest",
+            "PEP 8 · Style Guide for Python Code"
           ]
         }
       ]
@@ -1189,6 +1525,14 @@
         {
           "label": "MongoDB · Schema validation",
           "url": "https://www.mongodb.com/docs/manual/core/schema-validation/"
+        },
+        {
+          "label": "W3C · XML Schema 1.1",
+          "url": "https://www.w3.org/TR/xmlschema11-1/"
+        },
+        {
+          "label": "WHATWG · Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
         }
       ],
       "pages": [
@@ -1209,12 +1553,20 @@
             },
             {
               "type": "paragraph",
+              "text": "El analizador necesita reconocer una sola raíz y un árbol de etiquetas correctamente anidado. Una etiqueta sin cerrar o un ampersand literal en el texto rompe la sintaxis; escribir `&amp;` conserva el carácter en el valor. La validación de esquema es una segunda fase: primero debe construirse el árbol. Mantén los datos, atributos y unidades documentados para que productores distintos generen la misma estructura."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Indica qué error sintáctico aparece si se omite `</alumno>` y diferencia bien formado de válido."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El elemento alumno queda sin cerrar y el analizador debe rechazar el documento. Una estructura bien formada puede no ser válida frente a un esquema, por ejemplo si falta un campo obligatorio. Primero se comprueba sintaxis; después, si el contrato lo exige, se valida contra XSD u otra gramática."
             }
+          ],
+          "sources": [
+            "W3C · XML 1.0",
+            "W3C · XML Schema 1.1"
           ]
         },
         {
@@ -1234,12 +1586,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Un atributo puede representar el identificador de una línea y un elemento hijo su cantidad o descripción, pero la decisión debe ser uniforme en el contrato. Los atributos no tienen un orden significativo y un atributo no puede contener otros elementos. Los hermanos repetidos representan una colección. Aclara si un elemento omitido y uno vacío significan lo mismo; esa diferencia afecta consultas, validación y compatibilidad entre versiones del documento."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Diseña una regla para representar varios artículos y distingue colección vacía de dato omitido."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Repite `linea` dentro de `lineas` y documenta si un contenedor vacío significa que no hay artículos. Si falta `lineas`, el emisor quizá desconoce el dato o no lo envió; esa diferencia solo tiene significado si el contrato la define. Identificadores estables van bien como atributos, pero no son automáticamente claves de base de datos."
             }
+          ],
+          "sources": [
+            "W3C · XML 1.0",
+            "W3C · XML Schema 1.1"
           ]
         },
         {
@@ -1259,12 +1619,19 @@
             },
             {
               "type": "paragraph",
+              "text": "La identidad del nombre XML se compone de namespace URI y nombre local; el prefijo escrito es un alias. Si el documento cambia de `c:` a `x:` pero conserva la URI, la consulta puede seguir usando `e:` enlazado por la aplicación. Los atributos no cualificados no heredan el namespace por defecto del elemento. Prueba siempre la consulta con el namespace real y verifica el resultado cuando la selección queda vacía."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Explica por qué una consulta `//alumno` sin namespace puede devolver cero resultados."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El nombre expandido del elemento es `{urn:escuela:curso}alumno`, no el nombre sin namespace. Registra, por ejemplo, el prefijo `e` con esa URI en la API de consulta y busca `//e:alumno`; el alias puede diferir del prefijo `c` del archivo. El atributo `codigo` está sin namespace en este ejemplo."
             }
+          ],
+          "sources": [
+            "W3C · Namespaces in XML"
           ]
         },
         {
@@ -1284,12 +1651,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Una ruta absoluta expresa desde qué raíz navega, mientras una ruta relativa parte del nodo de contexto dado por la API. `//` abre la búsqueda a descendientes en cualquier nivel y puede seleccionar nodos ajenos si el vocabulario reutiliza nombres. Los prefijos de namespace se enlazan en el entorno de evaluación. Comprueba si el resultado tiene cero, uno o varios nodos antes de convertirlo a texto o tomar el primero."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Propón una consulta para seleccionar los elementos `linea` de todos los pedidos y considera el namespace."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Si los pedidos son la raíz de consulta, usa una ruta relativa como `//p:pedido/p:lineas/p:linea` con `p` enlazado a la URI declarada. La consulta devuelve nodos, no necesariamente una sola cadena. Si el documento cambia de vocabulario o un nombre aparece en otro namespace, ajusta el vínculo y los pasos en vez de quitar prefijos a ciegas."
             }
+          ],
+          "sources": [
+            "W3C · XPath 3.1",
+            "W3C · Namespaces in XML"
           ]
         },
         {
@@ -1309,12 +1684,19 @@
             },
             {
               "type": "paragraph",
+              "text": "En `.../alumno[@activo=\"true\"][1]`, el primer predicado conserva los alumnos activos y el segundo escoge el primer nodo de ese resultado según el paso. Una posición no es un identificador estable: insertar otro hermano puede cambiarla. `contains` expresa una búsqueda parcial y no igualdad; normaliza espacios solo si la regla del campo lo permite. Crea un XML pequeño donde el primer alumno no esté activo para comprobar el orden de predicados."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Compara la intención de seleccionar el primer alumno activo con el primer alumno si está activo."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La expresión filtra alumnos activos y después toma el primero de esos resultados. Si se aplicara `[1]` antes de la condición, podría examinar solo el primer alumno y no hallar ninguno aunque exista otro activo. Escribe la intención en palabras y valida el orden de pasos con un XML de prueba donde el primer elemento no cumpla la condición."
             }
+          ],
+          "sources": [
+            "W3C · XPath 3.1"
           ]
         },
         {
@@ -1334,12 +1716,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Los objetos JSON usan pares nombre-valor y los arrays conservan orden. null es un valor explícito; omitir una propiedad puede significar que el emisor no la conoce o que el contrato no la requiere. RFC 8259 no asigna tipos de fecha o dinero: acuerda formato y valida al parsear. Evita claves duplicadas porque los analizadores pueden resolverlas de diferente manera. Prueba caracteres escapados y números límite además del ejemplo normal."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Identifica cómo representar una fecha y un campo ausente sin inventar tipos JSON."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Una convención común intercambia fechas como cadenas en formato documentado, por ejemplo ISO 8601, y se valida al recibirlas. Un campo ausente no es lo mismo que `null`: el contrato debe decir si se omite, se desconoce o se declara explícitamente vacío. Evita duplicar claves y verifica que `quantity` sea un entero positivo donde el dominio lo exija."
             }
+          ],
+          "sources": [
+            "IETF · RFC 8259 JSON"
           ]
         },
         {
@@ -1359,12 +1748,20 @@
             },
             {
               "type": "paragraph",
+              "text": "El cliente debe revisar estado y cabeceras antes de tratar el cuerpo como pedido. Fetch entrega una Response incluso con 404 o 500, y json() solo analiza sintaxis: no verifica que `items` sea un array ni que quantity sea positiva. El servidor valida autorización y campos antes de persistir; el cliente valida otra vez lo necesario para presentar un mensaje útil. Maneja por separado error de red, HTTP y JSON inválido."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué control falta si se asume que la respuesta analizada ya es un pedido correcto?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Falta verificar que el contenido cumpla el esquema del pedido y que las operaciones puedan tolerar campos ausentes o datos incorrectos. El estado HTTP informa del resultado de la petición, no certifica el dominio del JSON. El servidor aplica autorización y valida entradas; el navegador puede validar adicionalmente para mostrar errores útiles."
             }
+          ],
+          "sources": [
+            "IETF · RFC 8259 JSON",
+            "WHATWG · Fetch Standard"
           ]
         },
         {
@@ -1384,12 +1781,19 @@
             },
             {
               "type": "paragraph",
+              "text": "El patrón de acceso decide entre incrustar y referenciar. Las líneas de un pedido suelen leerse y escribirse con el pedido, por lo que un array acotado puede ser cómodo; comentarios que crecen sin límite conviene separarlos. BSON añade tipos como ObjectId y fecha que no son idénticos a sus representaciones textuales JSON. Al cruzar la API, fija una conversión estable y no expongas un identificador como autorización."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Cuándo conviene incrustar `lines` y qué límite revisarías?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Incrústalas si pertenecen al pedido, se leen juntas y su crecimiento está acotado. Si la colección de líneas puede crecer indefinidamente o se actualiza y consulta de forma independiente, evalúa documentos separados y referencias. Revisa tamaño del documento, duplicación, consistencia de escrituras y necesidades de lectura; no elijas solo por la forma visual del JSON."
             }
+          ],
+          "sources": [
+            "MongoDB · Manual"
           ]
         },
         {
@@ -1409,37 +1813,48 @@
             },
             {
               "type": "paragraph",
+              "text": "find aplica un filtro y puede limitar campos mediante proyección; updateOne y deleteOne necesitan un predicado que identifique la entidad esperada. Un filtro `{}` es amplio y puede alterar toda la colección. Un índice compuesto se diseña según filtro y orden frecuentes, y su coste se paga en espacio y escrituras. Explica cada actualización con un conjunto de documentos de prueba y verifica el resultado antes de repetir en producción."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Diseña un índice para filtrar por cliente y ordenar por fecha descendente."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Un índice candidato es `{ customerId: 1, createdAt: -1 }`, siempre que la consulta real filtre por cliente y ordene por fecha. Confirma con el plan de ejecución y datos de volumen similar; el índice consume espacio y ralentiza inserciones y actualizaciones. Evita un filtro accidental `{}` y limita la proyección a campos necesarios."
             }
+          ],
+          "sources": [
+            "MongoDB · Manual"
           ]
         },
         {
-          "heading": "10. Agregación y validación del esquema",
+          "heading": "10. XSD y validación del contrato",
           "blocks": [
             {
               "type": "paragraph",
-              "text": "Objetivo: Componer transformaciones de documentos y proteger la colección con reglas de validación."
+              "text": "Objetivo: Distinguir un XML bien formado de uno válido y expresar con XSD una restricción de datos verificable."
             },
             {
               "type": "paragraph",
-              "text": "Una canalización de agregación procesa documentos por etapas: por ejemplo, filtrar con `$match`, descomponer arrays con `$unwind`, agrupar con `$group` y ordenar con `$sort`. Colocar un filtro temprano puede reducir trabajo, aunque debe preservar la semántica. Los valores nulos, campos ausentes y tipos heterogéneos pueden cambiar los cálculos. La validación de esquema puede rechazar o advertir ante documentos que incumplen reglas, pero no reemplaza la validación de negocio ni la autorización. Ajusta validadores gradualmente al migrar datos heredados y observa errores de escritura. Documenta la versión del servidor y controlador, porque algunas opciones disponibles dependen de esas versiones."
+              "text": "XML Schema define elementos, atributos, tipos simples y complejos, cardinalidad mediante minOccurs/maxOccurs y facetas como mínimos y máximos. Un analizador puede leer un documento bien formado aunque falte un campo obligatorio; la validación compara el documento con el esquema acordado. XSD valida estructura y ciertos valores, pero no resuelve todas las reglas de negocio entre registros externos ni la autorización. Asocia el esquema de forma controlada, comprueba qué versión soporta el validador y prueba tanto un valor permitido como uno fuera de rango."
             },
             {
               "type": "code",
-              "text": "[MongoDB aggregation]\ndb.orders.aggregate([\n  { $match: { status: \"paid\" } },\n  { $unwind: \"$lines\" },\n  { $group: { _id: \"$lines.sku\", units: { $sum: \"$lines.quantity\" } } }\n])"
+              "text": "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n  <xs:element name=\"nota\">\n    <xs:simpleType>\n      <xs:restriction base=\"xs:decimal\">\n        <xs:minInclusive value=\"0\"/>\n        <xs:maxInclusive value=\"10\"/>\n      </xs:restriction>\n    </xs:simpleType>\n  </xs:element>\n</xs:schema>",
+              "language": "XML Schema (XSD)"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: Predice qué ocurre con pedidos no pagados y con pedidos pagados sin líneas."
+              "text": "Práctica: El documento contiene `<nota>12.5</nota>`. ¿Está bien formado? ¿Lo admite el esquema y qué regla de matrícula seguiría fuera de su alcance?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: `$match` elimina los pedidos no pagados antes de expandir líneas. `$unwind` normalmente descarta arrays vacíos o ausentes si no se configura para preservarlos; por tanto, esos pedidos no aportan al resultado. Para incluirlos, revisa `preserveNullAndEmptyArrays` y define cómo debe contar una línea ausente. La respuesta final depende del contrato de negocio y se comprueba con ejemplos frontera."
+              "text": "Respuesta razonada: El XML puede estar bien formado porque las etiquetas están cerradas, pero el validador rechaza 12.5 al superar el máximo inclusivo 10. XSD no comprueba por sí solo que el alumno esté matriculado en ese módulo en una base de datos; esa regla requiere validación de aplicación o una consulta adicional. Conserva ejemplos válidos e inválidos como pruebas del contrato."
             }
+          ],
+          "sources": [
+            "W3C · XML Schema 1.1"
           ]
         }
       ]
@@ -1476,28 +1891,37 @@
       ],
       "pages": [
         {
-          "heading": "1. Árbol, nodo de contexto y resultado",
+          "heading": "1. XML bien formado, árbol y contexto",
           "blocks": [
             {
               "type": "paragraph",
-              "text": "Objetivo: Razonar sobre el árbol XPath antes de escribir una expresión que dependa del nodo actual."
+              "text": "Objetivo: Comprobar el documento XML antes de razonar sobre el nodo de contexto y el resultado de XPath."
             },
             {
               "type": "paragraph",
-              "text": "XPath evalúa expresiones sobre un modelo de datos con nodos y valores atómicos. El contexto incluye el nodo actual, posición y tamaño de secuencia, junto con bindings de variables y namespaces que aporta el procesador. Una expresión como `.` selecciona el elemento de contexto; `..` su padre y `@id` un atributo. El resultado no tiene por qué ser un nodo: puede ser una secuencia, número, booleano o cadena. La versión del procesador y su API determinan qué funciones están disponibles y cómo se convierten los resultados. Al depurar, registra el nodo de contexto y prueba cada paso por separado antes de anidar filtros."
+              "text": "XML bien formado respeta sintaxis, raíz y anidamiento; XML válido cumple además un DTD o XSD. XPath solo puede evaluar el árbol si el documento se ha analizado correctamente. El contexto incluye nodo actual, posición y tamaño de secuencia, junto con variables y namespaces configurados por el procesador. Una expresión puede devolver nodos, secuencias, números, booleanos o cadenas. Identifica versión y API antes de usar funciones XPath 3.1 y prueba cada paso por separado cuando el resultado sea inesperado."
             },
             {
               "type": "code",
-              "text": "[XPath 3.1]\n/c:catalogo/c:libro[price gt 20]/title"
+              "text": "<catalogo><libro id=\"L1\"><titulo>Java básico</titulo><precio>24.95</precio></libro></catalogo>\n/catalogo/libro[@id=\"L1\"]/precio",
+              "language": "XML + XPath 3.1"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: Si el contexto es el segundo `libro`, ¿qué devuelve `../libro` y por qué?"
+              "text": "Antes de evaluar rutas, inspecciona la raíz y confirma si el validador exige XSD. Una etiqueta mal anidada impide construir el árbol; una restricción incumplida es un diagnóstico distinto. La API también debe especificar si devuelve nodos o un valor."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: ¿Qué sucede si se omite `</libro>`? Si el XML es correcto pero incumple el XSD, ¿puede XPath resolver la consulta antes de la validación?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Devuelve los elementos `libro` hijos del padre del nodo actual, no solo el segundo elemento. El paso `..` sube al padre y el paso `libro` vuelve a seleccionar sus hijos con ese nombre y namespace. Si se quería seleccionar el hermano anterior, se debe escoger un eje como `preceding-sibling` y limitarlo explícitamente."
+              "text": "Respuesta razonada: Sin cierre correcto, el analizador no construye un árbol y XPath no se ejecuta. Un documento bien formado pero no válido sí puede analizarse; que la aplicación permita consultarlo depende de si exige validación previa. El contexto de la expresión parte del documento si se evalúa desde la raíz; si se evalúa sobre el segundo libro, `.` es ese elemento."
             }
+          ],
+          "sources": [
+            "W3C · XML 1.0",
+            "W3C · XPath 3.1"
           ]
         },
         {
@@ -1517,12 +1941,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Un eje expresa la relación desde el nodo de contexto. child y descendant avanzan hacia abajo; parent, ancestor y preceding-sibling consultan relaciones hacia arriba o anteriores. Los ejes inversos tienen un orden de proximidad distinto, lo que puede afectar al predicado `[1]`. Para obtener el hermano inmediato anterior, combina preceding-sibling con una posición bien definida. Dibuja un árbol mínimo y anota el nodo inicial antes de interpretar una ruta extensa."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué selecciona `[1]` en el eje inverso `preceding-sibling` y qué deberías verificar en tu biblioteca?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: En el modelo XPath, el primer resultado del eje inverso es el hermano precedente más próximo, así que la expresión busca ese capítulo. Comprueba que tu procesador evalúe la abreviatura conforme a XPath y que el namespace `c` esté enlazado. Para evitar confusión, compara también la versión expandida y crea una prueba con tres hermanos."
             }
+          ],
+          "sources": [
+            "W3C · XPath 3.1"
           ]
         },
         {
@@ -1542,12 +1973,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Cada paso de una ruta establece una secuencia de nodos y sus predicados filtran esa secuencia. `[1]` en un paso no siempre equivale a `(...)[1]` sobre el resultado completo, especialmente cuando hay varios padres. `last()` permite referirse al último nodo de la secuencia de contexto, no a un identificador permanente. Prueba con tres hermanos donde solo el segundo cumple la condición y observa si la posición se aplica antes o después del filtro."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Explica por qué filtrar `@activo` antes de tomar los tres primeros importa."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Primero se forma la secuencia de alumnos activos; `position() le 3` conserva hasta tres de esa secuencia. Si se toma la primera página de alumnos antes de filtrar, podrían aparecer menos de tres activos aunque existan otros después. Para paginación real, añade orden estable por clave, pues posición documental por sí sola puede cambiar."
             }
+          ],
+          "sources": [
+            "W3C · XPath 3.1"
           ]
         },
         {
@@ -1567,12 +2005,19 @@
             },
             {
               "type": "paragraph",
+              "text": "`normalize-space` recorta extremos y convierte grupos de espacios a uno; no cambia mayúsculas ni convierte una búsqueda parcial en igualdad. `contains` responde si un texto contiene otro, mientras una comparación exacta debe expresarse con igualdad. En XPath 2.0+, `eq` es comparación de valor con cardinalidad esperada; `=` puede comparar valores de secuencias. Convierte a decimal solo tras validar o capturar errores de tipo, y documenta las entradas vacías."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué `contains(normalize-space(.), 'Ana')` no comprueba que el nombre sea exactamente Ana?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: `contains` acepta cualquier texto que incluya esa secuencia; también coincide con “Ana Ruiz” y “Mariana”. La normalización arregla espacios, no cambia una búsqueda parcial en igualdad. Para identidad textual normalizada compara `normalize-space(.) = 'Ana'`; si el idioma y mayúsculas importan, define además la política de normalización."
             }
+          ],
+          "sources": [
+            "W3C · XPath 3.1"
           ]
         },
         {
@@ -1592,12 +2037,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Los bindings de namespace forman parte del contexto estático de XPath. El prefijo de consulta puede diferir del alias escrito en el XML si ambos apuntan a la misma URI. Configura el binding en la API; los atributos sin prefijo siguen sin namespace. Guarda URI y prefijos junto a la consulta para reproducirla."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: El XML cambia de prefijo `e` a `x`, con la URI intacta. ¿Hay que cambiar la expresión?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: No, el prefijo usado por la expresión se enlaza en el contexto estático y no depende del alias escrito en el archivo. Si cambia la URI, sí se debe actualizar el vínculo. Si la API no permite declarar namespaces en la propia expresión, pasa el binding por su mecanismo de contexto y documenta ese detalle."
             }
+          ],
+          "sources": [
+            "W3C · XML Namespaces",
+            "W3C · XPath 3.1"
           ]
         },
         {
@@ -1617,12 +2070,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Los ejes pueden devolver nodos, mientras una función como count devuelve un número y una comparación puede devolver booleano. XPath 3.1 permite secuencias de valores atómicos y nodos; conserva la distinción al pasar el resultado a otra API. `cast as` exige una conversión compatible, `castable as` comprueba si puede intentarse. El tipo estático y la cardinalidad declarada ayudan al compilador, pero los datos reales todavía pueden incumplir supuestos."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué resultado representa `()` frente a `''` y por qué puede importar al consumir la consulta?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: `()` representa una secuencia sin elementos, mientras `''` es una cadena existente de longitud cero. Una API puede traducir la primera a “sin resultado” y la segunda a un campo encontrado pero vacío. Si se esperaba un único nodo, declara cómo debe tratarse ausencia, duplicidad y conversión, y verifica que el motor soporte XPath 3.1."
             }
+          ],
+          "sources": [
+            "W3C · XPath 3.1"
           ]
         },
         {
@@ -1642,12 +2102,19 @@
             },
             {
               "type": "paragraph",
+              "text": "FLWOR combina for, let, where, order by y return para transformar una secuencia. `for` enlaza cada elemento; `let` puede nombrar una expresión calculada; `where` filtra; `order by` define un orden; `return` produce el resultado. La ordenación de cadenas y números depende del tipo y la colación. Mantén explícita la conversión de nota a decimal y define el comportamiento de un texto no convertible antes de usarlo en una clasificación."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué ventaja aporta convertir la nota a decimal antes de ordenar?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La conversión hace que el orden sea numérico: de otro modo valores textuales como `10` y `8` pueden ordenarse lexicográficamente en herramientas o transformaciones que traten cadenas. Los datos no válidos pueden causar error al convertir, así que el esquema debería restringir la nota o la consulta debe definir una política de validación y error."
             }
+          ],
+          "sources": [
+            "W3C · XQuery 3.1"
           ]
         },
         {
@@ -1667,12 +2134,19 @@
             },
             {
               "type": "paragraph",
+              "text": "El XSD del ejemplo declara tipo decimal y límites, pero debe integrarse en el modelo que declara curso y alumno. `minOccurs` y `maxOccurs` se aplican a la aparición local de un elemento; facetas como minInclusive restringen su valor. XSD valida estructura y tipos en el documento, no referencias a datos externos sin una regla adicional. Fija si el proyecto usa 1.0 o 1.1: una aserción 1.1 puede no funcionar en un validador antiguo."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Una nota debe estar entre cero y diez. ¿Qué valida este fragmento y qué regla falta?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El fragmento declara un decimal obligatorio y único, pero no establece el rango. Deben añadirse facetas de mínimo y máximo apropiadas al tipo decimal y al nivel XSD elegido. También comprueba que el elemento padre use esa declaración y que la herramienta realmente soporte la versión 1.1 si el esquema usa características añadidas."
             }
+          ],
+          "sources": [
+            "W3C · XML Schema 1.1 Part 1"
           ]
         },
         {
@@ -1692,12 +2166,20 @@
             },
             {
               "type": "paragraph",
+              "text": "XSLT ejecuta plantillas sobre nodos; `match` selecciona el tipo de nodo y `apply-templates` continúa el recorrido, mientras `value-of` extrae texto. Una plantilla raíz fija el punto de entrada y limita la forma de salida. Comprueba precedencia y modo cuando varias plantillas coinciden. Mantén pruebas con entrada mínima, salida esperada y nodos no reconocidos; las reglas integradas del procesador pueden producir texto que no esperabas si no declaras una salida explícita."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Si ninguna plantilla propia coincide con un nodo, ¿por qué conviene declarar una plantilla raíz?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El procesamiento integrado puede copiar o descartar nodos según las reglas por defecto del procesador. Una plantilla raíz explícita documenta el punto de entrada y la estructura de salida esperada. También permite controlar qué nodos se recorren y evita exponer accidentalmente texto o elementos fuera del resultado previsto."
             }
+          ],
+          "sources": [
+            "W3C · XSLT 3.0",
+            "W3C · XPath 3.1"
           ]
         },
         {
@@ -1717,12 +2199,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Convierte la hoja de examen en tres comprobaciones reproducibles: selecciona títulos con precio mayor que 20, cuenta los libros y extrae el id de Java básico. Después compara `//libro[1]` con `(//libro)[1]` en una estructura con más de un catálogo. Indica el procesador y su versión, el namespace enlazado y el resultado esperado. Si se usa castable, prueba también texto que no sea decimal y una secuencia vacía. La secuencia `//libro[1]` aplica la posición en cada paso, mientras `(//libro)[1]` toma el primero del resultado global. Conserva el binding del prefijo junto al fixture para reproducir la respuesta."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué aporta `castable` y qué problema de seguridad no soluciona?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: `castable` permite comprobar si un valor puede convertirse al tipo decimal antes de convertirlo y ayuda a no fallar por texto mal formado. No protege frente a expresiones inyectadas, documentos enormes ni consultas costosas. Usa variables del procesador, limita recursos, valida estructura y prueba rendimiento con datos realistas."
             }
+          ],
+          "sources": [
+            "W3C · XPath 3.1"
           ]
         }
       ]
@@ -1763,12 +2252,19 @@
             },
             {
               "type": "paragraph",
+              "text": "En un bloque anónimo, DECLARE es opcional, pero BEGIN y END delimitan las sentencias ejecutables. EXCEPTION es opcional y maneja fallos; los puntos y coma forman parte del código, mientras la barra final la interpreta el cliente SQL*Plus/SQLcl. Un IDE puede ejecutar el bloque con otro botón o delimitador. Separa la declaración de la operación para probar una variable y una consulta a la vez."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué partes son del bloque y cuál es la barra final en SQL*Plus o SQLcl?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: `DECLARE`, `BEGIN`, las sentencias, `END` y el punto y coma forman el bloque. `/` es una instrucción del cliente que ejecuta el contenido del búfer; no se envía como una sentencia PL/SQL al servidor. Una herramienta distinta puede tener otra forma de ejecutar bloques."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference"
           ]
         },
         {
@@ -1788,12 +2284,20 @@
             },
             {
               "type": "paragraph",
+              "text": "%TYPE reutiliza el tipo declarado en una columna y %ROWTYPE describe una fila completa. Si cambia el tamaño o tipo de last_name, la variable anclada sigue el esquema al compilar el bloque. Aun así, el SELECT INTO exige una cardinalidad compatible. Usa una clave única cuando solo puede existir una persona; usa un cursor cuando varias filas son parte del resultado esperado."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué cambia si `employee_id` no es único en la tabla consultada?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El `SELECT INTO` lanza `TOO_MANY_ROWS`; no elige una fila arbitraria. Si el negocio exige una única persona, protege la clave con una restricción única y trata la excepción como anomalía. Si se esperan varias personas, modela una consulta de varias filas en vez de ocultar el error."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference",
+            "Oracle AI Database 26ai · SQL Language Reference"
           ]
         },
         {
@@ -1813,12 +2317,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Las excepciones predefinidas permiten tratar casos conocidos y RAISE propaga un error que no se ha resuelto. WHEN OTHERS debe situarse al final y no terminar silenciosamente con NULL. Una excepción no revierte automáticamente todo lo ejecutado antes; confirma qué transacción controla el cliente y si una operación de limpieza es necesaria. Registra mensaje y contexto técnico sin incluir datos sensibles ni contraseñas."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué un `WHEN OTHERS THEN NULL` puede ocultar un fallo grave?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El cliente recibe una terminación aparentemente normal aunque la operación no haya cumplido su propósito, y puede continuar con estado parcial. Si no puedes reparar el error, propágalo o tradúcelo a una excepción documentada conservando el contexto. Si escribes una traza, evita registrar datos sensibles y define su propia transacción."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference"
           ]
         },
         {
@@ -1838,12 +2349,19 @@
             },
             {
               "type": "paragraph",
+              "text": "El cursor se abre una sola vez, cada FETCH intenta obtener la siguiente fila y CLOSE libera el recurso. Comprobar c_emp%NOTFOUND justo después de FETCH evita procesar variables que conservaban la fila anterior. %ROWCOUNT informa cuántas filas se han obtenido; %ISOPEN indica estado. Si ocurre una excepción antes de CLOSE, el bloque debe terminar correctamente o elegir un FOR LOOP que gestione el ciclo de vida."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué se comprueba `%NOTFOUND` inmediatamente tras `FETCH`?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Tras `FETCH`, si no había más filas, no se debe procesar el contenido de las variables como si fuese una fila nueva. La condición de salida evita una lectura fantasma o datos anteriores. En producción, un cursor FOR LOOP elimina la gestión manual del cierre cuando no se necesita acceso explícito."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference"
           ]
         },
         {
@@ -1863,12 +2381,19 @@
             },
             {
               "type": "paragraph",
+              "text": "El parámetro p_dept permite reutilizar el mismo cursor para otro departamento sin duplicar la consulta. El registro r existe solo dentro del bucle y recibe una fila por iteración. Sin ORDER BY, la base no promete que los empleados salgan en un orden concreto. Si la consulta devuelve cero filas, el cuerpo no ejecuta ninguna vuelta; si el requisito exige al menos una, compruébalo aparte."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué ocurre con el cursor FOR LOOP si la consulta no devuelve filas?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El cuerpo del bucle ejecuta cero iteraciones, sin lanzar `NO_DATA_FOUND` solo por estar vacío. Si el negocio requiere que haya al menos una fila, comprueba ese requisito explícitamente. El parámetro limita la consulta y el cursor se cierra al salir normalmente o por excepción."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference"
           ]
         },
         {
@@ -1894,6 +2419,9 @@
               "type": "callout",
               "text": "Respuesta razonada: Una rutina solo en el cuerpo es privada a los clientes del paquete. Para que sea invocable externamente, se declara en la especificación y luego se implementa en el cuerpo. También se deben conceder privilegios apropiados al consumidor; que la firma sea pública no significa que cualquier usuario pueda ejecutarla."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Packages and Types Reference"
           ]
         },
         {
@@ -1913,12 +2441,19 @@
             },
             {
               "type": "paragraph",
+              "text": "IN transmite entrada, OUT entrega un resultado e IN OUT permite recibir y devolver un valor. Una función declara RETURN y su llamada debe respetar restricciones del contexto, especialmente cuando se invoca desde SQL. Antes de calcular dinero, fija moneda, precisión y redondeo; una tasa del 21 % es un dato del dominio, no una constante universal. Prueba base cero, negativa y NULL de acuerdo con el contrato."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué contrato adicional definirías antes de usar la función con bases negativas o nulas?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Define si `NULL` se propaga, se rechaza o se trata como cero, y si una base negativa es válida por devoluciones. La función implementa una operación financiera, así que tasa, moneda, escala y redondeo requieren reglas del dominio. No basta con que compile ni con el ejemplo de una entrada positiva."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference"
           ]
         },
         {
@@ -1934,16 +2469,25 @@
             },
             {
               "type": "code",
-              "text": "[PL/SQL]\nCREATE OR REPLACE TRIGGER orders_bi\nBEFORE INSERT ON orders\nFOR EACH ROW\nBEGIN\n  :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);\nEND;\n/"
+              "text": "CREATE OR REPLACE TRIGGER audit_status\nAFTER UPDATE OF status ON orders\nFOR EACH ROW\nBEGIN\n  INSERT INTO order_audit(order_id, old_status, new_status)\n  VALUES (:OLD.order_id, :OLD.status, :NEW.status);\nEND;\n/",
+              "language": "Oracle PL/SQL 26ai"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: ¿Por qué una fecha predeterminada puede declararse como `DEFAULT` en vez de trigger?"
+              "text": "Una restricción declarativa como CHECK suele comunicar mejor una condición simple que una lógica escondida. El trigger del ejemplo registra cambio de estado después del UPDATE y conserva ambos valores para auditoría. :OLD y :NEW dependen del evento; insertar no tiene un estado anterior y borrar no tiene uno nuevo. No consultes la tabla mutante desde un trigger por fila sin revisar las restricciones de Oracle y el diseño."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: ¿Qué pseudorregistro se consulta en INSERT, DELETE y UPDATE? ¿Por qué un DEFAULT suele bastar para completar una fecha?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Una cláusula `DEFAULT` suele hacer más visible la regla y elimina código de trigger cuando solo se trata de completar un valor ausente. El trigger puede ser necesario si hay lógica contextual adicional. Comprueba la semántica de valores nulos, permisos y compatibilidad del esquema antes de elegir."
+              "text": "Respuesta razonada: En INSERT se consulta :NEW; en DELETE, :OLD; en UPDATE, ambos representan el valor nuevo y el anterior. Las condiciones INSERTING, DELETING y UPDATING permiten distinguir el evento. Si la regla solo asigna un valor inicial, DEFAULT suele ser más visible; reserva el trigger para lógica que necesite contexto adicional."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference",
+            "Oracle AI Database 26ai · SQL Language Reference"
           ]
         },
         {
@@ -1963,12 +2507,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Una operación set-based permite que SQL cambie todas las filas seleccionadas en una sentencia y deja al motor optimizar el conjunto. Un cursor tiene sentido cuando la lógica requiere una acción por fila que no se puede expresar razonablemente en SQL. COMMIT dentro de una rutina interna puede confirmar cambios previos del llamador. Deja claro quién decide la transacción y prueba rollback para comprobar que la ruta de error no persiste datos."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué ventaja aporta dejar `COMMIT` al código que coordina la transacción?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El llamador puede combinar varias operaciones y confirmarlas o revertirlas como una unidad. Si una rutina interna confirma por su cuenta, la aplicación pierde esa posibilidad y puede persistir un estado incompleto. El contrato debe indicar claramente quién controla la transacción y qué fallos producen rollback."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference",
+            "Oracle AI Database 26ai · SQL Language Reference"
           ]
         },
         {
@@ -1988,12 +2540,20 @@
             },
             {
               "type": "paragraph",
+              "text": "SQL%ROWCOUNT informa cuántas filas afectó la sentencia SQL implícita más reciente; cero filas puede ser un resultado válido sin excepción. SAVEPOINT permite volver a un punto dentro de la transacción, pero no sustituye una prueba aislada. Verifica plan y cardinalidad de la consulta antes de añadir un índice. El despliegue versiona especificación, cuerpo, tablas, privilegios y migraciones como una unidad reproducible."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué comprobar `SQL%ROWCOUNT` y probar después un rollback?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La sentencia válida puede afectar cero filas sin generar excepción; comprobar el contador convierte ese caso en un resultado explícito. Un rollback verifica que el bloque no dejó persistencia accidental en la prueba. En una aplicación, el identificador de pedido y los permisos deben validarse dentro del flujo transaccional."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference",
+            "Oracle AI Database 26ai · SQL Language Reference"
           ]
         }
       ]
@@ -2042,12 +2602,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Escribe la firma antes del cuerpo y traduce cada frase del enunciado a una condición comprobable. Una colección vacía, un valor exactamente igual al límite y una entrada nula suelen revelar supuestos no escritos. Si null no está permitido, valida o documenta la excepción; si se permite, define el resultado. Esto permite explicar por qué el método devuelve un valor y evita diseñar una solución basada solo en el ejemplo feliz."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Define tres casos de prueba, incluido uno límite, para `contarMayores`."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Con `[]` el resultado esperado es `0`; con `[4, 7, 7]` y límite `7`, es `0` porque la comparación es estricta; con `[8, 7]` es `1`. El enunciado debe decidir qué hacer con `null`, ya que el fragmento lanza `NullPointerException` y no lo maneja explícitamente."
             }
+          ],
+          "sources": [
+            "Oracle · Java Language Specification, Java SE 21"
           ]
         },
         {
@@ -2067,12 +2634,19 @@
             },
             {
               "type": "paragraph",
+              "text": "removeIf elimina todas las coincidencias y administra el recorrido internamente. remove(Integer.valueOf(4)) selecciona la sobrecarga por objeto, mientras remove(4) intenta borrar la posición 4. Un Iterator permite eliminar durante una iteración si se usa iterator.remove; cambiar la lista directamente en un for-each puede provocar ConcurrentModificationException. Prueba duplicados consecutivos para comprobar que la eliminación no se salta el segundo elemento."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Cómo eliminarías solo la primera aparición del valor 4 y qué ambigüedad evitarías?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: `values.remove(Integer.valueOf(4))` selecciona la sobrecarga que elimina por objeto; `values.remove(4)` intenta eliminar el índice 4. `removeIf` elimina todas las apariciones que cumplen el predicado. La respuesta depende de si el contrato dice primera coincidencia o todos los valores pares."
             }
+          ],
+          "sources": [
+            "Oracle · Java SE 21 Collections API"
           ]
         },
         {
@@ -2092,12 +2666,19 @@
             },
             {
               "type": "paragraph",
+              "text": "getOrDefault evita una búsqueda seguida de una rama manual cuando una palabra aparece por primera vez. La clave debe tener igualdad y hash coherentes; si no, una palabra idéntica puede ocupar dos entradas distintas. La frecuencia puede actualizarse con merge o compute, pero elige una expresión que el examinador pueda leer con claridad. Si necesitas orden alfabético al imprimir, ordena las claves o usa TreeMap."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué ocurre si `words` contiene `null` y el mapa es `HashMap`?"
             },
             {
               "type": "callout",
               "text": "`HashMap` admite la clave nula y su implementación de `merge` la cuenta bajo esa clave; no lanza `NullPointerException` por ese motivo. `merge` sí exige que el valor nuevo y la función de combinación no sean nulos. Si el dominio no permite palabras nulas, recházalas o normalízalas explícitamente antes de contarlas."
             }
+          ],
+          "sources": [
+            "Oracle · Java SE 21 Collections API"
           ]
         },
         {
@@ -2117,12 +2698,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Comparable define el orden natural mediante compareTo y Comparator permite pasar criterios alternativos sin cambiar la clase. Para ordenar por precio y desempatar por nombre, compón criterios o compara sucesivamente. No calcules `a - b` con enteros para obtener el signo: el desbordamiento puede invertir el resultado; utiliza Integer.compare o Double.compare. Define qué debe pasar con valores iguales y comprueba el orden de una lista pequeña a mano."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué `Integer.compare(a.age(), b.age())` es preferible a `a.age() - b.age()`?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: `Integer.compare` no puede desbordarse por una resta intermedia y expresa directamente el resultado requerido. La resta puede producir signo incorrecto para edades u otros enteros extremos. Si la edad es el único criterio, dos personas pueden empatar; añade un desempate si el orden total de salida debe ser reproducible."
             }
+          ],
+          "sources": [
+            "Oracle · Java SE 21 Collections API",
+            "Oracle · Java Language Specification, Java SE 21"
           ]
         },
         {
@@ -2142,12 +2731,19 @@
             },
             {
               "type": "paragraph",
+              "text": "El constructor garantiza que el objeto nace dentro de su dominio y los métodos conservan esa condición. Un campo private protege la representación, pero los getters que devuelven una colección mutable pueden volver a exponerla. Copia defensivamente o devuelve una vista inmutable cuando la regla lo requiera. La prueba debe intentar tanto una creación inválida como una operación que rompería el estado y comprobar que no cambió nada."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué regla falta para que esta clase proteja realmente el saldo?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El constructor debe validar que `inicial` no sea nulo y cumpla la regla de saldo; además, las operaciones de ingreso y retirada deben validar importes y preservar la invariante. Un getter no debe permitir mutar el objeto devuelto si el estado fuera una colección. La encapsulación solo ayuda cuando los caminos de escritura están controlados."
             }
+          ],
+          "sources": [
+            "Dev.java · Object-Oriented Programming"
           ]
         },
         {
@@ -2167,12 +2763,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Composición describe una colaboración: un servicio recibe un repositorio o una política y delega el trabajo. Una interfaz da un contrato intercambiable; una jerarquía de clases añade relación de subtipo y obliga a respetar sus garantías. Para examen, dibuja las dependencias y pregunta qué cambio requiere modificar más clases. Un doble de prueba sencillo permite comprobar la interacción sin una base de datos real."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Cómo probarías que un informe recibe la fecha correcta sin depender del reloj real?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Sustituye `Clock` por una implementación fija que devuelva un instante conocido y verifica el contenido generado. Así la prueba es determinista y no falla al cruzar medianoche o cambiar la zona horaria. En producción, la implementación real puede delegar en `Instant.now()`."
             }
+          ],
+          "sources": [
+            "Dev.java · Object-Oriented Programming"
           ]
         },
         {
@@ -2192,12 +2795,19 @@
             },
             {
               "type": "paragraph",
+              "text": "NumberFormatException es unchecked y puede capturarse al convertir una entrada, mientras IOException es checked y debe capturarse o declararse. Captura cerca del límite donde puedas mostrar cómo corregir el dato; evita catch(Exception) que oculte fallos de programación. Si la entrada es inválida, no la sustituyas por cero salvo que el enunciado lo pida. Prueba texto vacío, letras, límites válidos y valores fuera del dominio."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué entradas producen `NumberFormatException` y cuáles `IllegalArgumentException`?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Una cadena no convertible, como `\"abc\"`, produce `NumberFormatException`, que hereda de `IllegalArgumentException`. Una cadena válida que representa cero o un entero negativo produce la excepción explícita del método. Si la interfaz necesita diferenciar mensajes, captura con cuidado y traduce a un error de dominio documentado."
             }
+          ],
+          "sources": [
+            "Oracle · Java Language Specification, Java SE 21"
           ]
         },
         {
@@ -2217,12 +2827,19 @@
             },
             {
               "type": "paragraph",
+              "text": "BufferedReader permite recorrer líneas sin cargar el fichero completo; Files.newBufferedReader recibe la ruta y la codificación. try-with-resources cierra automáticamente el lector al acabar o si se produce IOException. Usa UTF-8 cuando el contrato lo establezca y distingue fichero ausente de error de permisos si el usuario puede recuperarse de ellos. En las pruebas, usa contenido temporal y elimina el recurso al terminar."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué no usarías `readString` para un archivo de tamaño ilimitado proporcionado por un usuario?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: El método carga el contenido completo en memoria, por lo que un archivo enorme puede agotar recursos. Se debe limitar tamaño y utilizar lectura en streaming. También hay que validar que la ruta esté dentro del área permitida, comprobar permisos y gestionar `IOException` en el punto donde se pueda explicar o recuperar el fallo."
             }
+          ],
+          "sources": [
+            "Oracle · Java SE 21 Files API"
           ]
         },
         {
@@ -2242,12 +2859,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Una prueba JUnit debe expresar el contrato con assertEquals, assertTrue o assertThrows. Un caso por límite evita que una sola prueba mezcle varias causas de fallo. No compruebes métodos privados ni el orden interno de llamadas si el resultado público es suficiente. Las pruebas deben ser deterministas y no depender de red o reloj. Si el cambio de implementación rompe una prueba aunque el comportamiento siga igual, revisa su acoplamiento."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Añade una prueba para el array vacío y explica la expectativa."
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La expectativa es cero, porque no existe ningún elemento mayor que el límite. Esa prueba detecta inicializaciones incorrectas y accesos al primer índice sin validar longitud. Añade también un caso con un valor igual al límite para confirmar que el enunciado usa `>` y no `>=`."
             }
+          ],
+          "sources": [
+            "JUnit 5.14.4 · User Guide"
           ]
         },
         {
@@ -2263,16 +2887,25 @@
             },
             {
               "type": "code",
-              "text": "[Java 21]\nstatic Optional<String> primeroMayor(List<String> valores, int minimo) {\n    return valores.stream().filter(s -> s.length() > minimo).findFirst();\n}"
+              "text": "import java.util.HashMap;\nimport java.util.Map;\n\nrecord Contacto(String nombre, String email) {}\nclass Agenda {\n  private final Map<String, Contacto> contactos = new HashMap<>();\n  boolean alta(Contacto c) {\n    return contactos.putIfAbsent(c.email(), c) == null;\n  }\n}",
+              "language": "Java 21"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: ¿Qué significa que `findFirst` dependa del orden de la lista y qué debes especificar?"
+              "text": "putIfAbsent expresa el alta sin sobrescribir el contacto existente. El email es una regla de dominio: normaliza mayúsculas si el centro las considera equivalentes. Un mini test puede preguntar getOrDefault, orden de HashSet y excepciones checked."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: Intenta dar de alta dos contactos con el mismo email. Añade además una pregunta de mini test: ¿qué diferencia hay entre Comparable y Comparator?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: El método devuelve la primera coincidencia según el orden de encuentro. Si la colección no tiene orden definido, el resultado puede variar. Para un resultado determinista, usa una lista ordenada o define un `Comparator`; además, especifica si lista nula y elementos nulos se admiten y qué significa “primero”."
+              "text": "putIfAbsent conserva el primer contacto y devuelve false ante un duplicado. Comparable define el orden natural; Comparator expresa un criterio externo, como ordenar por nombre y luego email. Puntúa cada respuesta y repasa las incorrectas explicando el motivo, no solo memorizando una opción."
             }
+          ],
+          "sources": [
+            "Oracle · Java SE 21 Collections API",
+            "Oracle · Java Language Specification, Java SE 21"
           ]
         }
       ]
@@ -2317,6 +2950,14 @@
         {
           "label": "W3C · XQuery 3.1",
           "url": "https://www.w3.org/TR/xquery-31/"
+        },
+        {
+          "label": "Oracle · Java SE 21 Collections API",
+          "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/package-summary.html"
+        },
+        {
+          "label": "WHATWG · Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
         }
       ],
       "pages": [
@@ -2337,12 +2978,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Asigna tiempo a lectura, diseño, implementación, comprobación y entrega. Antes de programar, escribe una fila de ejemplo y un caso límite; ambos sirven para comprobar que XML, tabla, objeto Java y formulario usan la misma identidad. Separa lo que pide el enunciado de la tecnología elegida. La evidencia final debe permitir a otra persona repetir la consulta o ejecutar el ejemplo sin datos personales ni dependencias no declaradas."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: El caso da cursos, alumnado y matrículas. ¿Qué resultado planeas antes de abrir el editor?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Lista entidades, relaciones y operaciones pedidas; anota una fila válida y un caso sin matrícula. Decide qué datos están en XML, SQL y objeto Java, y cómo se identifica cada entidad. Ese pequeño contrato orienta el modelo y previene que cada módulo use nombres o tipos distintos."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · SQL Language Reference"
           ]
         },
         {
@@ -2354,20 +3002,29 @@
             },
             {
               "type": "paragraph",
-              "text": "Supón que el documento usa el namespace `urn:dam:matriculas` y contiene alumnos con matrículas. El cuerpo de la ruta y los predicados usa XPath 3.1; como el ejemplo incluye `declare namespace`, el bloque completo es una consulta XQuery 3.1. Si se ejecuta solo la expresión con una API XPath, elimina el prólogo y enlaza `m` en el contexto estático; configura también `xs` si el procesador no lo ofrece. Antes de consultar, comprueba que el XML esté bien formado y que cada matrícula incluya identificador de módulo, estado y nota cuando el estado sea evaluado. XPath debe enlazar la URI a un prefijo propio del contexto estático. Una ruta absoluta concreta evita seleccionar nodos de otros vocabularios. Si se usa posición, define el orden; no confundas el primer resultado documental con el más reciente. En una respuesta de examen, muestra el resultado y explica cómo respondería la consulta si no hubiera coincidencias."
+              "text": "Supón un documento XML con namespace `urn:dam:matriculas` y matrículas con estado y nota. La expresión siguiente es XPath 3.1, no un prólogo XQuery: la aplicación enlaza el prefijo `m` a la URI antes de evaluar. Comprueba que el documento esté bien formado, que nota sea decimal y que la condición se aplique solo a matrículas evaluadas. La ruta devuelve nodos que coinciden; si no hay resultados, la secuencia queda vacía. El prefijo puede ser distinto al escrito físicamente en el XML siempre que apunte a la misma URI."
             },
             {
               "type": "code",
-              "text": "[XQuery 3.1]\ndeclare namespace m = \"urn:dam:matriculas\";\n//m:matricula[@estado = \"evaluada\"][xs:decimal(m:nota) ge 5]"
+              "text": "//m:matricula[@estado = \"evaluada\"][xs:decimal(m:nota) ge 5]",
+              "language": "XPath 3.1"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: ¿Qué ocurre si `nota` contiene `apta` en lugar de un decimal?"
+              "text": "Prueba también `count(//m:matricula)` con cero, una y varias matrículas. Si el documento emplea un namespace, configura el prefijo en la API; una ruta sin binding puede parecer correcta y devolver vacío. Conserva XML mínimo y resultado esperado como evidencia del simulacro."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: ¿Qué ocurre si nota contiene `apta` y por qué esta expresión debe evaluarse con el namespace configurado?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: La conversión directa a decimal falla. El contrato debería restringir el valor mediante XSD o la consulta debe comprobar `castable as xs:decimal` y definir qué hacer con el dato no convertible. También debe confirmarse que la regla aplique solo a matrículas evaluadas; un estado pendiente no tiene por qué tener nota."
+              "text": "Respuesta razonada: La conversión directa a decimal falla si el contenido no es numérico. Valida el dato con XSD o comprueba `castable as xs:decimal` y define cómo tratar el registro inválido. Sin enlazar m a `urn:dam:matriculas`, XPath buscaría otro nombre expandido y podría devolver una secuencia vacía. Un estado pendiente tampoco tiene por qué contener nota."
             }
+          ],
+          "sources": [
+            "W3C · XML 1.0",
+            "W3C · XPath 3.1"
           ]
         },
         {
@@ -2387,12 +3044,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Una clave primaria identifica la fila de alumno; una clave foránea impide que matrícula apunte a un alumno inexistente. La consulta de aprobados agrupa por la unidad que define el informe y filtra con HAVING cuando el criterio depende de AVG o COUNT. Comprueba que un alumno con varias matrículas no multiplique la media de forma inesperada. Ejecuta un caso con una sola nota y otro módulo sin resultados."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Cómo detectarías si el resultado duplica un alumno por tener varias matrículas aprobadas?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Define la granularidad del resultado: aquí una fila representa una matrícula aprobada, no necesariamente una persona única. Si piden alumnos, usa `EXISTS` o una agrupación adecuada; no añadas `DISTINCT` sin decidir si se debe mostrar cada módulo. Prueba un alumno con dos módulos aprobados para observar la cardinalidad."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · SQL Language Reference"
           ]
         },
         {
@@ -2412,12 +3076,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Una reserva de plazas cambia una cantidad y crea una matrícula; si solo una operación confirma, el sistema deja datos incoherentes. Agrupa ambas en la transacción, valida filas afectadas y usa ROLLBACK si falla una regla. Usa placeholders del controlador para valores y deja que el driver los enlace; no concatenes cadenas recibidas del formulario. Prueba una inscripción duplicada y una plaza agotada en una base de pruebas."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Cuándo insertas la matrícula y cómo respondes si se actualizaron cero filas?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Inserta solo si la actualización afectó exactamente una fila. Si afectó cero, no quedaban plazas o el módulo no existe; no insertes la matrícula y devuelve el resultado de negocio correspondiente. La transacción y restricciones únicas protegen consistencia adicional; el bloqueo y nivel de aislamiento deben probarse con concurrencia real."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · SQL Language Reference"
           ]
         },
         {
@@ -2437,12 +3108,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Un cursor explícito sirve para procesar múltiples filas en PL/SQL, pero una consulta de conjunto es más simple cuando basta con insertar o actualizar todos los registros. Comprueba `%NOTFOUND` tras FETCH antes de usar variables y cierra el cursor. Si el informe no tiene alumnos, el bloque debe comunicar “sin resultados” o producir cero certificados según el contrato, no emitir una fila anterior que quedó en memoria."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué este bloque no demuestra todavía que un certificado se haya guardado?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: `DBMS_OUTPUT` solo escribe una línea en el buffer de salida de la sesión; no inserta ni confirma un certificado. Para persistir, hace falta una tabla y una operación DML, con claves idempotentes y una política de transacción. La salida de consola sirve para revisión, no como prueba de persistencia."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · PL/SQL Language Reference"
           ]
         },
         {
@@ -2462,12 +3140,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Map agrupa notas por clave de módulo; getOrDefault inicializa el contador o suma en cero sin una rama separada. Define qué ocurre si la nota está ausente y valida que no se añada un null a la media. ArrayList conserva posiciones; HashMap no ordena claves para el informe. Si se necesita salida determinista, ordena por código antes de presentar. Calcula a mano dos notas de un módulo para validar el acumulador."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué caso falla en este método si `values` está vacío?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La división usa divisor cero y lanza `ArithmeticException`. Decide si no hay media debe producir `Optional.empty()`, un error de dominio o una convención documentada; no inventes cero, pues cero sería una media real. Valida también nulos y fija escala y redondeo."
             }
+          ],
+          "sources": [
+            "Oracle · Java SE 21 Collections API",
+            "Oracle · Java Language Specification 21"
           ]
         },
         {
@@ -2487,12 +3173,20 @@
             },
             {
               "type": "paragraph",
+              "text": "La etiqueta debe nombrar el control y el atributo name identifica el campo enviado. required aporta una comprobación cliente, no autorización ni validación final. Muestra el error junto al campo y conserva los valores corregibles. Tab debe recorrer controles en un orden lógico y el foco debe ser visible. Si el formulario de matrícula se envía a un servidor, vuelve a comprobar identificador, plazas y permisos antes de persistir."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué el servidor debe volver a validar un correo marcado como obligatorio en HTML?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La persona puede desactivar o saltarse las restricciones del navegador y enviar una petición modificada. El servidor es la autoridad que valida formato, tamaño, autorización y reglas de negocio. La validación del cliente mejora la experiencia y da errores tempranos; no es una frontera de seguridad."
             }
+          ],
+          "sources": [
+            "WHATWG · HTML Living Standard",
+            "W3C WAI · Forms"
           ]
         },
         {
@@ -2512,12 +3206,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Comprueba response.ok, analiza JSON y valida los campos antes del estado listo: un 200 no certifica el formato. Representa carga, error y datos en estados distintos para no mostrar información obsoleta. Cancela o ignora peticiones anteriores cuando cambie el filtro, y prueba fallo de red, 404 y campos ausentes."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué riesgo hay en asumir que `modulos` es siempre un array válido?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La respuesta puede tener otro formato, estar vacía o provenir de un servidor con error de contrato. Comprueba `Array.isArray` y valida los campos requeridos antes de usarlos. Mantén salida segura con `textContent`, muestra un mensaje útil en el estado de error y no expongas detalles internos del servidor."
             }
+          ],
+          "sources": [
+            "ECMA · ECMAScript 2025",
+            "WHATWG · Fetch Standard"
           ]
         },
         {
@@ -2537,12 +3239,20 @@
             },
             {
               "type": "paragraph",
+              "text": "La traza se reduce al primer límite donde difiere el valor esperado: compara identificador, tipo y cardinalidad en cada paso. No cambies varias capas simultáneamente; una reproducción mínima permite saber si el fallo está en el JOIN, la conversión o el renderizado."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: La base de datos tiene la nota correcta, pero la web muestra otra. ¿Qué fronteras revisarías primero?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Compara el registro por su ID en la consulta y su proyección, revisa la conversión a DTO y el JSON serializado, y observa qué respuesta recibió el navegador. Si el servidor devuelve el dato correcto, inspecciona estado y renderizado del cliente; si no, retrocede al JOIN y a la condición SQL. Cambia una sola frontera y reproduce."
             }
+          ],
+          "sources": [
+            "Oracle AI Database 26ai · SQL Language Reference",
+            "Oracle AI Database 26ai · PL/SQL Language Reference"
           ]
         },
         {
@@ -2554,20 +3264,35 @@
             },
             {
               "type": "paragraph",
-              "text": "La entrega debe incluir los archivos pedidos y una explicación breve de decisiones. Anota motor y versión para SQL y PL/SQL, versión Java y navegador o runtime si afectan compatibilidad. Ejecuta pruebas, incluye datos mínimos reproducibles y muestra salidas esperadas. Revisa que no haya credenciales, rutas personales ni información de alumnado en el repositorio. La autoevaluación puede puntuar cumplimiento del contrato, casos límite, claridad del modelo, manejo de errores y evidencia de ejecución. Un punto parcial razonado vale más que ocultar una decisión no resuelta; identifica su supuesto y explica cómo lo verificarías con la documentación oficial."
-            },
-            {
-              "type": "code",
-              "text": "[Rúbrica]\nContrato 30 % · datos y consultas 25 % · implementación 25 % · pruebas y explicación 20 %"
+              "text": "Entrega los archivos solicitados y una explicación breve de decisiones. Anota motor y versión para SQL/PLSQL, Java y runtime si afectan a la compatibilidad. Incluye datos mínimos reproducibles, salida esperada y resultado observado. Evalúa contrato, modelo, implementación, pruebas y explicación con 2 puntos por respuesta completa, 1 por parcial y 0 por incorrecta: con 8/10 o más pasa a práctica; con menos de 6/10 repasa y repite justificando los errores. Elimina credenciales y datos reales del alumnado antes de entregar."
             },
             {
               "type": "paragraph",
-              "text": "Práctica: ¿Qué evidencia distingue una consulta correcta de una consulta que solo compila?"
+              "text": "Rúbrica: 2 puntos para contrato y límites; 2 para XML/XPath; 2 para SQL/PLSQL; 2 para Java/Web; 2 para pruebas y explicación."
+            },
+            {
+              "type": "code",
+              "text": "int score = 7;\nString plan = score >= 8 ? \"apto\" :\n    score >= 6 ? \"revisar\" : \"repetir\";",
+              "language": "java"
+            },
+            {
+              "type": "paragraph",
+              "text": "El ejercicio puede incluir cinco respuestas cortas: XPath, SELECT INTO, Comparable, LEFT JOIN y await. Puntúa cada una, explica el error con una fuente y repite solo las que no alcanzan el contrato. Guarda la hoja de resultados para comparar el segundo intento."
+            },
+            {
+              "type": "paragraph",
+              "text": "Práctica: Puntúa 7/10 con una respuesta incompleta sobre LEFT JOIN. ¿Qué debe revisar la persona antes de repetir el simulacro?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: Incluye datos de prueba con cardinalidades conocidas, resultado esperado y resultado observado. La compilación detecta sintaxis y algunos tipos, no valida el significado del JOIN ni los filtros. Contrasta un caso normal, uno sin coincidencias y uno con duplicidad o límite; explica la diferencia respecto al contrato."
+              "text": "Respuesta razonada: 7/10 queda entre los umbrales: revisa la respuesta parcial, consulta la documentación del motor y practica un caso con alumno sin matrículas. La evidencia distingue una consulta correcta de una que solo compila: datos con cardinalidad conocida, resultado esperado y observado, incluyendo cero coincidencias y duplicados. Explica por qué el JOIN conserva o descarta la fila."
             }
+          ],
+          "sources": [
+            "W3C · XPath 3.1",
+            "Oracle AI Database 26ai · PL/SQL Language Reference",
+            "Oracle · Java Language Specification 21",
+            "WHATWG · HTML Living Standard"
           ]
         }
       ]
@@ -2628,12 +3353,21 @@
             },
             {
               "type": "paragraph",
+              "text": "El compilador usa tipos para detectar usos incompatibles y después emite JavaScript; una anotación no modifica el valor recibido. strict activa comprobaciones como strictNullChecks, y noUncheckedIndexedAccess modela que un índice puede no existir. La versión instalada y tsconfig efectiva forman parte del ejercicio: ejecuta el comando local y revisa qué configuración leyó. Las aserciones `as` desaparecen y nunca deben confundirse con parseo o validación de datos."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: Una API devuelve texto JSON. ¿Por qué no basta con escribir `const user = data as User`?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La aserción solo cambia la opinión del compilador; no examina el texto recibido y el objeto podría carecer de propiedades o tener tipos incorrectos. Analiza JSON como `unknown` y valida sus campos en runtime antes de tratarlo como `User`. Comprueba que el proyecto usa el compilador esperado y que la configuración estricta realmente se carga."
             }
+          ],
+          "sources": [
+            "TypeScript · Handbook",
+            "TypeScript · TSConfig strict",
+            "TypeScript · Release 7.0"
           ]
         },
         {
@@ -2653,12 +3387,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Una tupla expresa posiciones y tipos fijos; para una respuesta que crezca, un objeto con campos suele ser más fácil de leer que índices numéricos. readonly impide mutaciones permitidas por el tipo de esa referencia, pero otra referencia todavía puede cambiar el objeto. Con exactOptionalPropertyTypes, propiedad omitida y valor undefined explícito son casos distintos. Define el contrato de serialización y prueba objeto ausente, campo vacío y campo presente con valor normal."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Cómo distinguir “no se envió `displayName`” de un nombre vacío?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Comprueba si la propiedad existe y define por separado si `\"\"` es válida. La opción `exactOptionalPropertyTypes` evita tratar automáticamente el campo omitido como idéntico a un campo asignado `undefined`, pero no convierte una cadena vacía en ausencia. La regla pertenece al contrato de la API y debe reflejarse también en validación de runtime."
             }
+          ],
+          "sources": [
+            "TypeScript · Handbook"
           ]
         },
         {
@@ -2678,12 +3419,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Una unión discriminada agrega un campo literal como kind para que el compilador estreche el tipo dentro de cada rama. Después del switch, una variable never puede comprobar que se trataron todos los estados. Si se añade un nuevo tipo, el error de compilación guía los consumidores que faltan. No mezcles datos listos con un mensaje de error opcional si eso permite estados contradictorios; expresa las variantes válidas en el tipo."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué debería hacer la interfaz en cada variante y cómo detectar una futura variante nueva?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Muestra indicador de carga, representa `value` cuando está lista y presenta un mensaje recuperable cuando falla. En un `switch` que termina con una comprobación `const exhaustive: never = state`, añadir una variante obliga a revisar el renderizado. Los valores procedentes de JSON aún necesitan validación antes de entrar a este tipo."
             }
+          ],
+          "sources": [
+            "TypeScript · Handbook"
           ]
         },
         {
@@ -2703,12 +3451,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Una función se tipa por parámetros y retorno; un callback expresa qué argumentos recibe. `interface` describe y extiende la forma de objetos; `type` también representa uniones y tuplas. Usa inferencia si conserva el contrato y anota cuando aclara una ambigüedad."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué comprobaciones faltan para que `isUser` verifique completamente sus propiedades?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: La guarda solo verifica que existan `id` y `name`, pero no que ambos sean cadenas. Debe comprobar `typeof record.id === \"string\"` y lo mismo para `name`, tras confirmar que el valor es un objeto no nulo. En producción, contempla arrays y propiedad heredada según el formato esperado; la guarda debe garantizar realmente todo el contrato que anuncia."
             }
+          ],
+          "sources": [
+            "TypeScript · Handbook"
           ]
         },
         {
@@ -2728,12 +3483,20 @@
             },
             {
               "type": "paragraph",
+              "text": "unknown obliga a comprobar el dato antes de usarlo, mientras any permite cualquier operación y propaga la pérdida de seguridad. Tras typeof value === \"object\", todavía hay que excluir null y confirmar las propiedades. La estrechez de tipo solo es confiable para el flujo que el compilador puede analizar; datos de JSON requieren validación de cada campo en runtime. Mantén separados el error de transporte y el rechazo del esquema."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué diferencia hay entre `??` y `||` al dar un valor por defecto?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: `??` aplica el valor alternativo solo ante `null` o `undefined`; `||` también lo hace con `\"\"`, `0` y `false`. Si cero o cadena vacía pueden ser datos válidos, la elección cambia el resultado. El comportamiento debe corresponder al contrato y se cubre con pruebas para esos valores frontera."
             }
+          ],
+          "sources": [
+            "TypeScript · Handbook",
+            "TypeScript · TSConfig strict"
           ]
         },
         {
@@ -2753,12 +3516,19 @@
             },
             {
               "type": "paragraph",
+              "text": "Un parámetro genérico T conserva la relación entre entrada y salida; evita repetir una versión para cada tipo sin perder información. Una restricción `T extends { id: string }` permite leer id porque todos los tipos admitidos lo declaran. Si el tipo de salida no depende de la entrada, el genérico quizá no aporta valor. Prueba inferencia con dos tipos distintos y evita recurrir a any para silenciar una restricción mal diseñada."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué garantía aporta `T extends { id: string }` y qué no garantiza sobre datos recibidos por HTTP?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Permite leer una propiedad `id` de tipo string en cada `T`, pero no valida un objeto JSON externo. Tampoco garantiza que los IDs sean únicos; si se repiten, el mapa conserva el último valor. Valida entradas y decide explícitamente cómo tratar duplicados."
             }
+          ],
+          "sources": [
+            "TypeScript · Handbook"
           ]
         },
         {
@@ -2778,12 +3548,19 @@
             },
             {
               "type": "paragraph",
+              "text": "El constructor crea un estado inicial y los métodos públicos deben conservar las invariantes. readonly impide reasignar una propiedad durante comprobación estática; `private` de TypeScript también es una restricción del compilador, mientras los campos `#privados` tienen semántica de runtime de JavaScript. Valida valores externos antes de construir la instancia. Decide si una clase aporta identidad y comportamiento o si un objeto de datos y funciones resulta más sencillo."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué evita `#status` y por qué la propiedad `readonly createdAt` no congela el objeto Date?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: `#status` es un campo privado de JavaScript y no puede leerse directamente desde fuera de la clase. `readonly` impide reasignar la referencia durante el análisis TypeScript, pero `Date` sigue siendo mutable: métodos como `setTime` pueden cambiar su valor. Devuelve copias o usa una representación inmutable si el contrato lo exige."
             }
+          ],
+          "sources": [
+            "TypeScript · Handbook"
           ]
         },
         {
@@ -2803,12 +3580,20 @@
             },
             {
               "type": "paragraph",
+              "text": "Node mantiene versiones Current y LTS; la fecha de soporte cambia y debe comprobarse antes de fijar una versión de producción. package.json y tsconfig determinan cómo se resuelven módulos y qué sintaxis se emite. Un módulo que usa document pertenece al navegador y no debe ejecutarse directamente en Node. Fija runtime y gestor de paquetes, conserva lockfile y prueba el comando real de compilación y arranque."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Por qué un proyecto puede compilar localmente y fallar al ejecutar en producción?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Puede haber diferencias en major de Node, formato ESM/CommonJS, dependencias instaladas o archivos emitidos. El compilador comprueba tipos, pero no garantiza que el runtime tenga una API disponible. Fija versiones, reproduce el script de producción en CI y verifica la salida compilada bajo la misma versión principal de Node."
             }
+          ],
+          "sources": [
+            "Node.js · API Documentation",
+            "Node.js · Release schedule"
           ]
         },
         {
@@ -2828,12 +3613,20 @@
             },
             {
               "type": "paragraph",
+              "text": "allowJs y checkJs permiten que archivos existentes participen en comprobación; JSDoc puede documentar parámetros antes de renombrar cada archivo. Migra una frontera estable y añade pruebas de comportamiento para distinguir errores de tipos de cambios funcionales. Mantén cualquier any temporal localizado y con motivo; no lo propagues a las capas nuevas. Revisa la configuración que ejecuta CI, porque el editor puede estar comprobando un tsconfig distinto."
+            },
+            {
+              "type": "paragraph",
               "text": "Práctica: ¿Qué valor aporta `// @ts-check` en un archivo JS y qué trabajo no reemplaza?"
             },
             {
               "type": "callout",
               "text": "Respuesta razonada: Pide al editor o compilador comprobar ese archivo JavaScript y ayuda a migrar con JSDoc. No transforma las entradas en tipos runtime, no actualiza las dependencias ni reemplaza pruebas funcionales. Actívalo en módulos seleccionados, anota contratos reales y resuelve los errores en lugar de silenciarlos globalmente."
             }
+          ],
+          "sources": [
+            "TypeScript · Handbook",
+            "TypeScript · TSConfig strict"
           ]
         },
         {
@@ -2849,16 +3642,22 @@
             },
             {
               "type": "code",
-              "text": "[React 19 + TypeScript]\ntype Load<T> = { kind: \"loading\" } | { kind: \"ready\"; data: T } | { kind: \"error\"; message: string };\nfunction SubmitButton({ disabled }: { disabled: boolean }) {\n  return <button type=\"submit\" disabled={disabled}>Guardar</button>;\n}"
+              "text": "type User = { id: string; name: string };\ntype Load<T> = { kind: \"loading\" } | { kind: \"ready\"; data: T } | { kind: \"error\"; message: string };\nfunction isUser(value: unknown): value is User {\n  return typeof value === \"object\" && value !== null &&\n    \"id\" in value && typeof value.id === \"string\" &&\n    \"name\" in value && typeof value.name === \"string\";\n}\nfunction SubmitButton({ disabled }: { disabled: boolean }) {\n  return <button type=\"submit\" disabled={disabled}>Guardar</button>;\n}",
+              "language": "React + TypeScript"
             },
             {
               "type": "paragraph",
-              "text": "Práctica: ¿Por qué `setLoad({ kind: \"ready\", data: json as User })` no basta tras `fetch`?"
+              "text": "Práctica: Un servidor responde con `{ \"id\": 7, \"name\": \"Ana\" }`. ¿Debe mostrarse el estado ready si el id debe ser string?"
             },
             {
               "type": "callout",
-              "text": "Respuesta razonada: La aserción no comprueba el payload. Analiza el cuerpo como `unknown`, valida `id` y demás campos en runtime y solo entonces construye el estado `ready`. Muestra el estado `loading` mientras espera, representa errores de red y HTTP por separado si la UX lo requiere, y evita que una respuesta antigua sobreescriba la nueva."
+              "text": "Respuesta razonada: No. isUser rechaza el id numérico y el componente mantiene un estado de error con un mensaje comprensible. El tipo de TypeScript se borra al emitir JavaScript; solo el guard ejecuta una comprobación de runtime. Incluye además el estado loading y evita que una respuesta anterior reemplace la de la búsqueda actual."
             }
+          ],
+          "sources": [
+            "React · TypeScript",
+            "React · Forms",
+            "TypeScript · Handbook"
           ]
         }
       ]
