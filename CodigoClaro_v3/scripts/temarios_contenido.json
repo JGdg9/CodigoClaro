@@ -1254,38 +1254,38 @@
     {
       "track": "Kotlin",
       "title": "Coroutines",
-      "explanation": "suspend marca una función que puede ceder y reanudarse mediante operaciones suspendibles; por sí sola no crea un hilo ni inicia concurrencia. kotlinx.coroutines aporta builders como launch, que devuelve Job, y async, que devuelve Deferred con resultado. Ambos necesitan un CoroutineScope que gestione hijos y cancelación. delay suspende una coroutine sin bloquear el hilo. La cancelación es cooperativa y debe propagarse; evita iniciar tareas desligadas del ciclo de vida de la operación.",
-      "example": "[kotlin]\nimport kotlinx.coroutines.async\nimport kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\n\nsuspend fun calcular(nombre: String, valor: Int, esperaMs: Long): Int {\n    println(\"$nombre inicia\")\n    delay(esperaMs)\n    println(\"$nombre termina\")\n    return valor\n}\n\nfun main() = runBlocking {\n    val a = async { calcular(\"A\", 20, 100L) }\n    val b = async { calcular(\"B\", 22, 20L) }\n    println(\"Total: ${a.await() + b.await()}\")\n}\nContexto: Requiere la dependencia kotlinx-coroutines-core; async, delay y runBlocking pertenecen a esa biblioteca, no a Kotlin estándar.",
-      "output": "A inicia\nB inicia\nB termina\nA termina\nTotal: 42",
+      "explanation": "suspend marca una función que puede ceder y reanudarse mediante operaciones suspendibles; por sí sola no crea un hilo ni inicia concurrencia. kotlinx.coroutines aporta builders como launch y un CoroutineScope que gestiona hijos y cancelación. La cancelación es cooperativa: cancelar un Job padre se propaga a sus hijos. Los bloques finally se ejecutan durante la cancelación para liberar recursos; cancelAndJoin solicita la cancelación y espera a que termine el Job y sus hijos. delay y awaitCancellation suspenden sin bloquear el hilo.",
+      "example": "[kotlin]\nimport kotlinx.coroutines.*\nfun main() = runBlocking {\n    val iniciado = CompletableDeferred<Unit>()\n    val padre = launch {\n        try {\n            launch {\n                try { iniciado.complete(Unit); awaitCancellation() }\n                finally { println(\"Hijo ejecuta finally\") }\n            }\n            awaitCancellation()\n        } finally { println(\"Padre ejecuta finally\") }\n    }\n    iniciado.await()\n    padre.cancelAndJoin()\n    println(\"Padre e hijo terminan\")\n}\nContexto: Requiere kotlinx-coroutines-core; runBlocking, launch, CompletableDeferred y cancelAndJoin pertenecen a esa biblioteca.",
+      "output": "Se muestran ambos mensajes finally (su orden relativo no se fija). Después aparece «Padre e hijo terminan», porque cancelAndJoin espera a que concluya también el hijo.",
       "mistakes": [
         "Afirmar que suspend mueve automáticamente el trabajo a otro hilo.",
         "Lanzar tareas en un scope global que no se cancela con quien las necesita.",
-        "Olvidar await y no observar el resultado o el error de una tarea async."
+        "Suponer que cancel() espera a que termine el Job; usa cancelAndJoin() cuando debas esperar, y no ocultes la cancelación capturando CancellationException."
       ],
       "exercise": {
-        "statement": "Dentro de un scope, calcula dos valores concurrentes y combina sus resultados. Explica qué debe cancelarse si la operación principal se cancela.",
+        "statement": "Crea un Job padre con un hijo que espera mediante awaitCancellation(). Usa CompletableDeferred para saber que el hijo ha empezado; cancela el padre con cancelAndJoin() y registra un mensaje en finally en ambos. Verifica la propagación y que los dos finally ocurren antes del mensaje posterior, sin exigir un orden entre ellos.",
         "cases": [
           {
-            "input": "(10, 5)",
-            "expected": "15"
+            "input": "El hijo completa la señal y después se cancela el padre",
+            "expected": "El hijo recibe la cancelación y ejecuta su finally."
           },
           {
-            "input": "(0, 0)",
-            "expected": "0"
+            "input": "El Job padre entra en cancelación",
+            "expected": "El bloque finally del padre también se ejecuta."
           },
           {
-            "input": "(-2, 7)",
-            "expected": "5"
+            "input": "Esperar con padre.cancelAndJoin()",
+            "expected": "Cuando retorna, ambos finally han ocurrido; el mensaje posterior se imprime después."
           }
         ],
-        "solution": "[kotlin]\nimport kotlinx.coroutines.async\nimport kotlinx.coroutines.coroutineScope\nimport kotlinx.coroutines.delay\n\nprivate suspend fun calcular(nombre: String, valor: Int, esperaMs: Long): Int {\n    println(\"$nombre inicia\")\n    delay(esperaMs)\n    println(\"$nombre termina\")\n    return valor\n}\n\nsuspend fun combinar(a: Int, b: Int): Int = coroutineScope {\n    val primero = async { calcular(\"A\", a, 100L) }\n    val segundo = async { calcular(\"B\", b, 20L) }\n    primero.await() + segundo.await()\n}\nCriterio de aceptación: Los dos cálculos usan una operación suspendible; si se cancela el scope, ambos hijos respetan la cancelación.",
+        "solution": "[kotlin]\nimport kotlinx.coroutines.*\nfun main() = runBlocking {\n    val iniciado = CompletableDeferred<Unit>()\n    val padre = launch {\n        try {\n            launch {\n                try { iniciado.complete(Unit); awaitCancellation() }\n                finally { println(\"Hijo ejecuta finally\") }\n            }\n            awaitCancellation()\n        } finally { println(\"Padre ejecuta finally\") }\n    }\n    iniciado.await()\n    padre.cancelAndJoin()\n    println(\"Padre e hijo terminan\")\n}\nCriterio: aparecen ambos mensajes finally antes del mensaje final; no se exige orden entre padre e hijo.",
         "alternatives": [
-          "Usar async/await dentro de coroutineScope cuando los resultados puedan ejecutarse concurrentemente.",
-          "Llamar funciones suspend de forma secuencial si la concurrencia no aporta valor."
+          "Llamar a padre.cancel() y después padre.join() para separar la solicitud de cancelación de la espera.",
+          "Usar una señal CompletableDeferred o un canal de prueba para coordinar que el hijo ya está suspendido antes de cancelar."
         ],
-        "scenario": "Un cálculo combina dos tareas hijas bajo el mismo alcance para que su ciclo de vida dependa de la operación que las inicia.",
-        "reasoning": "coroutineScope crea un alcance estructurado y async inicia dos hijos que calculan valores mediante delay. Cada hijo anuncia el inicio, se suspende sin bloquear el hilo y anuncia al terminar; como B espera menos, normalmente termina mientras A sigue suspendida. await recupera los dos resultados y la suma produce 15, 0 y 5 en los casos indicados. Si se cancela la operación principal, coroutineScope propaga la cancelación a ambos hijos.",
-        "extension": "Haz que cada tarea hija invoque una operación suspendible y prueba cancelar el scope mientras espera; comprueba que ambas tareas hijas reciben la cancelación."
+        "scenario": "Una pantalla cancela una operación con tareas hijas al cerrarse y necesita comprobar que todas liberaron sus recursos.",
+        "reasoning": "El hijo se crea dentro del cuerpo del padre y hereda su Job. La señal evita cancelar antes de que el hijo empiece a esperar. Al cancelar el padre, la cancelación llega al hijo; cada finally registra la limpieza. cancelAndJoin no retorna hasta que el padre y sus hijos completan, por lo que el mensaje final sirve como comprobación. El orden entre los finally no es parte del contrato.",
+        "extension": "Añade otro hijo con su propio finally y verifica que cancelAndJoin retorna solo después de la limpieza de los dos hijos."
       },
       "sources": [
         {
@@ -1295,6 +1295,10 @@
         {
           "label": "JetBrains / kotlinx.coroutines — Coroutines guide",
           "url": "https://kotlinlang.org/docs/coroutines-guide.html"
+        },
+        {
+          "label": "JetBrains / Cancellation and timeouts",
+          "url": "https://kotlinlang.org/docs/cancellation-and-timeouts.html"
         }
       ]
     },
@@ -1710,6 +1714,10 @@
         {
           "label": "Equipo de React — useEffect",
           "url": "https://react.dev/reference/react/useEffect"
+        },
+        {
+          "label": "Equipo de React / You Might Not Need an Effect",
+          "url": "https://react.dev/learn/you-might-not-need-an-effect"
         }
       ]
     },
@@ -2151,7 +2159,7 @@
     {
       "track": "Java",
       "title": "Variables y tipos",
-      "explanation": "Java tiene ocho tipos primitivos: byte, short, int y long para enteros; float y double para decimales binarios; char para una unidad de código UTF-16; y boolean para true o false. String, arrays y objetos son tipos de referencia. Ampliar un tipo numérico suele ser implícito; reducirlo normalmente requiere un cast y puede perder información. Java admite una excepción para algunas constantes enteras representables, por ejemplo byte nivel = 3.",
+      "explanation": "Java tiene ocho tipos primitivos: byte, short, int y long para enteros; float y double para decimales binarios; char para una unidad de código UTF-16; y boolean para true o false. String, arrays y objetos son tipos de referencia. Ampliar un tipo numérico suele ser implícito; reducirlo normalmente requiere un cast y puede perder información. Java admite una excepción para algunas constantes enteras representables, por ejemplo byte nivel = 3. String es una clase, no un tipo primitivo. Para comparar su contenido usa equals(); con referencias, == comprueba si ambas apuntan al mismo objeto.",
       "example": "[java]\npublic class Main {\n    public static void main(String[] args) {\n        byte nivel = 3;\n        int unidades = 3;\n        double precio = 2.5;\n        int precioEntero = (int) precio; // pierde la parte decimal\n        final String moneda = \"EUR\";\n        System.out.println(nivel + \" · \" + (unidades * precio) + \" \" + moneda + \" · \" + precioEntero);\n    }\n}",
       "output": "3 · 7.5 EUR · 2",
       "mistakes": [
@@ -2192,6 +2200,14 @@
         {
           "label": "Oracle — JLS, conversiones y asignaciones",
           "url": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html#jls-5.2"
+        },
+        {
+          "label": "Oracle — JLS, operadores de igualdad, Java SE 25",
+          "url": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.21"
+        },
+        {
+          "label": "Oracle — String API, Java SE 25",
+          "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html"
         }
       ]
     },
@@ -2672,38 +2688,40 @@
     {
       "track": "Java",
       "title": "Colecciones",
-      "explanation": "List conserva orden y admite duplicados; Set representa elementos únicos; Map relaciona claves y valores. ArrayList y HashSet son implementaciones habituales. Programa contra interfaces para expresar el comportamiento requerido; no confíes en el orden de HashSet o HashMap.",
+      "explanation": "List conserva orden y admite duplicados; Set representa elementos únicos; Map relaciona claves y valores. ArrayList y HashSet son implementaciones habituales. Programa contra interfaces; no confíes en el orden de HashSet o HashMap. En ArrayList, remove(int) elimina por índice y remove(Object) elimina la primera coincidencia. Comparable define el orden natural; TreeMap ordena sus claves con esa comparación y considera una clave equivalente a otra cuando compareTo devuelve cero. Añade un desempate si varias claves pueden compartir el criterio principal. En colecciones hash, equals() y hashCode() deben respetar su contrato.",
       "example": "[java]\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        List<String> nombres = new ArrayList<>(List.of(\"Luz\",\"Paz\",\"Luz\"));\n        Set<String> unicos = new HashSet<>(nombres);\n        Map<String,Integer> cuenta = new HashMap<>();\n        for (String nombre : nombres) cuenta.merge(nombre, 1, Integer::sum);\n        System.out.println(nombres.size() + \", \" + unicos.size());\n        System.out.println(cuenta.get(\"Luz\"));\n    }\n}",
       "output": "3, 2\n2",
       "mistakes": [
         "Esperar que List rechace duplicados.",
         "Suponer que HashMap conserva el orden de inserción.",
-        "Modificar la colección durante un for-each."
+        "Confundir remove(2), que elimina el índice 2 en ArrayList<Integer>, con remove(Integer.valueOf(2)), que elimina el primer valor 2.",
+        "Sobrescribir equals sin mantener el contrato de hashCode en claves de HashMap o elementos de HashSet.",
+        "Ordenar productos solo por precio y devolver cero para nombres distintos; TreeMap los trataría como la misma clave."
       ],
       "exercise": {
-        "statement": "Cuenta las frecuencias de palabras de una lista.",
+        "statement": "Muestra en dos copias de una ArrayList la diferencia entre remove(2) y remove(Integer.valueOf(2)). Después implementa Producto como Comparable, con orden natural por precio y desempate por nombre, y guarda productos en un TreeMap. Incluye una inserción repetida de la misma clave.",
         "cases": [
           {
-            "input": "[\"sol\",\"luna\",\"sol\"]",
-            "expected": "sol=2, luna=1"
+            "input": "valores=[7,2,9,2]; aplicar remove(2) y remove(Integer.valueOf(2)) en copias separadas",
+            "expected": "remove(2) => [7, 2, 2]; remove(Integer.valueOf(2)) => [7, 9, 2]"
           },
           {
-            "input": "[]",
-            "expected": "mapa vacío"
+            "input": "TreeMap con (B,5)=1, (A,5)=2 y (C,3)=1",
+            "expected": "Orden natural: C:3=1, A:5=2, B:5=1; el desempate por nombre conserva A y B."
           },
           {
-            "input": "[\"mar\"]",
-            "expected": "mar=1"
+            "input": "Insertar (A,5)=2 y luego otra vez (A,5)=4",
+            "expected": "Primero C:3=1, A:5=2, B:5=1; tras insertar (A,5)=4: C:3=1, A:5=4, B:5=1. La clave equivalente actualiza su valor."
           }
         ],
-        "solution": "[java]\nimport java.util.*;\npublic class Main {\n    static Map<String,Integer> contar(List<String> palabras) {\n        Map<String,Integer> r = new HashMap<>();\n        for (String palabra : palabras) r.merge(palabra, 1, Integer::sum);\n        return r;\n    }\n    public static void main(String[] args) { System.out.println(contar(List.of(\"sol\",\"luna\",\"sol\"))); }\n}",
+        "solution": "[java]\nimport java.util.*;\nrecord Producto(String nombre, int precio) implements Comparable<Producto> {\n    @Override public int compareTo(Producto otro) {\n        int c = Integer.compare(precio, otro.precio);\n        return c != 0 ? c : nombre.compareTo(otro.nombre);\n    }\n}\npublic class Main {\n    public static void main(String[] args) {\n        var porIndice = new ArrayList<>(List.of(7, 2, 9, 2));\n        var porValor = new ArrayList<>(porIndice);\n        porIndice.remove(2);\n        porValor.remove(Integer.valueOf(2));\n        System.out.println(porIndice + \" / \" + porValor);\n        var mapa = new TreeMap<Producto, Integer>();\n        mapa.put(new Producto(\"B\", 5), 1); mapa.put(new Producto(\"A\", 5), 2);\n        mapa.put(new Producto(\"C\", 3), 1); mapa.forEach((p, n) -> System.out.println(p.nombre() + \":\" + p.precio() + \"=\" + n));\n        mapa.put(new Producto(\"A\", 5), 4); mapa.forEach((p, n) -> System.out.println(p.nombre() + \":\" + p.precio() + \"=\" + n));\n    }\n}",
         "alternatives": [
-          "Usar groupingBy de Streams si expresa mejor la transformación.",
-          "Usar TreeMap cuando el resultado requiera claves ordenadas."
+          "Usar Comparator.comparingInt(...).thenComparing(...) y pasarlo a TreeMap cuando el orden pertenezca a la colección y no al tipo.",
+          "Usar TreeMap<String, Integer> para frecuencias cuando las claves de texto deban imprimirse ordenadas."
         ],
-        "scenario": "Un analizador cuenta cuántas veces aparece cada palabra en un registro de actividad.",
-        "reasoning": "Map.merge crea el contador con 1 o suma 1 al existente, y una lista vacía deja el mapa vacío. HashMap no garantiza el orden de impresión ni el formato exacto indicado en el caso; TreeMap es una alternativa si se pide ordenar las claves.",
-        "extension": "Con las palabras \"sol\", \"mar\", \"sol\", exige la representación ordenada \"mar=1, sol=2\" y define si se incluyen llaves."
+        "scenario": "Un inventario necesita eliminar por posición o por valor y presentar productos primero por precio y luego por nombre.",
+        "reasoning": "remove(2) selecciona el tercer elemento (9), mientras que remove(Integer.valueOf(2)) busca y elimina la primera coincidencia. Producto compara precio y, si empata, nombre; por eso A y B se conservan y C aparece primero. La segunda inserción de A con el mismo precio compara como cero y reemplaza su valor en TreeMap. Los resultados de los tres casos se pueden comprobar directamente.",
+        "extension": "Prueba dos productos con nombres distintos y el mismo precio, y después dos objetos con el mismo nombre y precio. Comprueba el orden y explica cuándo TreeMap reemplaza el valor de una clave equivalente."
       },
       "sources": [
         {
@@ -2713,6 +2731,22 @@
         {
           "label": "Oracle — Java Collections Framework",
           "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/package-summary.html"
+        },
+        {
+          "label": "Oracle — Object.equals y hashCode, Java SE 25",
+          "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Object.html"
+        },
+        {
+          "label": "Oracle / ArrayList.remove(int) y remove(Object), Java SE 25",
+          "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/ArrayList.html"
+        },
+        {
+          "label": "Oracle / Comparable, Java SE 25",
+          "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/Comparable.html"
+        },
+        {
+          "label": "Oracle / TreeMap, Java SE 25",
+          "url": "https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/TreeMap.html"
         }
       ]
     },
@@ -2858,6 +2892,10 @@
         {
           "label": "MDN — Grammar and types",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types"
+        },
+        {
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -2905,6 +2943,10 @@
         {
           "label": "MDN — Grammar and types",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types"
+        },
+        {
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -2952,6 +2994,10 @@
         {
           "label": "MDN — Grammar and types",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types"
+        },
+        {
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -2999,6 +3045,10 @@
         {
           "label": "MDN — Indexed collections",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections"
+        },
+        {
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -3046,6 +3096,10 @@
         {
           "label": "MDN — Closures",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures"
+        },
+        {
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -3093,6 +3147,10 @@
         {
           "label": "MDN — Working with objects",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects"
+        },
+        {
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -3140,6 +3198,10 @@
         {
           "label": "MDN — Document.querySelector",
           "url": "https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector"
+        },
+        {
+          "label": "WHATWG — DOM Standard",
+          "url": "https://dom.spec.whatwg.org/"
         }
       ]
     },
@@ -3187,6 +3249,10 @@
         {
           "label": "MDN — JavaScript language overview",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Language_overview"
+        },
+        {
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -3234,6 +3300,10 @@
         {
           "label": "MDN — async function",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"
+        },
+        {
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -3281,6 +3351,14 @@
         {
           "label": "MDN — JSON",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON"
+        },
+        {
+          "label": "IETF — RFC 8259: The JavaScript Object Notation (JSON) Data Interchange Format",
+          "url": "https://www.rfc-editor.org/rfc/rfc8259.html"
+        },
+        {
+          "label": "WHATWG — Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
         }
       ]
     },
@@ -3326,8 +3404,8 @@
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_classes"
         },
         {
-          "label": "ECMA International — ECMAScript specification",
-          "url": "https://tc39.es/ecma262/"
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -3375,6 +3453,10 @@
         {
           "label": "MDN — Error",
           "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error"
+        },
+        {
+          "label": "ECMA International — ECMAScript 2026 Language Specification",
+          "url": "https://tc39.es/ecma262/2026/"
         }
       ]
     },
@@ -3516,6 +3598,10 @@
         {
           "label": "MDN — Cross-Origin Resource Sharing (CORS)",
           "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS"
+        },
+        {
+          "label": "WHATWG — Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
         }
       ]
     }

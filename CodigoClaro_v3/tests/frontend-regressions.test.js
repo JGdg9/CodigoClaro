@@ -213,7 +213,13 @@ test('la configuración pública controla el alta y la visibilidad del CTA del h
   assert.match(panel, /<button id="landingRegister" class="btn hidden" type="button" onclick="showAuth\('register'\)">Crear cuenta<\/button>/);
   assert.ok(panel.includes('id="topAuth" onclick="showAuth()">Iniciar sesión</button>'));
   assert.ok(panel.includes('href="/temarios.html">Explorar temarios</a>'));
-  assert.ok(panel.includes('href="/aula.html">Abrir Aula e IDE</a>'));
+  assert.ok(panel.includes('href="/aula.html">Abrir Aula, IDE y tutor local</a>'));
+  assert.ok(panel.includes('class="landing-premium-link" href="#premium">Ver prototipo Premium (en evaluación)</a>'));
+  assert.match(panel, /landing-premium-link \{ color: #3f3a35 !important; font-size: 14px; font-weight: 500; \}/);
+  assert.match(aula, /<nav class="nav" id="nav" aria-label="Secciones del aula"><\/nav>/);
+  assert.match(aula, /<nav class="bottom" aria-label="Navegación móvil del aula">/);
+  assert.match(aula, /CódigoClaro v1\.4\.2/);
+  assert.doesNotMatch(aula, /CódigoClaro v1\.1\.5/);
   assert.match(panel, /api\('\/api\/config'\)\.then\(applyRegistrationConfig\)\.catch\(\(\)=>\{[^}]*registrationEnabled=false;[^}]*landingRegister[^}]*classList\.add\('hidden'\)/);
   const start = panel.indexOf('function applyRegistrationConfig(config){');
   const end = panel.indexOf('\n', start);

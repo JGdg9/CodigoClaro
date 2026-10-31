@@ -16,7 +16,7 @@ from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Preformatted, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Preformatted, Table, TableStyle, KeepTogether
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
@@ -25,7 +25,14 @@ PUB = ROOT / 'public'
 CATALOG = PUB / 'catalogo_temas.json'
 CONTENT_FILE = Path(__file__).resolve().parent / 'temarios_contenido.json'
 COMPLEMENTARY_GUIDES_FILE = Path(__file__).resolve().parent / 'guias_complementarias_contenido.json'
+MIN_PHYSICAL_PAGES = 10
 TOPIC_CONTENT = {}
+EXPANDED_REVIEW_TOPICS = {
+    ('Java', 1), ('Java', 3), ('Java', 6), ('Java', 12), ('Java', 14),
+    ('JavaScript', 1), ('JavaScript', 2), ('JavaScript', 3),
+    ('JavaScript', 4), ('JavaScript', 6), ('JavaScript', 7),
+    ('JavaScript', 10), ('JavaScript', 11), ('JavaScript', 12), ('JavaScript', 14),
+}
 
 # Registra fuentes del sistema para conservar tildes y signos en todos los bloques.
 FONT, BOLD, CODE = 'Helvetica', 'Helvetica-Bold', 'Courier'
@@ -41,18 +48,30 @@ for regular_path, bold_path, code_path in font_sets:
         FONT, BOLD, CODE = 'CC-Regular', 'CC-Bold', 'CC-Code'
         break
 
+NAVY = colors.HexColor('#243b80')
+TEAL = colors.HexColor('#087f8c')
+INK = colors.HexColor('#263244')
+MUTED = colors.HexColor('#596579')
+RULE = colors.HexColor('#d9dee8')
+PALE = colors.HexColor('#f3f5f9')
+
 styles = getSampleStyleSheet()
-styles.add(ParagraphStyle(name='CoverTitleCC', fontName=BOLD, fontSize=24, leading=28, textColor=colors.HexColor('#243b80'), spaceAfter=12, alignment=TA_LEFT))
-styles.add(ParagraphStyle(name='SubCC', fontName=FONT, fontSize=11, leading=13, textColor=colors.HexColor('#475467'), spaceAfter=4))
-styles.add(ParagraphStyle(name='H1CC', fontName=BOLD, fontSize=16, leading=18, textColor=colors.HexColor('#243b80'), spaceBefore=2, spaceAfter=3, keepWithNext=True))
-styles.add(ParagraphStyle(name='H2CC', fontName=BOLD, fontSize=10.5, leading=12, textColor=colors.HexColor('#087f8c'), spaceBefore=2, spaceAfter=1, keepWithNext=True))
-styles.add(ParagraphStyle(name='BodyCC', fontName=FONT, fontSize=10.2, leading=14.2, textColor=colors.HexColor('#263244'), spaceAfter=6))
-styles.add(ParagraphStyle(name='SmallCC', fontName=FONT, fontSize=9, leading=11.6, textColor=colors.HexColor('#596579'), spaceAfter=3))
-styles.add(ParagraphStyle(name='SourcesCC', fontName=FONT, fontSize=7.8, leading=9.8, textColor=colors.HexColor('#596579'), spaceAfter=3))
-styles.add(ParagraphStyle(name='CodeCC', fontName=CODE, fontSize=7.6, leading=9.7, leftIndent=8, rightIndent=8, backColor=colors.HexColor('#f3f5f9'), borderColor=colors.HexColor('#d8deea'), borderWidth=.5, borderPadding=5, spaceBefore=3, spaceAfter=5))
-styles.add(ParagraphStyle(name='BulletCC', parent=styles['BodyCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=4))
-styles.add(ParagraphStyle(name='BodyLastCC', fontName=FONT, fontSize=10.2, leading=14.2, textColor=colors.HexColor('#263244'), spaceAfter=6))
-styles.add(ParagraphStyle(name='BulletLastCC', parent=styles['BodyLastCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=4))
+styles.add(ParagraphStyle(name='CoverTitleCC', fontName=BOLD, fontSize=25, leading=29, textColor=NAVY, spaceAfter=12, alignment=TA_LEFT))
+styles.add(ParagraphStyle(name='SubCC', fontName=FONT, fontSize=13, leading=16, textColor=colors.HexColor('#475467'), spaceAfter=6))
+styles.add(ParagraphStyle(name='H1CC', fontName=BOLD, fontSize=21.5, leading=26.5, textColor=NAVY, spaceBefore=6, spaceAfter=8, keepWithNext=True))
+styles.add(ParagraphStyle(name='H2CC', fontName=BOLD, fontSize=15.2, leading=19.2, textColor=TEAL, spaceBefore=8, spaceAfter=5, keepWithNext=True))
+styles.add(ParagraphStyle(name='BodyCC', fontName=FONT, fontSize=13.8, leading=20.5, textColor=INK, spaceAfter=10.5))
+styles.add(ParagraphStyle(name='SmallCC', fontName=FONT, fontSize=10.7, leading=14.3, textColor=MUTED, spaceAfter=6))
+styles.add(ParagraphStyle(name='SourcesCC', fontName=FONT, fontSize=9.8, leading=13, textColor=MUTED, spaceAfter=6))
+styles.add(ParagraphStyle(name='TableHeadCC', fontName=BOLD, fontSize=10.5, leading=13, textColor=NAVY, spaceAfter=0))
+styles.add(ParagraphStyle(name='CodeCC', fontName=CODE, fontSize=9.2, leading=13.5, leftIndent=8, rightIndent=8, backColor=PALE, borderColor=RULE, borderWidth=.5, borderPadding=6, spaceBefore=5, spaceAfter=8))
+styles.add(ParagraphStyle(name='BulletCC', parent=styles['BodyCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=6))
+styles.add(ParagraphStyle(name='BodyLastCC', parent=styles['BodyCC'], backColor=PALE, borderColor=RULE, borderWidth=.5, borderPadding=7, leftIndent=5, rightIndent=5, spaceBefore=5, spaceAfter=8))
+styles.add(ParagraphStyle(name='BulletLastCC', parent=styles['BodyLastCC'], leftIndent=13, firstLineIndent=-8, bulletIndent=0, spaceAfter=5))
+styles.add(ParagraphStyle(name='ReviewTitleCC', parent=styles['H1CC'], fontSize=16.5, leading=20, spaceBefore=3, spaceAfter=4))
+styles.add(ParagraphStyle(name='ReviewH2CC', parent=styles['H2CC'], fontSize=12.2, leading=15, spaceBefore=3, spaceAfter=2))
+styles.add(ParagraphStyle(name='ReviewBodyCC', parent=styles['BodyCC'], fontSize=11.2, leading=14.8, spaceAfter=5))
+styles.add(ParagraphStyle(name='ReviewBulletCC', parent=styles['BulletCC'], fontSize=11.2, leading=14.8, spaceAfter=3))
 
 
 def esc(s):
@@ -88,17 +107,26 @@ def code_panel(value):
     return blocks
 
 def footer(canvas, doc):
-    """Dibuja el pie de página y la numeración de cada página del PDF."""
-    canvas.saveState(); w,h=A4
-    canvas.setStrokeColor(colors.HexColor('#d9dee8')); canvas.line(1.8*cm,1.35*cm,w-1.8*cm,1.35*cm)
-    canvas.setFont(FONT,7); canvas.setFillColor(colors.HexColor('#667085'))
-    canvas.drawString(1.8*cm,0.95*cm,'CódigoClaro · Síntesis basada en fuentes oficiales')
-    canvas.drawRightString(w-1.8*cm,0.95*cm,f'Página {doc.page}')
+    """Dibuja la cabecera, el pie y la numeración con la jerarquía común."""
+    canvas.saveState()
+    width, height = A4
+    left, right = 1.8 * cm, width - 1.8 * cm
+    canvas.setFont(FONT, 7.5)
+    canvas.setFillColor(MUTED)
+    canvas.drawString(left, height - .95 * cm, 'CódigoClaro · Material de estudio')
+    canvas.drawRightString(right, height - .95 * cm, 'DAM · DAW')
+    canvas.setStrokeColor(RULE)
+    canvas.line(left, height - 1.2 * cm, right, height - 1.2 * cm)
+    canvas.line(left, 1.35 * cm, right, 1.35 * cm)
+    canvas.setFont(FONT, 7.5)
+    canvas.setFillColor(MUTED)
+    canvas.drawString(left, .95 * cm, 'Síntesis basada en fuentes oficiales')
+    canvas.drawRightString(right, .95 * cm, f'Página {doc.page}')
     canvas.restoreState()
 
 def case_table(cases):
     rows = [
-        [para('Entrada', 'SmallCC'), para('Resultado esperado', 'SmallCC')],
+        [para('Entrada', 'TableHeadCC'), para('Resultado esperado', 'TableHeadCC')],
         *[[para(case['input'], 'SmallCC'), para(case['expected'], 'SmallCC')] for case in cases],
     ]
     return Table(
@@ -117,7 +145,7 @@ def case_table(cases):
 
 
 def study_table(headers, rows, widths=(5.2 * cm, 11.8 * cm)):
-    data = [[para(value, 'SmallCC') for value in headers]]
+    data = [[para(value, 'TableHeadCC') for value in headers]]
     data.extend([[para(value, 'SmallCC') for value in row] for row in rows])
     return Table(data, colWidths=list(widths), style=TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#eaf0ff')),
@@ -207,30 +235,106 @@ FAMILY_TERMS = {
 }
 
 
-def topic_family(item):
-    """Clasifica el objetivo del tema para añadir profundización pertinente."""
-    text = f"{item['title']} {item['description']}".casefold()
-    patterns = [
-        ('security', ('seguridad', 'xss', 'cors', 'secretos', 'validación de formularios')),
-        ('async', ('async', 'await', 'promesa', 'coroutine', 'asincron', 'suspend')),
-        ('generics', ('genérico', 'generics', 'variance', 'parametrizado')),
-        ('quality', ('pruebas', 'depuración', 'debug', 'excepciones', 'errores', 'testing')),
-        ('io', ('ficheros', 'archivos', 'json', 'api', 'http', 'serialización', 'red')),
-        ('modules', ('módulos', 'paquetes', 'import', 'entornos', 'node.js', 'arquitectura')),
-        ('ui', ('react', 'jsx', 'props', 'estado', 'hooks', 'efectos', 'formularios', 'dom', 'eventos', 'router', 'renderizado', 'keys')),
-        ('objects', ('clases', 'objetos', 'poo', 'constructores', 'herencia', 'polimorfismo', 'interfaces', 'dataclass')),
-        ('functions', ('métodos', 'funciones', 'lambdas', 'closures', 'parámetros', 'funciones de orden superior')),
-        ('collections', ('arrays', 'colecciones', 'listas', 'tuplas', 'diccionarios', 'conjuntos', 'mapas', 'iteradores', 'generadores')),
-        ('loops', ('bucles', 'iteración', 'recorridos')),
-        ('control', ('operadores', 'condiciones', 'condicionales', 'expresiones')),
-        ('values', ('variables', 'tipos', 'null safety', 'coerción', 'primitivos')),
-        ('foundations', ('instalación', 'primer programa', 'sintaxis y consola')),
-    ]
-    for family, words in patterns:
-        if any(word in text for word in words):
-            return family
-    return 'crosscut'
+TOPIC_FAMILIES = {
+    ('Java', 'Instalación y primer programa'): 'foundations',
+    ('Java', 'Variables y tipos'): 'values',
+    ('Java', 'Operadores y expresiones'): 'control',
+    ('Java', 'Condicionales'): 'control',
+    ('Java', 'Bucles'): 'loops',
+    ('Java', 'Arrays'): 'loops',
+    ('Java', 'Métodos'): 'functions',
+    ('Java', 'Clases y objetos'): 'objects',
+    ('Java', 'Constructores y this'): 'objects',
+    ('Java', 'Herencia y polimorfismo'): 'objects',
+    ('Java', 'Interfaces y abstractas'): 'objects',
+    ('Java', 'Excepciones'): 'quality',
+    ('Java', 'Colecciones'): 'collections',
+    ('Java', 'Genéricos y lambdas'): 'generics',
+    ('Java', 'Ficheros y pruebas'): 'io',
+    ('JavaScript', 'Sintaxis y consola'): 'foundations',
+    ('JavaScript', 'Tipos y coerción'): 'values',
+    ('JavaScript', 'Operadores y condiciones'): 'control',
+    ('JavaScript', 'Bucles e iteración'): 'loops',
+    ('JavaScript', 'Funciones'): 'functions',
+    ('JavaScript', 'Arrays y objetos'): 'collections',
+    ('JavaScript', 'DOM y eventos'): 'ui',
+    ('JavaScript', 'Módulos'): 'modules',
+    ('JavaScript', 'Promesas y async/await'): 'async',
+    ('JavaScript', 'JSON y APIs'): 'io',
+    ('JavaScript', 'Clases y POO'): 'objects',
+    ('JavaScript', 'Errores y depuración'): 'quality',
+    ('JavaScript', 'Node.js y backend'): 'modules',
+    ('JavaScript', 'Pruebas y calidad'): 'quality',
+    ('JavaScript', 'Seguridad web'): 'security',
+    ('Python', 'Instalación y primer programa'): 'foundations',
+    ('Python', 'Variables y tipos'): 'values',
+    ('Python', 'Operadores y condiciones'): 'control',
+    ('Python', 'Bucles'): 'loops',
+    ('Python', 'Listas y tuplas'): 'collections',
+    ('Python', 'Diccionarios y conjuntos'): 'collections',
+    ('Python', 'Funciones'): 'functions',
+    ('Python', 'Comprensiones y generadores'): 'collections',
+    ('Python', 'Módulos y paquetes'): 'modules',
+    ('Python', 'Excepciones'): 'quality',
+    ('Python', 'Ficheros y JSON'): 'io',
+    ('Python', 'POO y dataclasses'): 'objects',
+    ('Python', 'Librerías y entornos'): 'modules',
+    ('Python', 'Pruebas y depuración'): 'quality',
+    ('Python', 'APIs y seguridad'): 'security',
+    ('Kotlin', 'Primer programa Kotlin'): 'foundations',
+    ('Kotlin', 'val, var y tipos'): 'values',
+    ('Kotlin', 'Null safety'): 'values',
+    ('Kotlin', 'Condiciones y when'): 'control',
+    ('Kotlin', 'Bucles y rangos'): 'loops',
+    ('Kotlin', 'Funciones'): 'functions',
+    ('Kotlin', 'Colecciones'): 'collections',
+    ('Kotlin', 'Clases y data class'): 'objects',
+    ('Kotlin', 'Herencia e interfaces'): 'objects',
+    ('Kotlin', 'Lambdas y funciones de orden superior'): 'functions',
+    ('Kotlin', 'Excepciones'): 'quality',
+    ('Kotlin', 'Genéricos'): 'generics',
+    ('Kotlin', 'Coroutines'): 'async',
+    ('Kotlin', 'Ficheros y serialización'): 'io',
+    ('Kotlin', 'Pruebas y arquitectura'): 'quality',
+    ('React', 'Componentes y JSX'): 'ui',
+    ('React', 'Props'): 'ui',
+    ('React', 'Estado con useState'): 'ui',
+    ('React', 'Eventos y formularios'): 'ui',
+    ('React', 'Renderizado condicional'): 'ui',
+    ('React', 'Listas y keys'): 'ui',
+    ('React', 'useEffect'): 'ui',
+    ('React', 'Hooks personalizados'): 'ui',
+    ('React', 'Context'): 'ui',
+    ('React', 'React Router'): 'ui',
+    ('React', 'Peticiones a APIs'): 'async',
+    ('React', 'Validación de formularios'): 'ui',
+    ('React', 'Rendimiento'): 'ui',
+    ('React', 'Pruebas de componentes'): 'quality',
+    ('React', 'Seguridad y despliegue'): 'security',
+}
 
+# En estos temas la categoría general es demasiado amplia; la explicación del
+# banco oficial del tema y sus ejemplos son el detalle más preciso disponible.
+TOPICS_WITH_CONTENT_DETAIL = {
+    ('Python', 'Comprensiones y generadores'),
+    ('React', 'Eventos y formularios'),
+    ('React', 'Renderizado condicional'),
+    ('React', 'useEffect'),
+    ('React', 'Hooks personalizados'),
+    ('React', 'Context'),
+    ('React', 'React Router'),
+    ('React', 'Validación de formularios'),
+    ('React', 'Rendimiento'),
+}
+
+
+def topic_family(item):
+    """Devuelve la familia editorial asignada explícitamente a cada tema."""
+    key = (item['track'], item['title'])
+    try:
+        return TOPIC_FAMILIES[key]
+    except KeyError as exc:
+        raise ValueError(f'No hay familia editorial explícita para {key[0]}: {key[1]}') from exc
 
 def glossary_table(family):
     rows = [[para('Término', 'SmallCC'), para('Significado en este recorrido', 'SmallCC')]]
@@ -248,7 +352,7 @@ def glossary_table(family):
 
 def java_primitive_table():
     rows = [
-        [para('Tipo', 'SmallCC'), para('Uso y rango o precisión aproximada', 'SmallCC')],
+        [para('Tipo', 'TableHeadCC'), para('Uso y rango o precisión aproximada', 'TableHeadCC')],
         [para('byte', 'SmallCC'), para('Entero con signo de 8 bits: de -128 a 127.', 'SmallCC')],
         [para('short', 'SmallCC'), para('Entero con signo de 16 bits: de -32 768 a 32 767.', 'SmallCC')],
         [para('int', 'SmallCC'), para('Entero con signo de 32 bits; opción habitual para contadores y cantidades enteras.', 'SmallCC')],
@@ -285,12 +389,42 @@ def make_pages(item):
     foundation = TRACK_FOUNDATIONS[track]
     detail = FAMILY_DETAILS[family]
     specific_detail = TRACK_FAMILY_DETAILS.get((track, family))
+    use_topic_content_detail = (
+        specific_detail is None or (track, title) in TOPICS_WITH_CONTENT_DETAIL
+    )
     exercise = content['exercise']
     terms = [part.strip(' .;:') for part in re.split(r',|\band\b|\by\b', item['description'], flags=re.I) if len(part.strip()) > 3][:4]
     if not terms:
         terms = [title]
-    short_example = '\n'.join(content['example'].splitlines()[:18])
-    short_solution = '\n'.join(exercise['solution'].splitlines()[:22])
+    # Conserva los ejemplos y soluciones completos: recortarlos por número de
+    # líneas podía eliminar precisamente la parte que explica el caso límite.
+    short_example = content['example']
+    short_solution = exercise['solution']
+
+    if use_topic_content_detail:
+        topic_detail_blocks = [
+            para(f'Explicación técnica de {title.lower()}', 'H2CC'),
+            para(content['explanation']),
+            para('Errores concretos que cambian el resultado', 'H2CC'),
+            bullet(content['mistakes'][0]),
+            bullet(content['mistakes'][1]),
+            para('Resultado del ejemplo', 'H2CC'),
+            para(content['output']),
+        ]
+    else:
+        topic_detail_blocks = [
+            para(f'Reglas de {track} que afectan a este tema', 'H2CC'),
+            para(specific_detail),
+            para(f'Ideas específicas de {title.lower()}', 'H2CC'),
+            para(detail),
+            *([para('Los ocho tipos primitivos de Java', 'H2CC'),
+               para('Elige el tipo por el dominio del dato. Los enteros tienen capacidad limitada; las operaciones aritméticas con byte, short y char suelen promocionarse a int. float y double aproximan decimales, así que una comparación exacta puede sorprender. String es una clase de referencia, no un noveno primitivo; compara su contenido con equals().', 'BodyCC'),
+               java_primitive_table()]
+              if track == 'Java' and family == 'values' else []),
+            para('Glosario de trabajo', 'H2CC'),
+            glossary_table(family),
+            para('Relaciona cada término con una línea del ejemplo o una decisión del ejercicio. Comprueba las diferencias de versión en la fuente oficial enlazada antes de aplicar una regla al proyecto.'),
+        ]
 
     pages = [
         [
@@ -322,20 +456,12 @@ def make_pages(item):
         ],
         [
             para('Lección 2 · Vocabulario y reglas', 'H1CC'),
-            para(f'Reglas de {track} que afectan a este tema', 'H2CC'),
-            para(specific_detail or foundation),
-            para(f'Ideas específicas de {title.lower()}', 'H2CC'), para(detail),
-            *([para('Los ocho tipos primitivos de Java', 'H2CC'),
-               para('Elige el tipo por el dominio del dato. Los enteros tienen capacidad limitada; las operaciones aritméticas con byte, short y char suelen promocionarse a int. float y double aproximan decimales, así que una comparación exacta puede sorprender. String es una clase de referencia, no un noveno primitivo; compara su contenido con equals().', 'BodyCC'),
-               java_primitive_table()]
-              if track == 'Java' and family == 'values' else []),
-            para('Glosario de trabajo', 'H2CC'), glossary_table(family),
-            para('No memorices la tabla como definiciones aisladas. Relaciona cada término con una línea del ejemplo o una decisión del ejercicio. Si una palabra aparece con otro significado en una API o en otra versión del lenguaje, anótalo junto a la fuente oficial antes de aplicarla al proyecto.'),
+            *topic_detail_blocks,
         ],
         [
             para('Lección 3 · Lectura guiada del ejemplo', 'H1CC'),
             para('Primero identifica la entrada, luego sigue el valor por el programa. No supongas que una asignación transforma el dato: a veces solo enlaza un nombre con el mismo objeto. Observa dónde empieza cada bloque, qué condición activa una rama y qué instrucción produce la salida. Si el ejemplo tiene varias líneas, ejecútalo por partes y añade temporalmente observaciones seguras para ver los valores intermedios.', 'BodyCC'),
-            *code_panel(short_example),
+            KeepTogether(code_panel(short_example)),
             para('Salida esperada', 'H2CC'), Preformatted(content['output'], styles['CodeCC'], maxLineLength=84),
             para('Registro de la traza', 'H2CC'),
             study_table(['Momento', 'Qué anotar'], [
@@ -354,7 +480,7 @@ def make_pages(item):
         [
             para('Lección 4 · Decidir cuándo usarlo', 'H1CC'),
             para(detail),
-            para(f'Caso aplicado: en un proyecto de DAM/DAW, una pantalla de matrículas necesita {title.lower()}. Describe qué datos de la matrícula intervienen, qué regla del tema usarías y qué resultado verá el usuario. Mantén el cálculo o decisión separado de la lectura de interfaz cuando sea posible; así podrás comprobar la regla sin abrir la pantalla.', 'BodyCC'),
+            para('Caso de uso', 'H2CC'), para(exercise['scenario']),
             para('Compara antes de elegir', 'H2CC'),
             bullet('¿La solución más directa deja claro el propósito o requiere conocer demasiados detalles internos?'),
             bullet('¿Qué coste aparece si crece el volumen de datos o se añade un nuevo caso?'),
@@ -393,7 +519,7 @@ def make_pages(item):
         [
             para('Lección 7 · Solución explicada', 'H1CC'),
             para('Una solución no se justifica solo porque la salida coincida en un ejemplo. Debe respetar el contrato para todas las entradas admitidas. Lee el código siguiente y vincula cada operación con una frase del enunciado. Si no puedes señalar esa relación, revisa el diseño antes de continuar.', 'BodyCC'),
-            *code_panel(short_solution),
+            KeepTogether(code_panel(short_solution)),
             para('Por qué se sigue este razonamiento', 'H2CC'), para(exercise['reasoning']),
             para('Comprobación de corrección', 'H2CC'),
             para('Comprueba cada caso de la tabla y explica qué parte de la solución lo cubre. Después revisa el caso mínimo, el máximo razonable y una entrada inválida si el contrato la permite. Comprueba también los tipos de entrada y salida: una coincidencia textual puede ocultar un valor mal tipado o una conversión con pérdida.'),
@@ -435,7 +561,6 @@ def make_pages(item):
             bullet(f'La idea clave se resume en esta explicación: {content["explanation"]}'),
             bullet(f'Una fuente inicial de fallo descrita en el tema es: {content["mistakes"][0]}'),
             bullet('Una alternativa es válida si mantiene las entradas, salidas y reglas acordadas y supera las mismas pruebas.'),
-            para('Si tu respuesta no menciona un caso o una condición concreta, añade un ejemplo propio y vuelve a comprobarlo.'),
         ],
         [
             para('Lección 10 · Síntesis y fuentes', 'H1CC'),
@@ -451,6 +576,50 @@ def make_pages(item):
             para('Consulta la sección de la fuente que corresponda a la versión de tu proyecto. Este cuaderno resume conceptos para estudiar; cuando haya una diferencia de detalle, prevalece la documentación oficial del lenguaje o biblioteca.'),
         ],
     ]
+    # La síntesis seguida del repaso evita que un bloque de fuentes y pocas
+    # viñetas queden aislados como última página; conserva las diez lecciones.
+    pages[-2], pages[-1] = pages[-1], pages[-2]
+    pages[-2][0] = para('Lección 9 · Síntesis y fuentes', 'H1CC')
+    pages[-1][0] = para('Lección 10 · Repaso activo', 'ReviewTitleCC')
+    review_style_map = {
+        'H1CC': 'ReviewTitleCC', 'H2CC': 'ReviewH2CC',
+        'BodyCC': 'ReviewBodyCC', 'BulletCC': 'ReviewBulletCC',
+    }
+    for flowable in pages[-1][1:]:
+        style_name = getattr(getattr(flowable, 'style', None), 'name', None)
+        if style_name in review_style_map:
+            flowable.style = styles[review_style_map[style_name]]
+
+    if track == 'JavaScript' and title == 'Funciones':
+        scenario = exercise['scenario']
+        reasoning = exercise['reasoning']
+        case_summary = ' '.join(
+            f"Caso {index}: entrada {case['input']}; resultado esperado {case['expected']}."
+            for index, case in enumerate(exercise['cases'], start=1)
+        )
+        pages[-1].extend([
+            para('Aplicación: seguir un cierre', 'ReviewH2CC'),
+            para(
+                f"En la calculadora del escenario («{scenario}»), sigue qué valor queda disponible después de crear el sumador. {reasoning} {case_summary} "
+                'Explica qué dato conserva la función devuelta, cuál cambia en cada llamada y cómo una prueba separada detectaría que se mezcló la configuración de dos sumadores.',
+                'ReviewBodyCC',
+            ),
+        ])
+    if (track, num) in EXPANDED_REVIEW_TOPICS:
+        case_summary = ' '.join(
+            f"Caso {index}: entrada {case['input']}; resultado esperado {case['expected']}."
+            for index, case in enumerate(exercise['cases'], start=1)
+        )
+        pages[-1].extend([
+            para('Prueba aplicada: casos y razonamiento', 'ReviewH2CC'),
+            para(f"Escenario: {exercise['scenario']}", 'ReviewBodyCC'),
+            para(f"Razonamiento de la solución: {exercise['reasoning']}", 'ReviewBodyCC'),
+            para(f"Comprueba cada entrada: {case_summary}", 'ReviewBodyCC'),
+            para(f"Variación: {exercise['extension']} Explica qué resultado esperas y qué regla lo justifica.", 'ReviewBodyCC'),
+        ])
+
+    # Las fuentes quedan junto a la síntesis del tema, sin repetir una línea
+    # de enlaces en cada lección ni dejarla aislada al final de una página.
     return pages
 
 
@@ -463,6 +632,13 @@ def load_topic_content(catalog):
         raise ValueError('El banco de contenido debe tener version 1 y una lista topics.')
 
     expected = {(item['track'], item['title']) for item in catalog}
+    missing_families = expected - TOPIC_FAMILIES.keys()
+    unexpected_families = TOPIC_FAMILIES.keys() - expected
+    if missing_families or unexpected_families:
+        raise ValueError(
+            'El mapa explícito de familias no coincide con el catálogo; '
+            f'faltan {sorted(missing_families)} y sobran {sorted(unexpected_families)}.'
+        )
     indexed = {}
     for content in payload['topics']:
         if not isinstance(content, dict):
@@ -518,14 +694,16 @@ def build_pdf(item, workspace):
     pages = make_pages(item)
     story = []
     for page_number, page in enumerate(pages):
-        if page_number:
+        # Solo la portada tiene una página propia; las lecciones, el repaso y
+        # las referencias fluyen para aprovechar el espacio disponible.
+        if page_number == 1:
             story.append(PageBreak())
         story.extend(page)
 
     def create_doc():
         return SimpleDocTemplate(
-            str(work_pdf), pagesize=A4, rightMargin=1.7*cm, leftMargin=1.7*cm,
-            topMargin=1.4*cm, bottomMargin=1.6*cm,
+            str(work_pdf), pagesize=A4, rightMargin=1.8*cm, leftMargin=1.8*cm,
+            topMargin=1.8*cm, bottomMargin=1.7*cm,
             title=f"{item['track']} · Tema {item['num']:02d}: {item['title']}",
             author='CódigoClaro · síntesis basada en fuentes oficiales',
             subject=f"Temario didáctico de {item['track']} para DAM y DAW",
@@ -533,8 +711,11 @@ def build_pdf(item, workspace):
 
     doc = create_doc()
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
-    if doc.page < 10:
-        raise ValueError(f'El temario {item["file"]} debe ocupar al menos diez páginas; se generaron {doc.page}.')
+    if doc.page < MIN_PHYSICAL_PAGES:
+        raise ValueError(
+            f'{item["track"]} Tema {item["num"]:02d} ocupa {doc.page} páginas físicas; '
+            f'se requieren al menos {MIN_PHYSICAL_PAGES}.'
+        )
     shutil.copyfile(work_pdf, dest)
     return dest, doc.page
 
@@ -615,6 +796,15 @@ def load_complementary_guides():
             for source in sources
         ):
             raise ValueError(f'{filename} necesita referencias HTTPS directas.')
+        source_labels = {source['label'] for source in sources}
+        for page_number, page in enumerate(pages, start=1):
+            page_sources = page.get('sources')
+            if page_sources is not None and (
+                not isinstance(page_sources, list)
+                or not page_sources
+                or any(not isinstance(label, str) or label not in source_labels for label in page_sources)
+            ):
+                raise ValueError(f'La página {page_number} de {filename} contiene fuentes no declaradas en la bibliografía de la guía.')
         indexed[filename] = guide
 
     if indexed.keys() != COMPLEMENTARY_GUIDE_FILES:
@@ -642,8 +832,29 @@ def guide_block_flowables(block):
     raise ValueError(f'Tipo de bloque desconocido: {kind!r}')
 
 
+def use_complementary_guide_styles():
+    """Restaura la tipografía compacta para las diez secciones de cada guía."""
+    guide_style_values = {
+        'H1CC': {'fontSize': 20, 'leading': 24, 'spaceBefore': 5, 'spaceAfter': 7},
+        'H2CC': {'fontSize': 14, 'leading': 17, 'spaceBefore': 7, 'spaceAfter': 4},
+        'BodyCC': {'fontSize': 12, 'leading': 16.5, 'spaceAfter': 8},
+        'SmallCC': {'fontSize': 10, 'leading': 13, 'spaceAfter': 5},
+        'SourcesCC': {'fontSize': 9, 'leading': 11.5, 'spaceAfter': 5},
+        'TableHeadCC': {'fontSize': 10, 'leading': 12, 'spaceAfter': 0},
+        'CodeCC': {'fontSize': 8.5, 'leading': 12, 'spaceBefore': 4, 'spaceAfter': 7},
+        'BulletCC': {'fontSize': 12, 'leading': 16.5, 'spaceAfter': 6},
+        'BodyLastCC': {'fontSize': 12, 'leading': 16.5, 'spaceBefore': 5, 'spaceAfter': 8},
+        'BulletLastCC': {'fontSize': 12, 'leading': 16.5, 'spaceAfter': 5},
+    }
+    for style_name, values in guide_style_values.items():
+        style = styles[style_name]
+        for attribute, value in values.items():
+            setattr(style, attribute, value)
+
+
 def build_complementary_guides(workspace, only=None):
     """Regenera y sincroniza guías complementarias con explicaciones extensas."""
+    use_complementary_guide_styles()
     guides = load_complementary_guides()
     if only is not None:
         unknown = set(only) - guides.keys()
@@ -658,31 +869,45 @@ def build_complementary_guides(workspace, only=None):
             para(guide['title'], 'CoverTitleCC'),
             para(guide.get('subtitle', 'Guía de estudio · DAM/DAW'), 'SubCC'),
         ]
+        source_links = [
+            f'<link href="{esc(source["url"])}" color="#087f8c">{esc(source["label"])}</link>'
+            for source in guide['sources']
+        ]
+        source_by_label = {source['label']: source for source in guide['sources']}
         for index, page in enumerate(guide['pages']):
             if index:
                 story.append(PageBreak())
             story.append(para(page['heading'], 'H1CC'))
             for block in page['blocks']:
                 story.extend(guide_block_flowables(block))
-        source_links = [
-            f'<link href="{esc(source["url"])}" color="#087f8c">{esc(source["label"])}</link>'
-            for source in guide['sources']
-        ]
+            page_sources = page.get('sources', [])
+            if page_sources:
+                page_source_links = [
+                    f'<link href="{esc(source_by_label[label]["url"])}" color="#087f8c">{esc(label)}</link>'
+                    for label in page_sources
+                ]
+                story.append(Paragraph(
+                    '<b>Documentación consultada:</b> ' + ' · '.join(page_source_links),
+                    styles['SourcesCC'],
+                ))
         story.extend([
             para('Fuentes oficiales', 'H2CC'),
             Paragraph(' · '.join(source_links), styles['SourcesCC']),
         ])
         doc = SimpleDocTemplate(
             str(work_pdf), pagesize=A4,
-            rightMargin=1.7 * cm, leftMargin=1.7 * cm,
-            topMargin=1.4 * cm, bottomMargin=1.6 * cm,
+            rightMargin=1.8 * cm, leftMargin=1.8 * cm,
+            topMargin=1.8 * cm, bottomMargin=1.7 * cm,
             title=guide['title'],
             author='CódigoClaro · síntesis basada en fuentes oficiales',
             subject='Guía didáctica para DAM y DAW',
         )
         doc.build(story, onFirstPage=footer, onLaterPages=footer)
-        if doc.page < 10:
-            raise ValueError(f'La guía {filename} debe ocupar al menos diez páginas; se generaron {doc.page}.')
+        if doc.page < MIN_PHYSICAL_PAGES:
+            raise ValueError(
+                f'La guía {filename} ocupa {doc.page} páginas físicas; '
+                f'se requieren al menos {MIN_PHYSICAL_PAGES}.'
+            )
         for destination in (PUB / 'temarios' / filename, ROOT / 'docs' / 'temarios' / filename):
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(work_pdf, destination)
@@ -841,16 +1066,8 @@ TS_ROUTE = [
 
 
 def typescript_route_footer(canvas, doc):
-    """Dibuja un pie propio de la ruta sin modificar el generador principal."""
-    canvas.saveState()
-    width, _ = A4
-    canvas.setStrokeColor(colors.HexColor('#d9dee8'))
-    canvas.line(1.8 * cm, 1.35 * cm, width - 1.8 * cm, 1.35 * cm)
-    canvas.setFont(FONT, 7)
-    canvas.setFillColor(colors.HexColor('#667085'))
-    canvas.drawString(1.8 * cm, .95 * cm, 'CódigoClaro · Ruta complementaria de TypeScript · Fuentes oficiales')
-    canvas.drawRightString(width - 1.8 * cm, .95 * cm, f'Página {doc.page}')
-    canvas.restoreState()
+    """Aplica a la ruta TypeScript la cabecera y el pie comunes."""
+    footer(canvas, doc)
 
 
 def build_typescript_route():
@@ -895,7 +1112,7 @@ def build_typescript_route():
         doc = SimpleDocTemplate(
             str(output_path), pagesize=A4,
             rightMargin=1.8 * cm, leftMargin=1.8 * cm,
-            topMargin=1.35 * cm, bottomMargin=1.8 * cm,
+            topMargin=1.8 * cm, bottomMargin=1.7 * cm,
             title='TypeScript: de JavaScript a React y Node · 15 temas',
             author='CódigoClaro',
             subject='Ruta complementaria de aprendizaje de TypeScript',
@@ -960,9 +1177,13 @@ def main():
 
     CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     docs_catalog_path.write_text(json.dumps(docs_catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    if min(page_counts.values()) < 10 or (guide_page_counts and min(guide_page_counts.values()) < 10):
-        raise ValueError('Todos los temarios individuales y las guías complementarias generadas deben ocupar al menos diez páginas.')
-    print(f'Generados {len(catalog)} temarios individuales y {len(guide_page_counts)} guías complementarias; mínimo {min([*page_counts.values(), *guide_page_counts.values()])} páginas por PDF.')
+    if page_counts and min(page_counts.values()) < MIN_PHYSICAL_PAGES:
+        raise ValueError(f'Un temario individual quedó por debajo de {MIN_PHYSICAL_PAGES} páginas físicas.')
+    if guide_page_counts and min(guide_page_counts.values()) < MIN_PHYSICAL_PAGES:
+        raise ValueError(f'Una guía quedó por debajo de {MIN_PHYSICAL_PAGES} páginas físicas.')
+    min_pages = min([*page_counts.values(), *guide_page_counts.values()])
+    max_pages = max([*page_counts.values(), *guide_page_counts.values()])
+    print(f'Generados {len(catalog)} temarios individuales y {len(guide_page_counts)} guías complementarias; paginación continua de {min_pages} a {max_pages} páginas.')
 
 
 def validate_only():

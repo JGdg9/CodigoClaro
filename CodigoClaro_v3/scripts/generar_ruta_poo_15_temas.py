@@ -24,11 +24,11 @@ OUT = (
 JAVA = "https://dev.java/learn/"
 OOP = JAVA + "language/oop/"
 INK = colors.HexColor("#17243A")
-MUTED = colors.HexColor("#58677D")
+MUTED = colors.HexColor("#526477")
 TEAL = colors.HexColor("#087E8B")
-PALE_BLUE = colors.HexColor("#EEF3FA")
+PALE_BLUE = colors.HexColor("#F1F6F8")
 PALE_GOLD = colors.HexColor("#FFF5DF")
-LINE = colors.HexColor("#D9E1EB")
+LINE = colors.HexColor("#D6E1E8")
 WHITE = colors.white
 PAGE_W, PAGE_H = A4
 LEFT, RIGHT, BOTTOM = 46, PAGE_W - 46, 50
@@ -467,8 +467,8 @@ LESSONS = [
         ],
         "reading": "El servicio expresa la operación de aplicación y recibe el colaborador al construirse. La implementación concreta del repositorio queda fuera del fragmento para centrar el ejercicio en el límite entre política y almacenamiento.",
         "note": "Este esqueleto no es una arquitectura obligatoria ni un sistema de producción: faltan persistencia, validación, concurrencia y reglas específicas de la organización.",
-        "practice": "Entrega un diagrama de clases y una prueba para registrar un préstamo. Especifica precondiciones, resultado esperado, libro ya prestado, repositorio simulado y las decisiones que deliberadamente no modelaste.",
-        "check": "Puedes explicar quién posee cada dato, qué regla protege cada clase, qué interfaz necesita el cliente y cómo comprobarías cada caso límite.",
+        "practice": "Entrega un diagrama de clases y una prueba para registrar un préstamo. Implementa una invariante, una colaboración por interfaz y pruebas del caso normal, límite y error; explica qué decisión deliberadamente no modelaste.",
+        "check": "Puedes explicar quién posee cada dato, qué regla protege cada clase, qué interfaz necesita el cliente y qué resultado o límite comprueba cada prueba.",
         "sources": [
             ("POO en Java · Dev.java", OOP),
             ("Interfaces Java", OOP + "interfaces/defining-interfaces/"),
@@ -502,7 +502,7 @@ def draw_card(c, text, y, fill, style=SMALL):
         raise ValueError(f"Tarjeta fuera de página: {text[:70]!r}; y={y:.1f}; h={box_h:.1f}")
     c.setFillColor(fill)
     c.setStrokeColor(LINE)
-    c.roundRect(LEFT, y - box_h, CONTENT_W, box_h, 7, fill=1, stroke=1)
+    c.roundRect(LEFT, y - box_h, CONTENT_W, box_h, 5, fill=1, stroke=1)
     p.drawOn(c, LEFT + 11, y - 9 - h)
     return y - box_h
 
@@ -516,7 +516,7 @@ def draw_code(c, label, lines, y):
     if y - box_h < BOTTOM:
         raise ValueError(f"Código fuera de página: {label}; y={y:.1f}; h={box_h:.1f}")
     c.setFillColor(INK)
-    c.roundRect(LEFT, y - box_h, CONTENT_W, box_h, 7, fill=1, stroke=0)
+    c.roundRect(LEFT, y - box_h, CONTENT_W, box_h, 5, fill=1, stroke=0)
     c.setFillColor(colors.HexColor("#81D2D4"))
     c.setFont("Helvetica-Bold", 7.8)
     c.drawString(LEFT + 12, y - 15, label.upper())
@@ -541,12 +541,12 @@ def draw_sources(c, sources, y):
 
 
 def draw_page(c, lesson, number):
-    c.setFillColor(colors.HexColor("#F8FAFC"))
+    c.setFillColor(WHITE)
     c.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
     c.setFillColor(INK)
-    c.rect(0, PAGE_H - 8, PAGE_W, 8, fill=1, stroke=0)
+    c.rect(0, PAGE_H - 3, PAGE_W, 3, fill=1, stroke=0)
     c.setFillColor(TEAL)
-    c.rect(0, PAGE_H - 8, PAGE_W * number / len(LESSONS), 8, fill=1, stroke=0)
+    c.rect(0, PAGE_H - 3, PAGE_W * number / len(LESSONS), 3, fill=1, stroke=0)
     c.setFillColor(MUTED)
     c.setFont("Helvetica-Bold", 8)
     c.drawString(LEFT, PAGE_H - 31, "CÓDIGOCLARO  /  RUTA POO")
@@ -608,7 +608,19 @@ def make_pdf():
                 "La devolución conserva el historial y registra una fecha coherente.",
                 "Las pruebas cubren disponibilidad, rechazo y devolución repetida.",
             ],
+            "test_cases": [
+                "Ejemplar disponible y socio apto: se abre el préstamo y el estado observable cambia.",
+                "Ejemplar ya prestado: se rechaza la segunda solicitud y el préstamo anterior permanece.",
+                "Préstamo activo: la devolución lo cierra y conserva el historial.",
+                "Préstamo cerrado: repetir la devolución sigue la regla acordada sin alterar el registro.",
+            ],
+            "deliverable": "Entrega un diagrama de responsabilidades, la implementación y las pruebas de los casos habituales y límite. Explica por qué el servicio depende de RepositorioPrestamos y ejecuta la misma batería contra la colección en memoria y contra una segunda implementación de prueba.",
             "reflection": "Explica qué clase es responsable de cada regla, qué colaboración resolviste mediante composición y qué cambiarías si mañana el almacenamiento dejara de ser una lista en memoria.",
+            "sources": [
+                ("Programación orientada a objetos · Dev.java", JAVA + "language/oop/"),
+                ("Interfaces Java · Dev.java", JAVA + "language/oop/interfaces/"),
+                ("Pruebas con JUnit Jupiter 6.1.3", "https://docs.junit.org/6.1.3/writing-tests/intro.html"),
+            ],
         },
     )
 

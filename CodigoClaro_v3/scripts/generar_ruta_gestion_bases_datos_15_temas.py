@@ -24,11 +24,11 @@ OUT = (
 PG = "https://www.postgresql.org/docs/18/"
 ORACLE = "https://docs.oracle.com/en/database/oracle/oracle-database/26/dwhsg/data-warehouse-logical-design.html"
 INK = colors.HexColor("#17243A")
-MUTED = colors.HexColor("#58677D")
+MUTED = colors.HexColor("#526477")
 TEAL = colors.HexColor("#087E8B")
-PALE_BLUE = colors.HexColor("#EEF3FA")
+PALE_BLUE = colors.HexColor("#F1F6F8")
 PALE_GOLD = colors.HexColor("#FFF5DF")
-LINE = colors.HexColor("#D9E1EB")
+LINE = colors.HexColor("#D6E1E8")
 WHITE = colors.white
 PAGE_W, PAGE_H = A4
 LEFT, RIGHT, BOTTOM = 46, A4[0] - 46, 50
@@ -414,8 +414,8 @@ LESSONS = [
         ],
         "reading": "La clave foránea enlaza cada préstamo con sus entidades. Si se omite fecha_prestamo, CURRENT_DATE toma la fecha de inicio de la transacción. CHECK valida el orden entre fecha_prestamo y devuelto_en; el índice único parcial conserva el historial y limita a uno los préstamos sin fecha de devolución por ejemplar.",
         "note": "El SQL aplica reglas deliberadamente escogidas para el ejercicio. Antes de producción faltarían gestión de errores, autorización, política de retención, observabilidad, límites de carga y un plan probado de continuidad.",
-        "practice": "Entrega diagrama ER, migración inicial, transacción de préstamo, roles de lectura y escritura, comando de backup y acta de restauración en una base aislada.",
-        "check": "Puedes demostrar cómo se rechaza una referencia inválida, un segundo préstamo activo y una devolución anterior a la fecha del préstamo.",
+        "practice": "Entrega diagrama ER, migración inicial, transacción de préstamo, roles de lectura y escritura, comando de backup y acta de restauración en una base aislada. Incluye una consulta de aceptación y prueba que el rol de lectura no puede escribir.",
+        "check": "Puedes demostrar cómo se rechaza una referencia inválida, un segundo préstamo activo y una devolución anterior a la fecha del préstamo; la copia se restaura en otro destino y responde la consulta de aceptación.",
         "sources": [
             ("Restricciones · PostgreSQL", PG + "ddl-constraints.html"),
             ("Índices parciales · PostgreSQL", PG + "indexes-partial.html"),
@@ -451,7 +451,7 @@ def draw_card(c, text, y, fill, style=SMALL):
         raise ValueError(f"Tarjeta fuera de página: {text[:70]!r}; y={y:.1f}, h={box_height:.1f}")
     c.setFillColor(fill)
     c.setStrokeColor(LINE)
-    c.roundRect(LEFT, y - box_height, CONTENT_W, box_height, 7, fill=1, stroke=1)
+    c.roundRect(LEFT, y - box_height, CONTENT_W, box_height, 5, fill=1, stroke=1)
     paragraph.drawOn(c, LEFT + 11, y - 9 - height)
     return y - box_height
 
@@ -465,7 +465,7 @@ def draw_code(c, label, lines, y):
     if y - box_height < BOTTOM:
         raise ValueError(f"Código fuera de página: {label}; y={y:.1f}, h={box_height:.1f}")
     c.setFillColor(INK)
-    c.roundRect(LEFT, y - box_height, CONTENT_W, box_height, 7, fill=1, stroke=0)
+    c.roundRect(LEFT, y - box_height, CONTENT_W, box_height, 5, fill=1, stroke=0)
     c.setFillColor(colors.HexColor("#81D2D4"))
     c.setFont("Helvetica-Bold", 7.7)
     c.drawString(LEFT + 12, y - 15, label.upper())
@@ -492,12 +492,12 @@ def draw_sources(c, sources, y):
 
 
 def draw_page(c, lesson, number):
-    c.setFillColor(colors.HexColor("#F8FAFC"))
+    c.setFillColor(WHITE)
     c.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
     c.setFillColor(INK)
-    c.rect(0, PAGE_H - 8, PAGE_W, 8, fill=1, stroke=0)
+    c.rect(0, PAGE_H - 3, PAGE_W, 3, fill=1, stroke=0)
     c.setFillColor(TEAL)
-    c.rect(0, PAGE_H - 8, PAGE_W * number / len(LESSONS), 8, fill=1, stroke=0)
+    c.rect(0, PAGE_H - 3, PAGE_W * number / len(LESSONS), 3, fill=1, stroke=0)
     c.setFillColor(MUTED)
     c.setFont("Helvetica-Bold", 8)
     c.drawString(LEFT, PAGE_H - 31, "CÓDIGOCLARO  /  RUTA GESTIÓN BD")
@@ -546,6 +546,7 @@ def make_pdf():
         subject="Modelado, administración y recuperación de bases de datos",
         editorial_note="Las prácticas se contrastan con la documentación oficial de PostgreSQL 18; revisa la versión de tu instalación antes de aplicarlas.",
         closing_project={
+            "before_lesson_number": 14,
             "title": "Proyecto integrador · copia y restauración verificadas",
             "objective": "Practica un plan de copia y recuperación en una instancia local o de pruebas. No ejecutes estas operaciones sobre producción: primero identifica el entorno y confirma que puedes restaurar sin sobrescribir datos ajenos.",
             "steps": [
