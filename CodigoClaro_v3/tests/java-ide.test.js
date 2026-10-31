@@ -372,9 +372,11 @@ test('ccApi conserva validaciones 4xx seguras y oculta detalles internos', async
   });
 });
 
-test('el selector de lenguaje y el estado del endpoint tienen nombres y avisos accesibles', () => {
-  assert.match(aula, /<select id="ideLang" aria-label="Lenguaje de programación"/);
-  assert.match(aula, /id="judgeSettingsStatus" role="status" aria-live="polite" aria-atomic="true"/);
+test('el editor externo ofrece consentimiento y un estado accesible', () => {
+  const embed = fs.readFileSync(path.join(__dirname, '../public/onecompiler-embed.js'), 'utf8');
+  assert.match(embed, /id=\\"ccOneCompilerConsentButton\\" class=\\"btn primary\\" type=\\"button\\"/);
+  assert.match(embed, /id=\\"ccOneCompilerStatus\\" class=\\"tiny muted\\" role=\\"status\\" aria-live=\\"polite\\"/);
+  assert.match(embed, /Editor multilenguaje de OneCompiler, iniciado en Python/);
 });
 
 test('Java ofrece botones para comprobar la conexión y cancelar la ejecución', () => {
@@ -406,7 +408,7 @@ test('Java ofrece botones para comprobar la conexión y cancelar la ejecución',
   assert.equal(cancelled, 1);
 });
 
-test('Java cancela y no envía código si cambia endpoint o consentimiento durante la carga de runtimes', async () => {
+test('la ejecución Java de compatibilidad se cancela y sus controles no aparecen en el IDE público', async () => {
   const source = extract('async function ideRunJudge0(){', '// ideLoadSql');
 
   async function runAfterMutation(mutate) {
@@ -457,9 +459,10 @@ test('Java cancela y no envía código si cambia endpoint o consentimiento duran
     setup.context.document.getElementById('judgeToken').value = '';
     setup.context.ideCancelJudgeRun();
   });
-  assert.match(aula, /id="judgeEndpoint"[^>]*oninput="ideCancelJudgeRun\(\)"/);
-  assert.match(aula, /id="ideRemoteConsent"[^>]*onchange="[^"]*ideCancelJudgeRun\(\)"/);
-  assert.match(aula, /id="judgeToken"[^>]*oninput="ideCancelJudgeRun\(\)"/);
+  const pageStart = aula.indexOf('function idePage(){');
+  const pageEnd = aula.indexOf('\n// ideLang', pageStart);
+  assert.ok(pageStart >= 0 && pageEnd > pageStart);
+  assert.doesNotMatch(aula.slice(pageStart, pageEnd), /judgeEndpoint|ideRemoteConsent|judgeToken|ideLang/);
 });
 
 function judgeFetchRunner(fetch) {

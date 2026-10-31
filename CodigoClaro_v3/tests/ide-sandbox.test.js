@@ -112,14 +112,16 @@ test("el IDE incorpora validación XML y consultas XPath locales", () => {
   assert.match(aula, /xpath:'xpath'/);
 });
 
-test("React delega el renderizado estático a su worker local aislado", () => {
+test("el renderer React interno sigue aislado y no se ofrece en la página pública del IDE", () => {
   const aula = fs.readFileSync(path.join(__dirname, "../public/aula.html"), "utf8");
   assert.match(aula, /async function ideRunReact\(\)/);
   assert.match(aula, /CCReactPreview\.render\(code\)/);
   assert.match(aula, /frame\.srcdoc=result\.document/);
-  assert.match(aula, /React\/JSX ofrece vista previa estática en un worker local/);
-  assert.match(aula, /eventos, efectos y scripts no se ejecutan/);
   assert.doesNotMatch(aula, /function ideReactPreviewDocument|Babel\.transform|ReactDOM\.createRoot|Ejecución React desactivada por seguridad/);
+  const pageStart = aula.indexOf("function idePage(){");
+  const pageEnd = aula.indexOf("\n// ideLang", pageStart);
+  assert.ok(pageStart >= 0 && pageEnd > pageStart);
+  assert.doesNotMatch(aula.slice(pageStart, pageEnd), /React|reactPreview/);
   const worker = fs.readFileSync(path.join(__dirname, "../public/react-preview-worker.js"), "utf8");
   const client = fs.readFileSync(path.join(__dirname, "../public/react-preview-client.js"), "utf8");
   assert.match(worker, /new arr\("require","module","exports"/);
