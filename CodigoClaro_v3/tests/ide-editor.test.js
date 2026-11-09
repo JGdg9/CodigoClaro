@@ -40,15 +40,13 @@ test("HTML, CSS y SQL usan el modo de resaltado correspondiente", () => {
   assert.equal(mode({id:"typescript"}), "text/typescript");
 });
 
-test("React conserva edición y análisis con vista previa estática en worker", () => {
-  assert.match(aula, /id="ideCode"/);
-  assert.match(aula, /onclick="ideAnalyze\(\)"/);
-  assert.match(aula, /function ideAnalyze\(\)/);
-  assert.match(aula, /React\/JSX · vista previa estática local/);
-  assert.match(aula, /worker terminable/);
-  assert.match(aula, /id="reactPreview"/);
-  assert.match(aula, /CCReactPreview\.render\(code\)/);
-  assert.doesNotMatch(aula, /function ideReactPreviewDocument|Babel\.transform|ReactDOM\.createRoot/);
+test("la página pública del IDE ya no expone React ni el editor nativo", () => {
+  const pageStart = aula.indexOf("function idePage(){");
+  const pageEnd = aula.indexOf("\n// ideLang", pageStart);
+  assert.ok(pageStart >= 0 && pageEnd > pageStart);
+  const page = aula.slice(pageStart, pageEnd);
+  assert.match(page, /OneCompiler se abre en Python/);
+  assert.doesNotMatch(page, /ideCode|ideAnalyze|React|reactPreview|Judge0/);
 });
 
 test("Ejecutar React envía el código al renderizador local y muestra HTML sanitizado", async () => {

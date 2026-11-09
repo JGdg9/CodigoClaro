@@ -171,15 +171,16 @@ test('api del panel conserva validaciones seguras y oculta errores internos', as
   });
 });
 
-test('la política de privacidad describe el borrador local y los motores remotos', () => {
+test('la política describe el consentimiento y los datos enviados al editor OneCompiler', () => {
   const privacy = fs.readFileSync(path.join(root, 'public/privacidad.html'), 'utf8');
-  assert.match(privacy, /borrador local del IDE/);
-  assert.match(privacy, /solo después de marcar el consentimiento[\s\S]*código fuente y el contenido de stdin/);
-  assert.match(privacy, /Java, Kotlin, Node\.js, Python o TypeScript/);
-  assert.match(privacy, /React\/JSX genera HTML estático en un worker local; el código no se transmite/);
-  assert.match(privacy, /Comprobar conexión[\s\S]*token opcional[\s\S]*no incluye tu código/);
-  assert.match(privacy, /token, también se envía en la petición de ejecución/);
+  assert.match(privacy, /Simple Editor multilenguaje de OneCompiler es opcional/);
+  assert.match(privacy, /Acepto cargar OneCompiler en Python/);
+  assert.match(privacy, /no lee ni envía a OneCompiler el código local ni el reto/);
+  assert.match(privacy, /Al ejecutar, OneCompiler recibe el código y los datos de entrada/);
+  assert.match(privacy, /política de privacidad/);
+  assert.match(privacy, /pendiente de revisión humana y legal/);
   assert.match(privacy, /CódigoClaro gestiona los datos/);
+  assert.doesNotMatch(privacy, /Judge0|React\/JSX|worker local|simuladores didácticos|PL\/SQL/);
   assert.doesNotMatch(privacy, /\[(?:sustituir|añadir|completar)[^\]]*\]/i);
   assert.doesNotMatch(privacy, /@/);
   assert.doesNotMatch(privacy, /el IDE no envía el código a un compilador remoto/);
@@ -287,43 +288,20 @@ test('el IDE prepara un editor con resaltado y conserva el textarea si falla la 
   assert.match(aula, /function ideBindShortcuts\(\)/);
 });
 
-test('el IDE dirige cada lenguaje al motor que realmente ofrece', () => {
-  const runStart = aula.indexOf('function ideRun(){');
-  const runEnd = aula.indexOf('function ideRunJS(){', runStart);
-  const run = runStart >= 0 && runEnd > runStart ? aula.slice(runStart, runEnd) : '';
-  assert.match(run, /\['java','kotlin','node','python','oop','typescript'\]\.includes\(l\.id\)\)return ideRunJudge0\(\)/);
-  assert.match(run, /l\.id==='react'\)return ideRunReact\(\)/);
-  assert.match(run, /l\.id==='sql-postgres'\)return ideRunPostgres\(\)/);
-  assert.match(run, /l\.id==='db'\)return ideRunSQL\(\)/);
-  assert.match(run, /l\.id==='js'\)return ideRunJS\(\)/);
-  assert.match(run, /l\.id==='html'\|\|l\.id==='css'\)return ideRunMarkup\(\)/);
-  assert.match(aula, /id="ideRemoteConsent" type="checkbox"/);
-  assert.match(aula, /consent\.dataset\.endpoint!==base/);
-  assert.match(aula, /function ideRunMarkup\(\)/);
-  assert.match(aula, /CCIdeSandbox\.run\(kind,code\)/);
-  assert.match(aula, /function ideSanitizePreview\(/);
-  assert.match(aula, /id="ideCode"/);
-  assert.match(aula, /onclick="ideAnalyze\(\)"/);
-  assert.match(aula, /function ideAnalyze\(\)/);
-  assert.match(aula, /React\/JSX · vista previa estática local/);
-  assert.match(aula, /CCReactPreview\.render\(code\)/);
-  assert.match(aula, /id="reactPreview"/);
-  assert.doesNotMatch(aula, /function ideReactPreviewDocument|Babel\.transform|ReactDOM\.createRoot|Ejecución React desactivada por seguridad/);
-  assert.match(aula, /connect-src 'none'; frame-src 'none'/);
-  assert.match(aula, /frame\.setAttribute\('sandbox',''\)/);
-  assert.match(aula, /function idePostgresDataDir\(/);
-  assert.match(aula, /function ideRunPostgres\(/);
-  assert.match(aula, /id==='sql-postgres'\)return ideRunPostgres\(\)/);
-  assert.match(aula, /Motor: PostgreSQL local real \(PGlite\/WASM\)/);
-  assert.match(aula, /https:\/\/freesql\.com/);
-  assert.match(aula, /https:\/\/play\.tidbcloud\.com/);
-  assert.match(aula, /Al ejecutarlo, Oracle recibe ese código; CódigoClaro no lo copia ni lo envía/);
-  assert.match(aula, /TiDB Playground acepta una parte de su sintaxis; pega allí el código manualmente/);
-  assert.doesNotMatch(aula.slice(aula.indexOf('function ideRunReact(){'),aula.indexOf('function ideTestSample()',aula.indexOf('function ideRunReact(){'))), /new Function|https:/);
-  assert.doesNotMatch(run, /l\.id==='sql-oracle'\|\|l\.id==='sql-mysql'\|\|l\.id==='sql-postgres'\)return ideRunSQL/);
-  assert.match(aula, /Kotlin · ejecución remota opcional/);
-  assert.match(aula, /PL\/SQL · herramienta Oracle externa/);
-  assert.doesNotMatch(run, /La compilación real necesita un JDK\/runtime local/);
+test('la página del IDE muestra solo OneCompiler y lo carga tras el consentimiento', () => {
+  const pageStart = aula.indexOf('function idePage(){');
+  const pageEnd = aula.indexOf('\n// ideLang', pageStart);
+  assert.ok(pageStart >= 0 && pageEnd > pageStart);
+  const page = aula.slice(pageStart, pageEnd);
+  const embed = fs.readFileSync(path.join(root, 'public/onecompiler-embed.js'), 'utf8');
+  assert.match(page, /OneCompiler se abre en Python/);
+  assert.doesNotMatch(page, /ideLang|ideCode|ideRemoteConsent|ideChallengeSelect|Judge0|React/);
+  assert.match(aula, /\['ide','IDE'\]/);
+  assert.match(embed, /https:\/\/onecompiler\.com\/embed\/python/);
+  assert.match(embed, /ccOneCompilerConsentButton.*addEventListener\("click", \(\) => loadEditor\(panel\)\)/);
+  assert.match(embed, /frameHost\.replaceChildren\(frame\)/);
+  assert.doesNotMatch(embed, /postMessage|ideGetCode|populateCode|ideChallengeSelect/);
+  assert.doesNotMatch(aula, /onecompiler\.com[^\n]*studio|studio[^\n]*onecompiler\.com/i);
 });
 
 test('tests incluyen tipo test, verdadero/falso, mixto y retos de código con rúbrica', () => {
@@ -338,10 +316,10 @@ test('tests incluyen tipo test, verdadero/falso, mixto y retos de código con r�
   assert.match(aula, /no se mezclarán tecnologías/);
 });
 
-test('el IDE permite cargar retos guiados de los ejercicios en el editor', () => {
-  assert.match(aula, /id="ideChallengeSelect"/);
-  assert.match(aula, /onclick="ideLoadChallenge\(\)"/);
-  assert.match(aula, /function ideLoadChallenge\(\)/);
+test('el editor externo no recibe retos guiados de CódigoClaro', () => {
+  const embed = fs.readFileSync(path.join(root, 'public/onecompiler-embed.js'), 'utf8');
+  assert.match(embed, /no lee ni envía el código o el reto/);
+  assert.doesNotMatch(embed, /ideLoadChallenge|ideChallengeSelect|postMessage/);
 });
 
 test('un reto XPath abre el perfil XPath y conserva su expresión', () => {
